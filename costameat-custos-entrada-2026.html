@@ -718,7 +718,7 @@
         <option value="trimestre">Trimestre</option>
       </select>
       <button class="btn primary" onclick="openVendaModal()">+ Nova Venda</button>
-      <button class="btn" onclick="document.getElementById('importVendasJSONFile').click()" title="Importar vendas no formato JSON (Data, Cliente, CD_ITEM, NR_NOTA, Qtde, FatUnit, ImpostoUnit, ComissaoUnit)">⬆ Importar JSON</button>
+      <button class="btn" onclick="document.getElementById('importVendasJSONFile').click()" title="Importar vendas no formato JSON (DATA_PED, Cliente, CD_ITEM, NR_NOTA, Qtde, FatUnit, ImpostoUnit, ComissaoUnit) — DATA_PED é usada como data de referência da venda">⬆ Importar JSON</button>
       <input id="importVendasJSONFile" type="file" accept="application/json,.json" onchange="importVendasFlat(event)" style="display:none">
       <button class="btn" onclick="document.getElementById('importRel8005File').click()" title="Importar Relatório 8005 (CSV) — Vendas por representante">⬆ Rel.8005 (CSV)</button>
       <input id="importRel8005File" type="file" accept=".csv,text/csv" onchange="importRel8005CSV(event)" style="display:none">
@@ -3101,7 +3101,7 @@ function importVendasFlat(event) {
       if (!notaMap.has(nrNota)) {
         notaMap.set(nrNota, {
           docto: nrNota,
-          data:  row.Data    || row.data    || "",
+          data:  row.DATA_PED || row.data_ped || row.Data || row.data || "",
           cliente: row.Cliente || row.cliente || "",
           itens: [],
         });

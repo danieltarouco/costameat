@@ -398,6 +398,7 @@
       <span>👤 <strong id="header-user-name"></strong></span>
       <button onclick="doLogout()">Sair</button>
     </div>
+    <button id="btn-reseed" onclick="adminReseed()" title="Reinicializa os dados com os movimentos do Rel.218 (apaga vendas e saldos)">🔄 Reinicializar dados</button>
     <button onclick="exportJSON()">⬇︎ Exportar JSON</button>
     <button onclick="document.getElementById('importFile').click()">⬆︎ Importar JSON</button>
     <input id="importFile" type="file" accept="application/json" onchange="importJSON(event)" style="display:none">
@@ -5457,6 +5458,33 @@ const SUPABASE_URL = "https://bjkvjcegegnulvfdczxe.supabase.co";
 const SUPABASE_KEY = "sb_publishable_VieU-NG12zJj7kITXzG1nQ_G0PLdXzH";
 const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+/* ======================= ADMIN RESEED ======================= */
+async function adminReseed() {
+  if (!currentUser || currentUser.role !== "admin") {
+    alert("Apenas o administrador pode reinicializar os dados.");
+    return;
+  }
+  const ok = confirm(
+    "⚠️ ATENÇÃO\n\nEsta ação vai:\n" +
+    "• Reinicializar todos os itens e movimentos de compra do Rel.218\n" +
+    "• Apagar TODAS as vendas e saldos manuais\n\n" +
+    "Deseja continuar?"
+  );
+  if (!ok) return;
+  const btn = document.getElementById("btn-reseed");
+  if (btn) { btn.disabled = true; btn.textContent = "Reinicializando…"; }
+  try {
+    seedState();
+    await persist();
+    renderAll();
+    alert("✅ Dados reinicializados com sucesso!\n110 itens | 186 movimentos de compra | 0 vendas");
+  } catch(e) {
+    alert("Erro ao reinicializar: " + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "🔄 Reinicializar dados"; }
+  }
+}
+
 /* ======================= LOGIN ======================= */
 let currentUser = null;
 
@@ -5473,8 +5501,25 @@ function applyUserUI(usuario) {
   if (infoEl) infoEl.style.display = "flex";
   if (nameEl) nameEl.textContent = usuario.nome;
   if (usuario.role !== "admin") {
-    document.querySelectorAll("header .actions button[onclick*='exportJSON'], header .actions button[onclick*='importFile']")
+    // Ocultar botões de export/import e reseed do header
+    document.querySelectorAll("header .actions button[onclick*='exportJSON'], header .actions button[onclick*='importFile'], #btn-reseed")
       .forEach(b => b.style.display = "none");
+    // Ocultar abas restritas ao admin
+    ["regimes", "saldos"].forEach(tab => {
+      const el = document.querySelector(`.tab[data-tab="${tab}"]`);
+      if (el) el.style.display = "none";
+    });
+    // Se a aba ativa for uma aba restrita, ir para Itens
+    const activeTab = document.querySelector(".tab.active");
+    if (activeTab && ["regimes","saldos"].includes(activeTab.dataset.tab)) {
+      document.querySelector('.tab[data-tab="itens"]').click();
+    }
+  } else {
+    // Admin: garantir que abas apareçam
+    ["regimes", "saldos"].forEach(tab => {
+      const el = document.querySelector(`.tab[data-tab="${tab}"]`);
+      if (el) el.style.display = "";
+    });
   }
 }
 

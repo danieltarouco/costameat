@@ -1721,8 +1721,10 @@ function importJSON(evt) {
 const deptName = c => (DEPTS.find(d => d.code === c) || {nome: c}).nome;
 const fornecName = c => FORNECEDORES[c] || c || "";
 const fmtMoney = v => v == null || isNaN(v) ? "—" : v.toLocaleString("pt-BR",{style:"currency",currency:"BRL",minimumFractionDigits:2, maximumFractionDigits:2});
-const fmtNum = v => v == null || isNaN(v) ? "—" : v.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});
-const fmtPct = v => v == null || isNaN(v) ? "—" : v.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2}) + "%";
+const fmtNum   = v => v == null || isNaN(v) ? "—" : v.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtQtde  = v => v == null || isNaN(v) ? "" : Number(v).toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:3});
+const parseBR  = s => { if (s==null||s==="") return null; const n=Number(String(s).replace(/\./g,"").replace(",",".")); return isNaN(n)?null:n; };
+const fmtPct   = v => v == null || isNaN(v) ? "—" : v.toLocaleString("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2}) + "%";
 const fmtDate = v => {
   if (!v) return "—";
   const [y,m,d] = v.split("-"); return `${d}/${m}/${y}`;
@@ -2395,8 +2397,8 @@ function renderSaldos() {
       <td><b>${i.codigo}</b></td>
       <td>${i.descricao}</td>
       <td>${grupoLabel(i)}</td>
-      <td class="num"><input class="inline num-input" type="number" step="0.0001" value="${i.saldoQtde??""}" onchange="updateSaldo('${i.id}','saldoQtde',this.value)"></td>
-      <td class="num"><input class="inline num-input" type="number" step="0.0001" value="${i.saldoCusto??""}" onchange="updateSaldo('${i.id}','saldoCusto',this.value)"></td>
+      <td class="num"><input class="inline num-input" type="text" inputmode="decimal" value="${fmtQtde(i.saldoQtde)}" onchange="updateSaldo('${i.id}','saldoQtde',this.value)" onblur="this.value=fmtQtde(parseBR(this.value))"></td>
+      <td class="num"><input class="inline num-input" type="text" inputmode="decimal" value="${fmtQtde(i.saldoCusto)}" onchange="updateSaldo('${i.id}','saldoCusto',this.value)" onblur="this.value=fmtQtde(parseBR(this.value))"></td>
       <td class="num">${total==null?"—":fmtMoney(total)}</td>
       <td><input class="inline" type="date" value="${i.saldoData||""}" onchange="updateSaldo('${i.id}','saldoData',this.value)"></td>
       <td><input class="inline" type="text" value="${i.saldoObs||""}" onchange="updateSaldo('${i.id}','saldoObs',this.value)"></td>
@@ -2408,7 +2410,7 @@ function renderSaldos() {
 function updateSaldo(id, campo, val) {
   const it = state.itens.find(x=>x.id===id);
   if (!it) return;
-  if (campo === "saldoQtde" || campo === "saldoCusto") val = val === "" ? null : Number(val);
+  if (campo === "saldoQtde" || campo === "saldoCusto") val = parseBR(val);
   it[campo] = val;
   persist();
   renderSaldos();

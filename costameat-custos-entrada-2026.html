@@ -1539,7 +1539,7 @@ function uuid() { return "id_" + Math.random().toString(36).slice(2, 10); }
 async function loadState() {
   // Carrega estado do Supabase (JSONB)
   try {
-    const { data: sbRow, error: sbErr } = await supabase
+    const { data: sbRow, error: sbErr } = await sbClient
       .from("cm_state").select("data").eq("id", "main").single();
     if (!sbErr && sbRow && sbRow.data && Object.keys(sbRow.data).length > 0) {
       state = sbRow.data;
@@ -1669,7 +1669,7 @@ function reconciliarVendasComMovimentos() {
 async function persist() {
   state.modifiedAt = new Date().toISOString();
   try {
-    const { error } = await supabase.from("cm_state").upsert(
+    const { error } = await sbClient.from("cm_state").upsert(
       { id: "main", data: state, updated_at: new Date().toISOString() },
       { onConflict: "id" }
     );
@@ -5455,7 +5455,7 @@ document.querySelectorAll(".modal-backdrop").forEach(m => m.addEventListener("cl
 /* ======================= SUPABASE ======================= */
 const SUPABASE_URL = "https://bjkvjcegegnulvfdczxe.supabase.co";
 const SUPABASE_KEY = "sb_publishable_VieU-NG12zJj7kITXzG1nQ_G0PLdXzH";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* ======================= LOGIN ======================= */
 let currentUser = null;
@@ -5486,7 +5486,7 @@ async function doLogin() {
   errEl.classList.remove("visible");
   if (btnEl) { btnEl.disabled = true; btnEl.textContent = "Entrando…"; }
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+  const { data, error } = await sbClient.auth.signInWithPassword({ email, password: senha });
 
   if (btnEl) { btnEl.disabled = false; btnEl.textContent = "Entrar"; }
 
@@ -5505,7 +5505,7 @@ async function doLogin() {
 }
 
 async function doLogout() {
-  await supabase.auth.signOut();
+  await sbClient.auth.signOut();
   currentUser = null;
   document.getElementById("login-overlay").classList.remove("hidden");
   document.getElementById("login-email").value = "";
@@ -5518,7 +5518,7 @@ async function doLogout() {
 
 async function checkSession() {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await sbClient.auth.getSession();
     if (!session || !session.user) return false;
     const info = getUserInfo(session.user.email);
     currentUser = { email: session.user.email, ...info };

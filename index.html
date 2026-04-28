@@ -733,10 +733,8 @@
         <option value="trimestre">Trimestre</option>
       </select>
       <button class="btn primary" onclick="openVendaModal()">+ Nova Venda</button>
-      <button class="btn" onclick="document.getElementById('importVendasJSONFile').click()" title="Importar vendas no formato JSON (DATA_PED, Cliente, CD_ITEM, NR_NOTA, Qtde, FatUnit, ImpostoUnit, ComissaoUnit) — DATA_PED é usada como data de referência da venda">⬆ Importar JSON</button>
-      <input id="importVendasJSONFile" type="file" accept="application/json,.json" onchange="importVendasFlat(event)" style="display:none">
-      <button class="btn" onclick="document.getElementById('importRel8005File').click()" title="Importar Relatório 8005 (CSV) — Vendas por representante">⬆ Rel.8005 (CSV)</button>
-      <input id="importRel8005File" type="file" accept=".csv,text/csv" onchange="importRel8005CSV(event)" style="display:none">
+      <button class="btn" onclick="document.getElementById('importFaturamentoFile').click()" title="Importar planilha VALOR FATURAMENTO (.xlsx) — colunas: Cliente, Vendedor, Item, Qtde, Faturamento, Imposto, Data">⬆ Importar XLSX</button>
+      <input id="importFaturamentoFile" type="file" accept=".xlsx,.xls" onchange="importFaturamentoXLSX(event)" style="display:none">
       <button class="btn danger" onclick="limparVendas()" title="Remove todas as vendas e seus movimentos de saída no estoque" style="font-weight:700;">🗑 Limpar vendas</button>
       <div style="margin-left:auto" class="muted" id="count-vendas"></div>
     </div>
@@ -1394,6 +1392,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 /* ========= DADOS INICIAIS — extraídos do Relatório 218 (01/01 a 21/04/2026) ========= */
 const DEPTS = [
@@ -3465,6 +3464,142 @@ function importRel8005CSV(event) {
   r.onerror = () => alert("Não foi possível ler o arquivo.");
   r.onload  = e => processar(e.target.result);
   r.readAsText(file, 'ISO-8859-1');
+}
+
+/* ======================= IMPORTAÇÃO VALOR FATURAMENTO — XLSX ======================= */
+// Formato esperado (linha 1 = cabeçalho):
+// Col A: Cliente (ex: "NOME CLIENTE - CODCLI") — forward-fill quando vazio
+// Col B: Vendedor
+// Col C: Item (ex: "DESCRIÇÃO DO PRODUTO - CODPROD")
+// Col D: Qtde
+// Col E: Faturamento (total R$)
+// Col F: Imposto (total R$)
+// Col G: Data
+function importFaturamentoXLSX(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = "";
+
+  if (typeof XLSX === 'undefined') {
+    alert("Biblioteca XLSX não carregada. Recarregue a página e tente novamente.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb   = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+      const ws   = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+
+      if (rows.length < 2) { alert("Planilha vazia ou sem dados."); return; }
+
+      // Linha 0 = cabeçalho, dados de 1 em diante
+      let ultimoCliente = null;
+      const grupos = new Map(); // chave: "clienteCod|data|vendedor"
+
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i];
+        // Col A: cliente (forward-fill)
+        if (r[0] != null && String(r[0]).trim()) ultimoCliente = String(r[0]).trim();
+        const clienteRaw = ultimoCliente || "";
+
+        const vendedor  = r[1] != null ? String(r[1]).trim() : "";
+        const itemRaw   = r[2] != null ? String(r[2]).trim() : "";
+        const qtdeRaw   = r[3];
+        const fatRaw    = r[4];
+        const impRaw    = r[5];
+        const dataRaw   = r[6];
+
+        if (!itemRaw || !dataRaw) continue;
+
+        // Extrair codigo do item: último token após " - "
+        const codigoMatch = itemRaw.match(/-\s*(\d+)\s*$/);
+        if (!codigoMatch) continue;
+        const codigo   = codigoMatch[1];
+        const descricao = itemRaw.replace(/-\s*\d+\s*$/, "").trim();
+
+        // Extrair codigo do cliente
+        const cliMatch   = clienteRaw.match(/-\s*(\d+)\s*$/);
+        const clienteCod = cliMatch ? cliMatch[1] : "";
+        const clienteNome = clienteRaw.replace(/-\s*\d+\s*$/, "").trim();
+
+        // Normalizar data
+        let dataISO = "";
+        if (dataRaw instanceof Date) {
+          dataISO = dataRaw.toISOString().slice(0, 10);
+        } else {
+          const d = new Date(dataRaw);
+          if (!isNaN(d)) dataISO = d.toISOString().slice(0, 10);
+          else continue;
+        }
+
+        const qtde = Number(qtdeRaw) || 0;
+        const fat  = Number(fatRaw)  || 0;
+        const imp  = Number(impRaw)  || 0;
+        if (qtde === 0) continue;
+
+        const key = `${clienteCod}|${dataISO}|${vendedor}`;
+        if (!grupos.has(key)) {
+          grupos.set(key, {
+            docto:      `FAT-${clienteCod}-${dataISO}`,
+            data:       dataISO,
+            cliente:    clienteNome,
+            clienteCod,
+            vendedor,
+            origem:     'fatxlsx',
+            itens:      [],
+          });
+        }
+        grupos.get(key).itens.push({
+          codigo,
+          descricao,
+          qtde:         Math.round(qtde * 1e6) / 1e6,
+          precoVenda:   qtde > 0 ? Math.round((fat / qtde) * 1e6) / 1e6 : 0,
+          vlVendaTotal: Math.round(fat * 1e4) / 1e4,
+          impostoTotal: Math.round(imp * 1e4) / 1e4,
+          impostoUnit:  qtde > 0 ? Math.round((imp / qtde) * 1e6) / 1e6 : 0,
+          comissaoUnit: 0,
+        });
+      }
+
+      if (grupos.size === 0) {
+        alert("Nenhuma venda extraída. Verifique o formato da planilha.");
+        return;
+      }
+
+      // Verificar duplicatas pela chave docto
+      const existentes = new Set((state.vendas || []).map(v => v.docto));
+      let adicionadas = 0, ignoradas = 0, semItem = new Set();
+
+      grupos.forEach(v => {
+        if (existentes.has(v.docto)) { ignoradas++; return; }
+        const id = uuid();
+        const itens = v.itens.map(vi => {
+          const item = state.itens.find(i => String(i.codigo) === String(vi.codigo));
+          if (!item) semItem.add(vi.codigo);
+          return { ...vi, itemId: item ? item.id : null };
+        });
+        const venda = { id, ...v, itens };
+        state.vendas.push(venda);
+        sincronizarMovimentosVenda(venda);
+        adicionadas++;
+      });
+
+      persist();
+      renderAll();
+
+      let msg = `✅ Importação concluída!\n\n• ${adicionadas} vendas importadas`;
+      if (ignoradas)   msg += `\n• ${ignoradas} ignoradas (já existiam)`;
+      if (semItem.size) msg += `\n• ⚠️ ${semItem.size} código(s) sem cadastro: ${[...semItem].join(', ')}`;
+      alert(msg);
+
+    } catch(err) {
+      console.error("importFaturamentoXLSX:", err);
+      alert("Erro ao processar planilha:\n" + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 /* ======================= IMPORTAÇÃO REL. 322 — PDF ======================= */

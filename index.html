@@ -609,6 +609,13 @@
       <!-- select oculto mantém o valor selecionado para compatibilidade -->
       <select id="mov-item-select" style="display:none;"></select>
       <button class="btn primary" onclick="openMovModal()" id="btn-novo-mov" disabled>+ Novo movimento</button>
+      <div style="display:flex; align-items:center; gap:6px; margin-left:16px;">
+        <label style="font-weight:500; font-size:12px; color:var(--text-soft);">Período:</label>
+        <input type="date" id="filter-mov-de" title="Data inicial" onchange="renderMovimentos()" style="padding:5px 8px; font-size:12px; border:1px solid var(--border-strong); border-radius:6px; background:#fff;">
+        <span style="color:var(--text-muted); font-size:12px;">até</span>
+        <input type="date" id="filter-mov-ate" title="Data final" onchange="renderMovimentos()" style="padding:5px 8px; font-size:12px; border:1px solid var(--border-strong); border-radius:6px; background:#fff;">
+        <button class="btn ghost" style="font-size:11px; padding:4px 8px;" onclick="document.getElementById('filter-mov-de').value=''; document.getElementById('filter-mov-ate').value=''; renderMovimentos();">✕ Limpar</button>
+      </div>
       <div style="margin-left:auto" class="muted" id="mov-resumo"></div>
     </div>
     <div class="card">
@@ -619,11 +626,18 @@
             <div class="muted" style="font-size:12px;" id="mov-header-sub">—</div>
           </div>
           <div style="display:flex; gap:20px; flex-wrap:wrap;">
-            <div><div class="muted" style="font-size:11px; text-transform:uppercase;">Saldo Atual</div><div style="font-weight:600;" id="mov-saldo-qtde">—</div></div>
+            <div>
+              <div class="muted" style="font-size:11px; text-transform:uppercase;" id="mov-saldo-label">Saldo Atual</div>
+              <div style="font-weight:600;" id="mov-saldo-qtde">—</div>
+            </div>
             <div><div class="muted" style="font-size:11px; text-transform:uppercase;">Valor Bruto</div><div style="font-weight:600;" id="mov-saldo-valor">—</div></div>
             <div><div class="muted" style="font-size:11px; text-transform:uppercase;">Valor Líquido</div><div style="font-weight:600; color:var(--ok);" id="mov-saldo-valor-liq">—</div></div>
             <div><div class="muted" style="font-size:11px; text-transform:uppercase;">Preço Médio</div><div style="font-weight:600; color:var(--primary);" id="mov-preco-medio">—</div></div>
             <div><div class="muted" style="font-size:11px; text-transform:uppercase;">PM Líquido</div><div style="font-weight:600; color:var(--ok);" id="mov-preco-medio-liq">—</div></div>
+            <div id="mov-saldo-inicio-wrap" style="display:none; border-left:1px solid var(--border); padding-left:20px;">
+              <div class="muted" style="font-size:11px; text-transform:uppercase;">Saldo Início Período</div>
+              <div style="font-weight:600; color:var(--text-soft);" id="mov-saldo-inicio-qtde">—</div>
+            </div>
           </div>
         </div>
       </div>
@@ -2605,28 +2619,92 @@ function renderMovimentos() {
   document.getElementById("mov-header-title").textContent = `${item.codigo} — ${item.descricao}`;
   document.getElementById("mov-header-sub").textContent = `Grupo ${item.dept} ${deptName(item.dept)} · Fornecedor ${fornecName(item.fornecedor)} · Embalagem ${item.emb||"—"}${regimeInfo}`;
 
-  const linhas = calcEvolucao(item);
-  const fim = linhas[linhas.length - 1];
-  document.getElementById("mov-saldo-qtde").textContent = fmtNum(fim.qtdeSaldo);
-  document.getElementById("mov-saldo-valor").textContent = fmtMoney(fim.valorSaldo);
-  document.getElementById("mov-saldo-valor-liq").textContent = fmtMoney(fim.valorLiqSaldo);
-  document.getElementById("mov-preco-medio").textContent = fim.precoMedio ? fmtMoney(fim.precoMedio) : "—";
-  document.getElementById("mov-preco-medio-liq").textContent = fim.precoMedioLiq ? fmtMoney(fim.precoMedioLiq) : "—";
-  resumo.textContent = `${(item.movimentos||[]).length} movimentos · ${linhas.length} linhas`;
+  const todasLinhas = calcEvolucao(item);
+  const filterDe  = document.getElementById("filter-mov-de")?.value  || "";
+  const filterAte = document.getElementById("filter-mov-ate")?.value || "";
+  const temFiltro = filterDe || filterAte;
 
-  tbody.innerHTML = linhas.map((l, idx) => {
-    if (l.tipo === "INICIAL") {
-      return `<tr style="background:#f8fafc;">
+  // KPIs: saldo no FIM do período filtrado (ou total se sem filtro)
+  let linhaFim;
+  if (temFiltro) {
+    // Última linha dentro do filtro (ou mais próxima antes de filterAte)
+    const dentro = todasLinhas.filter(l => {
+      if (!l.data) return false;
+      if (filterDe && l.data < filterDe) return false;
+      if (filterAte && l.data > filterAte) return false;
+      return true;
+    });
+    linhaFim = dentro.length ? dentro[dentro.length-1] : todasLinhas[0];
+  } else {
+    linhaFim = todasLinhas[todasLinhas.length - 1];
+  }
+  const labelSaldo = temFiltro ? "Saldo Fim Período" : "Saldo Atual";
+  document.getElementById("mov-saldo-label").textContent = labelSaldo;
+  document.getElementById("mov-saldo-qtde").textContent = fmtNum(linhaFim.qtdeSaldo);
+  document.getElementById("mov-saldo-valor").textContent = fmtMoney(linhaFim.valorSaldo);
+  document.getElementById("mov-saldo-valor-liq").textContent = fmtMoney(linhaFim.valorLiqSaldo);
+  document.getElementById("mov-preco-medio").textContent = linhaFim.precoMedio ? fmtMoney(linhaFim.precoMedio) : "—";
+  document.getElementById("mov-preco-medio-liq").textContent = linhaFim.precoMedioLiq ? fmtMoney(linhaFim.precoMedioLiq) : "—";
+
+  // Saldo início de período (quando filtro ativo)
+  const wrapInicio = document.getElementById("mov-saldo-inicio-wrap");
+  if (temFiltro && filterDe) {
+    // A linha imediatamente anterior à data inicial (saldo de abertura)
+    const anteriores = todasLinhas.filter(l => l.data && l.data < filterDe);
+    const linhaAbertura = anteriores.length ? anteriores[anteriores.length-1] : todasLinhas[0];
+    document.getElementById("mov-saldo-inicio-qtde").textContent = fmtNum(linhaAbertura.qtdeSaldo);
+    wrapInicio.style.display = "";
+  } else {
+    wrapInicio.style.display = "none";
+  }
+
+  // Montar linhas visíveis na tabela
+  let linhasVisiveis = [];
+  if (temFiltro) {
+    // Linha de abertura: saldo acumulado ANTES de filterDe
+    const anteriores = filterDe
+      ? todasLinhas.filter(l => l.tipo !== "INICIAL" && l.data && l.data < filterDe)
+      : [];
+    const linhaAbertura = anteriores.length
+      ? { ...anteriores[anteriores.length-1], tipo: "ABERTURA" }
+      : { ...todasLinhas[0], tipo: "ABERTURA" };  // usa linha inicial se não há nada antes
+
+    // Movimentos dentro do filtro
+    const movsDoPeriodo = todasLinhas.filter(l => {
+      if (l.tipo === "INICIAL") return false;
+      if (!l.data) return !filterDe;
+      if (filterDe && l.data < filterDe) return false;
+      if (filterAte && l.data > filterAte) return false;
+      return true;
+    });
+    linhasVisiveis = [linhaAbertura, ...movsDoPeriodo];
+  } else {
+    linhasVisiveis = todasLinhas;
+  }
+
+  const totalMovs = (item.movimentos||[]).length;
+  const totalDentro = linhasVisiveis.filter(l => l.tipo !== "INICIAL" && l.tipo !== "ABERTURA").length;
+  resumo.textContent = temFiltro
+    ? `${totalDentro} mov. no período · ${totalMovs} total`
+    : `${totalMovs} movimentos · ${todasLinhas.length} linhas`;
+
+  tbody.innerHTML = linhasVisiveis.map((l, idx) => {
+    if (l.tipo === "INICIAL" || l.tipo === "ABERTURA") {
+      const isAbertura = l.tipo === "ABERTURA";
+      const rotulo = isAbertura
+        ? (filterDe ? `Saldo anterior a ${fmtDate(filterDe)}` : "Saldo de Implantação")
+        : "SALDO INICIAL";
+      return `<tr style="background:${isAbertura?'#eff6ff':'#f8fafc'};">
         <td>${l.data ? fmtDate(l.data) : ""}</td>
         <td></td><td></td><td></td>
         <td class="num"></td>
-        <td class="num"><span class="muted" style="font-style:italic;">SALDO INICIAL</span></td>
+        <td class="num"><span class="muted" style="font-style:italic;">${rotulo}</span></td>
         <td class="num" style="border-right:2px solid var(--border-strong);"></td>
-        <td class="num">${fmtNum(l.qtdeSaldo)}</td>
+        <td class="num"><b>${fmtNum(l.qtdeSaldo)}</b></td>
         <td class="num">${fmtMoney(l.valorSaldo)}</td>
         <td class="num" style="color:var(--ok);">${fmtMoney(l.valorLiqSaldo)}</td>
-        <td class="num">${l.precoMedio ? fmtMoney(l.precoMedio) : fmtMoney(0)}</td>
-        <td class="num" style="color:var(--ok);">${l.precoMedioLiq ? fmtMoney(l.precoMedioLiq) : fmtMoney(0)}</td>
+        <td class="num"><b>${l.precoMedio ? fmtMoney(l.precoMedio) : fmtMoney(0)}</b></td>
+        <td class="num" style="color:var(--ok);"><b>${l.precoMedioLiq ? fmtMoney(l.precoMedioLiq) : fmtMoney(0)}</b></td>
         <td></td>
       </tr>`;
     }

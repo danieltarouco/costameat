@@ -416,7 +416,7 @@
   <div class="tab" data-tab="vendedores">Vendedores</div>
   <div class="tab" data-tab="custo-liquido">Custo Líquido</div>
   <div class="tab" data-tab="simulacao">⚡ Simulação</div>
-  <div class="tab" data-tab="grafico-mensal">📊 Gráfico Mensal</div>
+  <div class="tab" data-tab="estoque">📦 Estoque</div>
 </nav>
 
 <!-- tab Amarração removida: Grupo é agora o Departamento (fixo do relatório) -->
@@ -1080,37 +1080,33 @@
   </section>
 
   <!-- ============================== GRÁFICO MENSAL ============================== -->
-  <section id="panel-grafico-mensal" class="panel">
-    <!-- Toolbar -->
-    <div class="toolbar" style="margin-bottom:16px; flex-wrap:wrap; gap:10px; align-items:center;">
+  <!-- ============================== ESTOQUE ============================== -->
+  <section id="panel-estoque" class="panel">
+    <div class="toolbar" style="flex-wrap:wrap; gap:10px; align-items:center;">
       <div style="display:flex; align-items:center; gap:6px;">
-        <label style="font-weight:600; font-size:13px;">Ano:</label>
-        <select id="gm-ano" onchange="renderGraficoMensal()" style="padding:6px 10px; border:1px solid var(--border-strong); border-radius:6px; font-size:13px; background:#fff;"></select>
+        <label style="font-weight:600; font-size:13px;">Saldo em:</label>
+        <input type="date" id="estoque-data" onchange="renderEstoque()"
+          style="padding:6px 10px; border:1px solid var(--border-strong); border-radius:6px; font-size:13px; background:#fff;">
+        <button class="btn ghost" style="font-size:11px; padding:4px 8px;" onclick="document.getElementById('estoque-data').value=''; renderEstoque();">✕ Hoje</button>
       </div>
-      <div style="display:flex; align-items:center; gap:6px;">
-        <label style="font-weight:600; font-size:13px;">Métrica:</label>
-        <select id="gm-metrica" onchange="renderGraficoMensal()" style="padding:6px 10px; border:1px solid var(--border-strong); border-radius:6px; font-size:13px; background:#fff;">
-          <option value="receita_cmv_margem">Receita / CMV / Margem</option>
-          <option value="receita_margem">Receita / Margem</option>
-          <option value="vendas_clientes">Nº Vendas / Clientes</option>
-        </select>
+      <div class="chip-toggle" id="estoque-filtro-chips">
+        <button class="active" data-ef="todos"    onclick="setEstoqueFiltro('todos')">Todos</button>
+        <button              data-ef="negativos" onclick="setEstoqueFiltro('negativos')">🔴 Negativos</button>
+        <button              data-ef="zerados"   onclick="setEstoqueFiltro('zerados')">⚪ Zerados</button>
+        <button              data-ef="positivos" onclick="setEstoqueFiltro('positivos')">🟢 Positivos</button>
       </div>
+      <input type="text" id="estoque-busca" placeholder="Buscar item…" oninput="renderEstoque()"
+        style="padding:6px 10px; border:1px solid var(--border-strong); border-radius:6px; font-size:13px; min-width:200px; background:#fff;">
+      <div style="margin-left:auto; font-size:12px; color:var(--text-muted);" id="estoque-resumo"></div>
     </div>
 
-    <!-- KPI cards -->
-    <div id="gm-kpis" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:20px;"></div>
+    <!-- KPI bar -->
+    <div id="estoque-kpis" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:16px;"></div>
 
-    <!-- Chart -->
-    <div class="card" style="padding:20px 16px; overflow-x:auto;">
-      <div id="gm-chart-wrap"></div>
-    </div>
-
-    <!-- Tabela mensal -->
-    <div class="card" style="margin-top:16px; overflow-x:auto;">
+    <div class="card" style="overflow-x:auto;">
       <table class="data-table">
-        <thead id="gm-thead"></thead>
-        <tbody id="gm-tbody"></tbody>
-        <tfoot id="gm-tfoot"></tfoot>
+        <thead id="estoque-thead"></thead>
+        <tbody id="estoque-tbody"></tbody>
       </table>
     </div>
   </section>
@@ -4191,233 +4187,160 @@ function renderVendasPorPeriodo(vendas, thead, tbody, tfoot, rec, cmv, imp, com,
   </tr>`;
 }
 
-/* ============================== GRÁFICO MENSAL ============================== */
-function renderGraficoMensal() {
-  const vendas = getVendasConsolidadas();
+/* ============================== ESTOQUE ============================== */
+let estoqueFiltro = "todos";
+function setEstoqueFiltro(v) {
+  estoqueFiltro = v;
+  document.querySelectorAll('#estoque-filtro-chips button').forEach(b =>
+    b.classList.toggle("active", b.dataset.ef === v));
+  renderEstoque();
+}
 
-  // Preenche select de anos
-  const anoSel = document.getElementById("gm-ano");
-  const metricaSel = document.getElementById("gm-metrica");
-  if (!anoSel || !metricaSel) return;
+function renderEstoque() {
+  const dataRef  = document.getElementById("estoque-data")?.value || "";
+  const busca    = (document.getElementById("estoque-busca")?.value || "").toLowerCase().trim();
+  const itens    = state.itens || [];
 
-  const anos = [...new Set(vendas.map(v => (v.data||"").slice(0,4)).filter(Boolean))].sort();
-  if (!anos.length) {
-    document.getElementById("gm-kpis").innerHTML = `<div class="alert info">Nenhuma venda importada ainda.</div>`;
-    document.getElementById("gm-chart-wrap").innerHTML = "";
-    document.getElementById("gm-thead").innerHTML = "";
-    document.getElementById("gm-tbody").innerHTML = "";
-    document.getElementById("gm-tfoot").innerHTML = "";
+  // Para cada item, calcular saldo na data de referência e data do primeiro negativo
+  const rows = itens.map(item => {
+    const linhas = calcEvolucao(item);
+
+    // Saldo na data de referência: última linha cujo data <= dataRef (ou a última de todas)
+    let linhaRef;
+    if (dataRef) {
+      // Inclui linha INICIAL se não há movimentos antes de dataRef
+      const candidatas = linhas.filter(l => !l.data || l.data <= dataRef);
+      linhaRef = candidatas.length ? candidatas[candidatas.length - 1] : linhas[0];
+    } else {
+      linhaRef = linhas[linhas.length - 1];
+    }
+
+    // Primeira linha onde saldo ficou negativo (em qualquer momento da história)
+    const primNeg = linhas.find(l => l.tipo !== "INICIAL" && l.qtdeSaldo < -0.001) || null;
+
+    // Saldo negativo NA data de referência
+    const saldoNegNaData = linhaRef.qtdeSaldo < -0.001;
+
+    return {
+      item,
+      qtdeSaldo:    linhaRef.qtdeSaldo,
+      valorSaldo:   linhaRef.valorSaldo,
+      valorLiqSaldo: linhaRef.valorLiqSaldo,
+      precoMedio:   linhaRef.precoMedio,
+      precoMedioLiq: linhaRef.precoMedioLiq,
+      // Primeiro negativo em qualquer data
+      dataPrimNeg:  primNeg ? primNeg.data : null,
+      qtdePrimNeg:  primNeg ? primNeg.qtdeSaldo : null,
+      docPrimNeg:   primNeg ? primNeg.docto : null,
+      saldoNegNaData,
+    };
+  });
+
+  // Filtro de visualização
+  let filtradas = rows;
+  if (estoqueFiltro === "negativos") filtradas = rows.filter(r => r.dataPrimNeg);
+  else if (estoqueFiltro === "zerados") filtradas = rows.filter(r => Math.abs(r.qtdeSaldo) < 0.001);
+  else if (estoqueFiltro === "positivos") filtradas = rows.filter(r => r.qtdeSaldo > 0.001);
+
+  // Busca texto
+  if (busca) {
+    filtradas = filtradas.filter(r =>
+      (r.item.codigo||"").toLowerCase().includes(busca) ||
+      (r.item.descricao||"").toLowerCase().includes(busca) ||
+      (r.item.dept||"").toLowerCase().includes(busca)
+    );
+  }
+
+  // KPIs
+  const totItens    = rows.length;
+  const nPos        = rows.filter(r => r.qtdeSaldo > 0.001).length;
+  const nNeg        = rows.filter(r => r.dataPrimNeg).length;       // já ficou negativo alguma vez
+  const nNegHoje    = rows.filter(r => r.saldoNegNaData).length;    // negativo na data filtrada
+  const nZero       = rows.filter(r => Math.abs(r.qtdeSaldo) < 0.001).length;
+  const kpiCard = (t, v, cor) =>
+    `<div style="background:#fff; border:1px solid var(--border); border-radius:8px; padding:12px 16px; border-left:4px solid ${cor};">
+      <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:600;">${t}</div>
+      <div style="font-size:22px; font-weight:700; margin-top:2px; color:var(--text);">${v}</div>
+    </div>`;
+  document.getElementById("estoque-kpis").innerHTML =
+    kpiCard("Total itens", totItens, "#64748b") +
+    kpiCard("Positivos", nPos, "#16a34a") +
+    kpiCard("Zerados", nZero, "#94a3b8") +
+    kpiCard("Negativo na data", nNegHoje, "#dc2626") +
+    kpiCard("Já ficou negativo", nNeg, "#f59e0b");
+
+  document.getElementById("estoque-resumo").textContent =
+    `${filtradas.length} de ${totItens} itens${dataRef ? " · em "+fmtDate(dataRef) : ""}`;
+
+  // Cabeçalho
+  document.getElementById("estoque-thead").innerHTML = `<tr>
+    <th style="width:70px;">Código</th>
+    <th>Descrição</th>
+    <th style="width:80px;">Grupo</th>
+    <th class="num" style="width:110px;">Saldo Qtde</th>
+    <th class="num" style="width:120px;">Valor Liq.</th>
+    <th class="num" style="width:110px;">PM Liq.</th>
+    <th style="width:120px; color:#dc2626;">🔴 1º Negativo</th>
+    <th class="num" style="width:110px; color:#dc2626;">Qtde no dia</th>
+    <th style="width:80px;"></th>
+  </tr>`;
+
+  if (!filtradas.length) {
+    document.getElementById("estoque-tbody").innerHTML =
+      `<tr><td colspan="9" class="muted" style="padding:32px; text-align:center;">
+        Nenhum item encontrado com o filtro atual.
+       </td></tr>`;
     return;
   }
-  // Popula select de anos se necessário
-  if (anoSel.options.length !== anos.length || anoSel.options[0].value !== anos[0]) {
-    anoSel.innerHTML = anos.map(a => `<option value="${a}">${a}</option>`).join("");
-    anoSel.value = anos[anos.length - 1]; // padrão: ano mais recente
-  }
-  const anoFiltro = anoSel.value;
-  const metrica = metricaSel.value;
 
-  const vendasAno = vendas.filter(v => (v.data||"").startsWith(anoFiltro));
-
-  // Agrega por mês
-  const nomesMes = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-  const meses = Array.from({length:12}, (_,i) => ({
-    idx: i, label: nomesMes[i],
-    receita: 0, cmv: 0, imposto: 0, comissao: 0,
-    vendas: 0, clientes: new Set(),
-  }));
-  vendasAno.forEach(v => {
-    const m = parseInt((v.data||"").slice(5,7), 10) - 1;
-    if (m < 0 || m > 11) return;
-    const r = vendaResumo(v);
-    meses[m].receita   += r.receita;
-    meses[m].cmv       += r.cmv;
-    meses[m].imposto   += r.imposto;
-    meses[m].comissao  += r.comissao;
-    meses[m].vendas    += 1;
-    if (v.cliente) meses[m].clientes.add(v.cliente);
+  // Ordenação: negativos primeiro (por data do primeiro negativo asc), depois positivos
+  filtradas.sort((a, b) => {
+    if (a.dataPrimNeg && !b.dataPrimNeg) return -1;
+    if (!a.dataPrimNeg && b.dataPrimNeg) return  1;
+    if (a.dataPrimNeg && b.dataPrimNeg) return a.dataPrimNeg.localeCompare(b.dataPrimNeg);
+    return (a.item.codigo||"").localeCompare(b.item.codigo||"", "pt-BR", {numeric:true});
   });
-  meses.forEach(m => { m.margem = m.receita - m.cmv - m.imposto - m.comissao; });
 
-  // KPIs totais
-  const totRec = meses.reduce((s,m)=>s+m.receita,0);
-  const totCmv = meses.reduce((s,m)=>s+m.cmv,0);
-  const totMar = meses.reduce((s,m)=>s+m.margem,0);
-  const totVnd = meses.reduce((s,m)=>s+m.vendas,0);
-  const totCli = new Set(vendasAno.map(v=>v.cliente).filter(Boolean)).size;
-  const totPct = totRec > 0 ? (totMar/totRec*100) : 0;
-  const bestMes = meses.reduce((best,m) => m.receita > best.receita ? m : best, meses[0]);
-
-  const kpiCard = (titulo, valor, cor) =>
-    `<div style="background:#fff; border:1px solid var(--border); border-radius:10px; padding:14px 18px; border-left:4px solid ${cor};">
-      <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:600; letter-spacing:0.4px;">${titulo}</div>
-      <div style="font-size:20px; font-weight:700; margin-top:4px; color:var(--text);">${valor}</div>
-    </div>`;
-
-  document.getElementById("gm-kpis").innerHTML =
-    kpiCard("Receita Total", fmtMoney(totRec), "#0891b2") +
-    kpiCard("CMV Total",     fmtMoney(totCmv), "#f59e0b") +
-    kpiCard("Margem Real",   fmtMoney(totMar), totMar>=0?"#16a34a":"#dc2626") +
-    kpiCard("Margem %",      totPct.toFixed(2)+"%", totPct>=0?"#16a34a":"#dc2626") +
-    kpiCard("Nº Vendas",     totVnd.toLocaleString("pt-BR"), "#6366f1") +
-    kpiCard("Clientes únicos", totCli.toLocaleString("pt-BR"), "#0f766e") +
-    kpiCard("Melhor mês",    bestMes.label, "#0891b2");
-
-  // ── GRÁFICO SVG ──────────────────────────────────────────────────────────
-  const chartW = 860;
-  const chartH = 320;
-  const padL = 72, padR = 20, padT = 30, padB = 50;
-  const plotW = chartW - padL - padR;
-  const plotH = chartH - padT - padB;
-  const nMes = 12;
-  const slotW = plotW / nMes;
-
-  let svgBars = "";
-
-  if (metrica === "vendas_clientes") {
-    // Barras: Nº Vendas (azul), Clientes únicos (verde)
-    const maxVal = Math.max(...meses.map(m => Math.max(m.vendas, m.clientes.size)), 1);
-    const scaleY = v => plotH - (v / maxVal) * plotH;
-
-    // Grid lines
-    const gridSteps = 5;
-    for (let s=0; s<=gridSteps; s++) {
-      const yv = maxVal * s / gridSteps;
-      const yp = padT + scaleY(yv);
-      svgBars += `<line x1="${padL}" y1="${yp}" x2="${padL+plotW}" y2="${yp}" stroke="#e2e8f0" stroke-width="1"/>`;
-      svgBars += `<text x="${padL-6}" y="${yp+4}" text-anchor="end" font-size="11" fill="#94a3b8">${Math.round(yv)}</text>`;
-    }
-    meses.forEach((m, i) => {
-      const x0 = padL + i * slotW;
-      const barW = slotW * 0.35;
-      const gap  = slotW * 0.05;
-      const hVnd = (m.vendas / maxVal) * plotH;
-      const hCli = (m.clientes.size / maxVal) * plotH;
-      const yBaseV = padT + plotH;
-      svgBars += `<rect x="${x0+gap}" y="${yBaseV-hVnd}" width="${barW}" height="${hVnd}" fill="#6366f1" rx="3"/>`;
-      svgBars += `<rect x="${x0+gap+barW+2}" y="${yBaseV-hCli}" width="${barW}" height="${hCli}" fill="#0891b2" rx="3"/>`;
-      if (m.vendas > 0) svgBars += `<text x="${x0+gap+barW/2}" y="${yBaseV-hVnd-4}" text-anchor="middle" font-size="10" fill="#6366f1" font-weight="600">${m.vendas}</text>`;
-      svgBars += `<text x="${x0+slotW/2}" y="${padT+plotH+18}" text-anchor="middle" font-size="11" fill="#475569" font-weight="500">${m.label}</text>`;
-    });
-    // Legenda
-    svgBars += `<rect x="${padL}" y="${padT-20}" width="12" height="12" fill="#6366f1" rx="2"/>
-      <text x="${padL+16}" y="${padT-10}" font-size="11" fill="#475569">Nº Vendas</text>
-      <rect x="${padL+90}" y="${padT-20}" width="12" height="12" fill="#0891b2" rx="2"/>
-      <text x="${padL+106}" y="${padT-10}" font-size="11" fill="#475569">Clientes únicos</text>`;
-
-  } else {
-    // Barras: Receita (azul) + opcionalmente CMV (âmbar) + Margem (verde)
-    const showCmv = metrica === "receita_cmv_margem";
-    const maxVal = Math.max(...meses.map(m => m.receita), 1);
-    const scaleY = v => plotH - Math.max(0, v / maxVal) * plotH;
-
-    // Grid lines
-    const gridSteps = 5;
-    for (let s=0; s<=gridSteps; s++) {
-      const yv = maxVal * s / gridSteps;
-      const yp = padT + scaleY(yv);
-      const label = yv >= 1000 ? `${(yv/1000).toFixed(0)}k` : yv.toFixed(0);
-      svgBars += `<line x1="${padL}" y1="${yp}" x2="${padL+plotW}" y2="${yp}" stroke="#e2e8f0" stroke-width="1"/>`;
-      svgBars += `<text x="${padL-6}" y="${yp+4}" text-anchor="end" font-size="11" fill="#94a3b8">${label}</text>`;
-    }
-    meses.forEach((m, i) => {
-      const x0 = padL + i * slotW;
-      const nBars = showCmv ? 3 : 2;
-      const barW = slotW * 0.7 / nBars;
-      const gap  = slotW * 0.15;
-      const yBase = padT + plotH;
-
-      // Receita
-      const hRec = Math.max(1, (m.receita / maxVal) * plotH);
-      svgBars += `<rect x="${x0+gap}" y="${yBase-hRec}" width="${barW}" height="${hRec}" fill="#0891b2" rx="3"/>`;
-      if (m.receita > 0) {
-        const lab = m.receita >= 1000 ? `${(m.receita/1000).toFixed(1)}k` : m.receita.toFixed(0);
-        svgBars += `<text x="${x0+gap+barW/2}" y="${yBase-hRec-4}" text-anchor="middle" font-size="9" fill="#0891b2" font-weight="600">${lab}</text>`;
-      }
-
-      // CMV (opcional)
-      if (showCmv) {
-        const hCmv = Math.max(0, (m.cmv / maxVal) * plotH);
-        svgBars += `<rect x="${x0+gap+barW+2}" y="${yBase-hCmv}" width="${barW}" height="${hCmv}" fill="#f59e0b" rx="3"/>`;
-      }
-
-      // Margem
-      const bIdx = showCmv ? 2 : 1;
-      const margemPos = Math.max(0, m.margem);
-      const hMar = Math.max(0, (margemPos / maxVal) * plotH);
-      const marFill = m.margem >= 0 ? "#16a34a" : "#dc2626";
-      svgBars += `<rect x="${x0+gap+barW*bIdx+bIdx*2}" y="${yBase-hMar}" width="${barW}" height="${hMar}" fill="${marFill}" rx="3"/>`;
-      if (m.margem < 0) {
-        const hNeg = Math.max(0, (Math.abs(m.margem) / maxVal) * plotH);
-        svgBars += `<rect x="${x0+gap+barW*bIdx+bIdx*2}" y="${yBase}" width="${barW}" height="${hNeg}" fill="#dc2626" rx="3" opacity="0.6"/>`;
-      }
-      // Mês label
-      svgBars += `<text x="${x0+slotW/2}" y="${yBase+18}" text-anchor="middle" font-size="11" fill="#475569" font-weight="500">${m.label}</text>`;
-      // Margem % abaixo
-      if (m.receita > 0) {
-        const pct = (m.margem/m.receita*100).toFixed(1);
-        const cor = parseFloat(pct) >= 0 ? "#16a34a" : "#dc2626";
-        svgBars += `<text x="${x0+slotW/2}" y="${yBase+32}" text-anchor="middle" font-size="10" fill="${cor}">${pct}%</text>`;
-      }
-    });
-    // Legenda
-    let legX = padL;
-    svgBars += `<rect x="${legX}" y="${padT-20}" width="12" height="12" fill="#0891b2" rx="2"/>
-      <text x="${legX+16}" y="${padT-10}" font-size="11" fill="#475569">Receita</text>`;
-    if (showCmv) {
-      legX += 75;
-      svgBars += `<rect x="${legX}" y="${padT-20}" width="12" height="12" fill="#f59e0b" rx="2"/>
-        <text x="${legX+16}" y="${padT-10}" font-size="11" fill="#475569">CMV</text>`;
-    }
-    legX += 60;
-    svgBars += `<rect x="${legX}" y="${padT-20}" width="12" height="12" fill="#16a34a" rx="2"/>
-      <text x="${legX+16}" y="${padT-10}" font-size="11" fill="#475569">Margem Real</text>`;
-  }
-
-  document.getElementById("gm-chart-wrap").innerHTML = `
-    <svg width="100%" viewBox="0 0 ${chartW} ${chartH}" style="display:block; min-width:580px;">
-      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+plotH}" stroke="#cbd5e1" stroke-width="1.5"/>
-      <line x1="${padL}" y1="${padT+plotH}" x2="${padL+plotW}" y2="${padT+plotH}" stroke="#cbd5e1" stroke-width="1.5"/>
-      ${svgBars}
-    </svg>`;
-
-  // ── TABELA ──────────────────────────────────────────────────────────────
-  document.getElementById("gm-thead").innerHTML = `<tr>
-    <th>Mês</th>
-    <th class="num">Vendas</th>
-    <th class="num">Clientes</th>
-    <th class="num" style="width:130px;">Receita</th>
-    <th class="num" style="width:120px;">CMV</th>
-    <th class="num" style="width:110px;">Imposto</th>
-    <th class="num" style="width:110px;">Comissão</th>
-    <th class="num" style="width:130px;">Margem Real</th>
-    <th class="num" style="width:80px;">Margem %</th>
-  </tr>`;
-
-  document.getElementById("gm-tbody").innerHTML = meses.filter(m=>m.vendas>0).map(m => {
-    const mp = m.receita > 0 ? (m.margem/m.receita*100) : null;
-    return `<tr>
-      <td><b>${m.label}/${anoFiltro}</b></td>
-      <td class="num">${m.vendas}</td>
-      <td class="num">${m.clientes.size}</td>
-      <td class="num">${fmtMoney(m.receita)}</td>
-      <td class="num">${fmtMoney(m.cmv)}</td>
-      <td class="num">${fmtMoney(m.imposto)}</td>
-      <td class="num">${fmtMoney(m.comissao)}</td>
-      <td class="num" style="font-weight:600; color:${m.margem>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(m.margem)}</td>
-      <td class="num">${mp==null?"—":mp.toFixed(2)+"%"}</td>
+  document.getElementById("estoque-tbody").innerHTML = filtradas.map(r => {
+    const saldoNeg = r.qtdeSaldo < -0.001;
+    const saldoZero = Math.abs(r.qtdeSaldo) < 0.001;
+    const saldoCor = saldoNeg ? "color:var(--danger); font-weight:700;"
+                   : saldoZero ? "color:var(--text-muted);"
+                   : "color:var(--ok);";
+    const rowStyle = r.dataPrimNeg ? 'style="background:#fff7f7;"' : '';
+    const negBadge = r.dataPrimNeg
+      ? `<span style="font-size:11px; background:#fee2e2; color:#dc2626; padding:1px 6px; border-radius:8px; font-weight:600;">${fmtDate(r.dataPrimNeg)}</span>`
+      : `<span style="color:var(--text-muted); font-size:12px;">—</span>`;
+    const qtdePrimNeg = r.dataPrimNeg
+      ? `<span style="color:#dc2626; font-weight:600;">${fmtNum(r.qtdePrimNeg)}</span>`
+      : "—";
+    return `<tr ${rowStyle}>
+      <td><b>${r.item.codigo||""}</b></td>
+      <td>${r.item.descricao||""}</td>
+      <td style="font-size:12px; color:var(--text-soft);">${r.item.dept||""}</td>
+      <td class="num" style="${saldoCor}">${fmtNum(r.qtdeSaldo)}</td>
+      <td class="num">${fmtMoney(r.valorLiqSaldo)}</td>
+      <td class="num">${r.precoMedioLiq ? fmtMoney(r.precoMedioLiq) : "—"}</td>
+      <td>${negBadge}</td>
+      <td class="num">${qtdePrimNeg}</td>
+      <td><button class="btn small ghost" onclick="abrirMovimentoItem('${r.item.id}')">📋 Movimentos</button></td>
     </tr>`;
   }).join("");
+}
 
-  document.getElementById("gm-tfoot").innerHTML = `<tr class="footer-total">
-    <td colspan="3" style="text-align:right;">TOTAL ${anoFiltro}</td>
-    <td class="num">${fmtMoney(totRec)}</td>
-    <td class="num">${fmtMoney(totCmv)}</td>
-    <td class="num">${fmtMoney(meses.reduce((s,m)=>s+m.imposto,0))}</td>
-    <td class="num">${fmtMoney(meses.reduce((s,m)=>s+m.comissao,0))}</td>
-    <td class="num">${fmtMoney(totMar)}</td>
-    <td class="num">${totRec>0?(totMar/totRec*100).toFixed(2)+"%":"—"}</td>
-  </tr>`;
+// Atalho: abre a aba Movimentos já filtrada no item
+function abrirMovimentoItem(itemId) {
+  document.querySelector('.tab[data-tab="movimentos"]').click();
+  const sel = document.getElementById("mov-item-select");
+  if (sel) {
+    sel.value = itemId;
+    const it = (state.itens||[]).find(x => x.id === itemId);
+    if (it) {
+      const searchEl = document.getElementById("mov-item-search");
+      if (searchEl) searchEl.value = `${it.codigo} — ${it.descricao||""}`;
+    }
+    renderMovimentos();
+  }
 }
 
 /* Drill-down: abre detalhe de uma venda */
@@ -5750,7 +5673,7 @@ const TAB_RENDERERS = {
   "vendas": () => renderVendas(),
   "vendedores": () => renderVendedores(),
   "simulacao": () => renderSimulacao(),
-  "grafico-mensal": () => renderGraficoMensal(),
+  "estoque": () => renderEstoque(),
 };
 document.querySelectorAll(".tab").forEach(t => {
   t.addEventListener("click", () => {

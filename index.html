@@ -4221,6 +4221,14 @@ function renderEstoque() {
     // Saldo negativo NA data de referência
     const saldoNegNaData = linhaRef.qtdeSaldo < -0.001;
 
+    // Totais de entrada e saída até a data de referência
+    const movsFiltrados = linhas.filter(l =>
+      l.tipo !== "INICIAL" && (!dataRef || (l.data && l.data <= dataRef)));
+    const totalEntQtde  = movsFiltrados.filter(l => l.tipo === "E").reduce((s,l) => s + (l.qtdeMov||0), 0);
+    const totalEntValor = movsFiltrados.filter(l => l.tipo === "E").reduce((s,l) => s + (l.valorLiqMov||0), 0);
+    const totalSaiQtde  = movsFiltrados.filter(l => l.tipo === "S").reduce((s,l) => s + (l.qtdeMov||0), 0);
+    const totalSaiValor = movsFiltrados.filter(l => l.tipo === "S").reduce((s,l) => s + (l.valorLiqMov||0), 0);
+
     return {
       item,
       qtdeSaldo:    linhaRef.qtdeSaldo,
@@ -4233,6 +4241,8 @@ function renderEstoque() {
       qtdePrimNeg:  primNeg ? primNeg.qtdeSaldo : null,
       docPrimNeg:   primNeg ? primNeg.docto : null,
       saldoNegNaData,
+      totalEntQtde, totalEntValor,
+      totalSaiQtde, totalSaiValor,
     };
   });
 
@@ -4251,23 +4261,28 @@ function renderEstoque() {
     );
   }
 
-  // KPIs
+  // KPIs — usa os itens filtrados para totais de E/S
   const totItens    = rows.length;
   const nPos        = rows.filter(r => r.qtdeSaldo > 0.001).length;
-  const nNeg        = rows.filter(r => r.dataPrimNeg).length;       // já ficou negativo alguma vez
-  const nNegHoje    = rows.filter(r => r.saldoNegNaData).length;    // negativo na data filtrada
+  const nNeg        = rows.filter(r => r.dataPrimNeg).length;
+  const nNegHoje    = rows.filter(r => r.saldoNegNaData).length;
   const nZero       = rows.filter(r => Math.abs(r.qtdeSaldo) < 0.001).length;
-  const kpiCard = (t, v, cor) =>
+  const totEntQtde  = filtradas.reduce((s,r) => s + r.totalEntQtde, 0);
+  const totEntValor = filtradas.reduce((s,r) => s + r.totalEntValor, 0);
+  const totSaiQtde  = filtradas.reduce((s,r) => s + r.totalSaiQtde, 0);
+  const totSaiValor = filtradas.reduce((s,r) => s + r.totalSaiValor, 0);
+
+  const kpiCard = (t, v, sub, cor) =>
     `<div style="background:#fff; border:1px solid var(--border); border-radius:8px; padding:12px 16px; border-left:4px solid ${cor};">
       <div style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:600;">${t}</div>
-      <div style="font-size:22px; font-weight:700; margin-top:2px; color:var(--text);">${v}</div>
+      <div style="font-size:20px; font-weight:700; margin-top:2px; color:var(--text);">${v}</div>
+      ${sub ? `<div style="font-size:11px; color:var(--text-soft); margin-top:2px;">${sub}</div>` : ""}
     </div>`;
   document.getElementById("estoque-kpis").innerHTML =
-    kpiCard("Total itens", totItens, "#64748b") +
-    kpiCard("Positivos", nPos, "#16a34a") +
-    kpiCard("Zerados", nZero, "#94a3b8") +
-    kpiCard("Negativo na data", nNegHoje, "#dc2626") +
-    kpiCard("Já ficou negativo", nNeg, "#f59e0b");
+    kpiCard("Total itens",        totItens, `${nPos} positivos · ${nZero} zerados`, "#64748b") +
+    kpiCard("Negativo na data",   nNegHoje, `${nNeg} já ficou negativo`, "#dc2626") +
+    kpiCard("Total Entradas (E)", fmtNum(totEntQtde), fmtMoney(totEntValor)+" liq.", "#0891b2") +
+    kpiCard("Total Saídas (S)",   fmtNum(totSaiQtde), fmtMoney(totSaiValor)+" liq.", "#f59e0b");
 
   document.getElementById("estoque-resumo").textContent =
     `${filtradas.length} de ${totItens} itens${dataRef ? " · em "+fmtDate(dataRef) : ""}`;

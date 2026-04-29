@@ -733,8 +733,8 @@
         <option value="trimestre">Trimestre</option>
       </select>
       <button class="btn primary" onclick="openVendaModal()">+ Nova Venda</button>
-      <button class="btn" onclick="document.getElementById('importFaturamentoFile').click()" title="Importar planilha VALOR FATURAMENTO (.xlsx) — colunas: Cliente, Vendedor, Item, Qtde, Faturamento, Imposto, Data">⬆ Importar XLSX</button>
-      <input id="importFaturamentoFile" type="file" accept=".xlsx,.xls" onchange="importFaturamentoXLSX(event)" style="display:none">
+      <button class="btn" onclick="document.getElementById('importRel8005File').click()" title="Importar Relatório 8005 (.csv)">⬆ Importar Rel.8005</button>
+      <input id="importRel8005File" type="file" accept=".csv,.txt" onchange="importRel8005CSV(event)" style="display:none">
       <button class="btn danger" onclick="limparVendas()" title="Remove todas as vendas e seus movimentos de saída no estoque" style="font-weight:700;">🗑 Limpar vendas</button>
       <div style="margin-left:auto" class="muted" id="count-vendas"></div>
     </div>
@@ -3122,6 +3122,15 @@ function aliquotaCreditoItem(item) {
   return ((a.icmsEf||0) + (a.pis||0) + (a.cofins||0)) / 100;
 }
 
+// Calcula imposto unitário na saída a partir do regime tributário do item
+// (PIS + COFINS + ICMS efetivo aplicado ao preço de venda)
+function impostoUnitDinamico(item, precoVenda) {
+  if (!item || !precoVenda) return 0;
+  const a = aliqsItem(item);
+  const pct = ((a.pis || 0) + (a.cofins || 0) + (a.icmsEf || 0)) / 100;
+  return precoVenda * pct;
+}
+
 function vendaResumo(v) {
   let receita = 0, cmv = 0, imposto = 0, comissao = 0;
   (v.itens||[]).forEach(vi => {
@@ -3129,7 +3138,7 @@ function vendaResumo(v) {
     const pm = pmLiqNaData(item, v.data, v.id);
     const qt = Number(vi.qtde||0);
     const pu = Number(vi.precoVenda||0);
-    const iu = Number(vi.impostoUnit||0);
+    const iu = impostoUnitDinamico(item, pu);
     const cu = Number(vi.comissaoUnit||0);
     receita += qt * pu;
     cmv += qt * pm;
@@ -4001,7 +4010,7 @@ function renderVendas() {
         const g = mapa.get(item.id);
         const qt = Number(vi.qtde||0);
         const pu = Number(vi.precoVenda||0);
-        const iu = Number(vi.impostoUnit||0);
+        const iu = impostoUnitDinamico(item, pu);
         const cu = Number(vi.comissaoUnit||0);
         const pm = pmLiqNaData(item, v.data, v.id);
         g.qtde += qt;
@@ -4530,7 +4539,7 @@ function openVendaDetail(vendaIdOrKey) {
     const pm = pmLiqNaData(item, v.data, v.id);
     const qt = Number(vi.qtde||0);
     const pu = Number(vi.precoVenda||0);
-    const iu = Number(vi.impostoUnit||0);
+    const iu = impostoUnitDinamico(item, pu);
     const cou = Number(vi.comissaoUnit||0);
     const rec = qt*pu, cc = qt*pm, imp = qt*iu, com = qt*cou;
     const mr = rec - cc - imp - com;
@@ -4715,7 +4724,7 @@ function expandItemVendas(itemId) {
     const vi = (v.itens||[]).find(x => x.itemId === itemId);
     const pm = pmLiqNaData(item, v.data, v.id);
     const qt = Number(vi.qtde||0), pu = Number(vi.precoVenda||0);
-    const iu = Number(vi.impostoUnit||0), cu = Number(vi.comissaoUnit||0);
+    const iu = impostoUnitDinamico(item, pu), cu = Number(vi.comissaoUnit||0);
     const rec = qt*pu, cc = qt*pm, imp = qt*iu, com = qt*cu;
     const mr = rec - cc - imp - com;
     totQt += qt; totRec += rec; totCmv += cc; totImp += imp; totCom += com;

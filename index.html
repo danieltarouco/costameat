@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -59,316 +60,318 @@
   }
   header button:hover { background: rgba(255,255,255,0.28); }
 
-  .tabs {
-    background: #fff;
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    display: flex;
-    gap: 0;
-    position: sticky; top: 63px; z-index: 10;
-    overflow-x: auto;
-  }
-  .tab {
-    padding: 12px 16px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-soft);
-    border-bottom: 2px solid transparent;
-    white-space: nowrap;
-  }
-  .tab:hover { color: var(--text); background: #f8fafc; }
-  .tab.active {
-    color: var(--primary);
-    border-bottom-color: var(--primary);
-  }
+.tabs {
+background: #fff;
+border-bottom: 1px solid var(–border);
+padding: 0 24px;
+display: flex;
+gap: 0;
+position: sticky; top: 63px; z-index: 10;
+overflow-x: auto;
+}
+.tab {
+padding: 12px 16px;
+cursor: pointer;
+font-size: 13px;
+font-weight: 500;
+color: var(–text-soft);
+border-bottom: 2px solid transparent;
+white-space: nowrap;
+}
+.tab:hover { color: var(–text); background: #f8fafc; }
+.tab.active {
+color: var(–primary);
+border-bottom-color: var(–primary);
+}
 
-  main { padding: 20px 24px 60px; max-width: 1600px; margin: 0 auto; }
-  .panel { display: none; }
-  .panel.active { display: block; }
+main { padding: 20px 24px 60px; max-width: 1600px; margin: 0 auto; }
+.panel { display: none; }
+.panel.active { display: block; }
 
-  .kpis {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .kpi {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 14px 16px;
-  }
-  .kpi .label { color: var(--text-soft); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .kpi .value { font-size: 20px; font-weight: 600; margin-top: 4px; }
-  .kpi .hint { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.kpis {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+gap: 12px;
+margin-bottom: 20px;
+}
+.kpi {
+background: var(–bg-card);
+border: 1px solid var(–border);
+border-radius: 8px;
+padding: 14px 16px;
+}
+.kpi .label { color: var(–text-soft); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi .value { font-size: 20px; font-weight: 600; margin-top: 4px; }
+.kpi .hint { font-size: 11px; color: var(–text-muted); margin-top: 2px; }
 
-  .toolbar {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-  }
-  .toolbar input[type=text], .toolbar select {
-    padding: 7px 10px;
-    border: 1px solid var(--border-strong);
-    border-radius: 6px;
-    font-size: 13px;
-    background: #fff;
-  }
-  .toolbar input[type=text] { min-width: 220px; }
-  .btn {
-    padding: 7px 12px;
-    border-radius: 6px;
-    border: 1px solid var(--border-strong);
-    background: #fff;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all .15s;
-  }
-  .btn:hover { background: #f8fafc; }
-  .btn.primary {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: #fff;
-  }
-  .btn.primary:hover { background: var(--primary-hover); }
-  .btn.danger { color: var(--danger); border-color: #fca5a5; }
-  .btn.danger:hover { background: #fee2e2; }
-  .btn.ghost { background: transparent; border-color: transparent; color: var(--text-soft); }
-  .btn.ghost:hover { background: #f1f5f9; color: var(--text); }
-  .btn.small { padding: 4px 8px; font-size: 12px; }
+.toolbar {
+display: flex;
+gap: 8px;
+align-items: center;
+flex-wrap: wrap;
+margin-bottom: 12px;
+}
+.toolbar input[type=text], .toolbar select {
+padding: 7px 10px;
+border: 1px solid var(–border-strong);
+border-radius: 6px;
+font-size: 13px;
+background: #fff;
+}
+.toolbar input[type=text] { min-width: 220px; }
+.btn {
+padding: 7px 12px;
+border-radius: 6px;
+border: 1px solid var(–border-strong);
+background: #fff;
+font-size: 13px;
+cursor: pointer;
+transition: all .15s;
+}
+.btn:hover { background: #f8fafc; }
+.btn.primary {
+background: var(–primary);
+border-color: var(–primary);
+color: #fff;
+}
+.btn.primary:hover { background: var(–primary-hover); }
+.btn.danger { color: var(–danger); border-color: #fca5a5; }
+.btn.danger:hover { background: #fee2e2; }
+.btn.ghost { background: transparent; border-color: transparent; color: var(–text-soft); }
+.btn.ghost:hover { background: #f1f5f9; color: var(–text); }
+.btn.small { padding: 4px 8px; font-size: 12px; }
 
-  .card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .card + .card { margin-top: 16px; }
+.card {
+background: var(–bg-card);
+border: 1px solid var(–border);
+border-radius: 8px;
+overflow: hidden;
+}
+.card + .card { margin-top: 16px; }
 
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead th {
-    background: #f8fafc;
-    text-align: left;
-    padding: 10px 12px;
-    font-weight: 600;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    color: var(--text-soft);
-    border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 2;
-  }
-  tbody td {
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-  }
-  tbody tr:hover { background: #f8fafc; }
-  tbody tr:nth-child(even) { background: var(--row-alt); }
-  tbody tr:nth-child(even):hover { background: #f1f5f9; }
-  .num { text-align: right; font-variant-numeric: tabular-nums; }
-  .muted { color: var(--text-muted); }
-  .chip {
-    display: inline-block;
-    background: var(--chip);
-    color: #0369a1;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 500;
-  }
-  .chip.gray { background: #f1f5f9; color: var(--text-soft); }
-  .chip.green { background: #dcfce7; color: #166534; }
-  .chip.orange { background: #fed7aa; color: #9a3412; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+background: #f8fafc;
+text-align: left;
+padding: 10px 12px;
+font-weight: 600;
+font-size: 11px;
+text-transform: uppercase;
+letter-spacing: 0.3px;
+color: var(–text-soft);
+border-bottom: 1px solid var(–border);
+position: sticky; top: 0; z-index: 2;
+}
+tbody td {
+padding: 8px 12px;
+border-bottom: 1px solid var(–border);
+vertical-align: middle;
+}
+tbody tr:hover { background: #f8fafc; }
+tbody tr:nth-child(even) { background: var(–row-alt); }
+tbody tr:nth-child(even):hover { background: #f1f5f9; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.muted { color: var(–text-muted); }
+.chip {
+display: inline-block;
+background: var(–chip);
+color: #0369a1;
+padding: 2px 8px;
+border-radius: 10px;
+font-size: 11px;
+font-weight: 500;
+}
+.chip.gray { background: #f1f5f9; color: var(–text-soft); }
+.chip.green { background: #dcfce7; color: #166534; }
+.chip.orange { background: #fed7aa; color: #9a3412; }
 
-  input.inline, select.inline {
-    width: 100%;
-    padding: 4px 6px;
-    border: 1px solid transparent;
-    background: transparent;
-    font-size: 13px;
-    border-radius: 4px;
-    font-family: inherit;
-  }
-  input.inline:hover, select.inline:hover { border-color: var(--border); }
-  input.inline:focus, select.inline:focus {
-    border-color: var(--primary);
-    background: #fff;
-    outline: none;
-  }
-  input.inline.num-input { text-align: right; font-variant-numeric: tabular-nums; }
+input.inline, select.inline {
+width: 100%;
+padding: 4px 6px;
+border: 1px solid transparent;
+background: transparent;
+font-size: 13px;
+border-radius: 4px;
+font-family: inherit;
+}
+input.inline:hover, select.inline:hover { border-color: var(–border); }
+input.inline:focus, select.inline:focus {
+border-color: var(–primary);
+background: #fff;
+outline: none;
+}
+input.inline.num-input { text-align: right; font-variant-numeric: tabular-nums; }
 
-  .modal-backdrop {
-    position: fixed; inset: 0;
-    background: rgba(15,23,42,0.55);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-  }
-  .modal-backdrop.open { display: flex; }
-  .modal {
-    background: #fff;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 560px;
-    max-height: 90vh;
-    overflow: auto;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-  }
-  .modal header {
-    background: #fff;
-    color: var(--text);
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-    position: static;
-  }
-  .modal header h2 { margin: 0; font-size: 15px; font-weight: 600; }
-  .modal .body { padding: 18px; }
-  .modal .footer { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
-  .form-row { margin-bottom: 12px; }
-  .form-row label { display: block; font-size: 12px; color: var(--text-soft); margin-bottom: 4px; font-weight: 500; }
-  .form-row input, .form-row select, .form-row textarea {
-    width: 100%;
-    padding: 7px 10px;
-    border: 1px solid var(--border-strong);
-    border-radius: 6px;
-    font-size: 13px;
-    font-family: inherit;
-  }
+.modal-backdrop {
+position: fixed; inset: 0;
+background: rgba(15,23,42,0.55);
+display: none;
+align-items: center;
+justify-content: center;
+z-index: 100;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+background: #fff;
+border-radius: 10px;
+width: 90%;
+max-width: 560px;
+max-height: 90vh;
+overflow: auto;
+box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.modal header {
+background: #fff;
+color: var(–text);
+padding: 14px 18px;
+border-bottom: 1px solid var(–border);
+position: static;
+}
+.modal header h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.modal .body { padding: 18px; }
+.modal .footer { padding: 12px 18px; border-top: 1px solid var(–border); display: flex; justify-content: flex-end; gap: 8px; }
+.form-row { margin-bottom: 12px; }
+.form-row label { display: block; font-size: 12px; color: var(–text-soft); margin-bottom: 4px; font-weight: 500; }
+.form-row input, .form-row select, .form-row textarea {
+width: 100%;
+padding: 7px 10px;
+border: 1px solid var(–border-strong);
+border-radius: 6px;
+font-size: 13px;
+font-family: inherit;
+}
 
-  .tree { font-size: 13px; }
-  .tree ul { list-style: none; padding-left: 18px; margin: 0; }
-  .tree > ul { padding-left: 0; }
-  .tree li { padding: 4px 0; }
-  .tree .node {
-    display: flex; align-items: center; gap: 6px;
-    padding: 4px 6px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  .tree .node:hover { background: #f1f5f9; }
-  .tree .node.group { font-weight: 600; }
-  .tree .node.subgroup { color: var(--text-soft); }
-  .tree .count { font-size: 11px; color: var(--text-muted); margin-left: auto; }
-  .tree .toggle { width: 14px; color: var(--text-muted); }
+.tree { font-size: 13px; }
+.tree ul { list-style: none; padding-left: 18px; margin: 0; }
+.tree > ul { padding-left: 0; }
+.tree li { padding: 4px 0; }
+.tree .node {
+display: flex; align-items: center; gap: 6px;
+padding: 4px 6px;
+border-radius: 4px;
+cursor: pointer;
+}
+.tree .node:hover { background: #f1f5f9; }
+.tree .node.group { font-weight: 600; }
+.tree .node.subgroup { color: var(–text-soft); }
+.tree .count { font-size: 11px; color: var(–text-muted); margin-left: auto; }
+.tree .toggle { width: 14px; color: var(–text-muted); }
 
-  .split { display: grid; grid-template-columns: 320px 1fr; gap: 16px; }
-  @media(max-width: 900px) { .split { grid-template-columns: 1fr; } }
+.split { display: grid; grid-template-columns: 320px 1fr; gap: 16px; }
+@media(max-width: 900px) { .split { grid-template-columns: 1fr; } }
 
-  .badge-dept { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: #f1f5f9; color: var(--text-soft); }
-  .tax-input { width: 64px !important; text-align: right; }
-  .alert {
-    padding: 10px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    margin-bottom: 12px;
-  }
-  .alert.info { background: #e0f2fe; color: #0c4a6e; border: 1px solid #7dd3fc; }
-  .alert.warn { background: #fef3c7; color: #78350f; border: 1px solid #fcd34d; }
+.badge-dept { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: #f1f5f9; color: var(–text-soft); }
+.tax-input { width: 64px !important; text-align: right; }
+.alert {
+padding: 10px 12px;
+border-radius: 6px;
+font-size: 12px;
+margin-bottom: 12px;
+}
+.alert.info { background: #e0f2fe; color: #0c4a6e; border: 1px solid #7dd3fc; }
+.alert.warn { background: #fef3c7; color: #78350f; border: 1px solid #fcd34d; }
 
-  details.dept-block { margin-bottom: 8px; }
-  details.dept-block > summary {
-    padding: 10px 14px;
-    background: #f8fafc;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 13px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-  }
-  details.dept-block[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-  details.dept-block > div { border: 1px solid var(--border); border-top: none; border-radius: 0 0 6px 6px; }
+details.dept-block { margin-bottom: 8px; }
+details.dept-block > summary {
+padding: 10px 14px;
+background: #f8fafc;
+cursor: pointer;
+font-weight: 600;
+font-size: 13px;
+border: 1px solid var(–border);
+border-radius: 6px;
+}
+details.dept-block[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+details.dept-block > div { border: 1px solid var(–border); border-top: none; border-radius: 0 0 6px 6px; }
 
-  .footer-total {
-    background: #0f172a;
-    color: #fff;
-  }
-  .footer-total td { padding: 10px 12px; font-weight: 600; }
+.footer-total {
+background: #0f172a;
+color: #fff;
+}
+.footer-total td { padding: 10px 12px; font-weight: 600; }
 
-  .hidden { display: none !important; }
-  .margin-pos { color: var(--ok); font-weight: 600; }
-  .margin-warn { color: var(--warn); font-weight: 600; }
-  .margin-neg { color: var(--danger); font-weight: 600; }
+.hidden { display: none !important; }
+.margin-pos { color: var(–ok); font-weight: 600; }
+.margin-warn { color: var(–warn); font-weight: 600; }
+.margin-neg { color: var(–danger); font-weight: 600; }
 
-  .chip-toggle {
-    display: inline-flex;
-    background: #f1f5f9;
-    border-radius: 6px;
-    padding: 2px;
-  }
-  .chip-toggle button {
-    background: transparent;
-    border: none;
-    padding: 4px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    color: var(--text-soft);
-    border-radius: 4px;
-  }
-  .chip-toggle button.active {
-    background: #fff;
-    color: var(--text);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-  }
+.chip-toggle {
+display: inline-flex;
+background: #f1f5f9;
+border-radius: 6px;
+padding: 2px;
+}
+.chip-toggle button {
+background: transparent;
+border: none;
+padding: 4px 10px;
+font-size: 12px;
+cursor: pointer;
+color: var(–text-soft);
+border-radius: 4px;
+}
+.chip-toggle button.active {
+background: #fff;
+color: var(–text);
+box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
 
-  /* ========== LOGIN ========== */
-  #login-overlay {
-    position: fixed; inset: 0; z-index: 9999;
-    background: linear-gradient(135deg, #0f766e 0%, #0e7490 100%);
-    display: flex; align-items: center; justify-content: center;
-  }
-  #login-overlay.hidden { display: none; }
-  .login-box {
-    background: #fff; border-radius: 16px;
-    padding: 40px 36px; width: 100%; max-width: 400px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    text-align: center;
-  }
-  .login-logo {
-    font-size: 28px; font-weight: 700; color: #0f766e;
-    letter-spacing: -0.5px; margin-bottom: 4px;
-  }
-  .login-subtitle { font-size: 13px; color: var(--text-soft); margin-bottom: 28px; }
-  .login-field { text-align: left; margin-bottom: 16px; }
-  .login-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-soft); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .login-field input {
-    width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong);
-    border-radius: 8px; font-size: 14px; transition: border .15s;
-    outline: none;
-  }
-  .login-field input:focus { border-color: #0f766e; box-shadow: 0 0 0 3px rgba(15,118,110,0.12); }
-  .login-btn {
-    width: 100%; padding: 12px; background: #0f766e; color: #fff;
-    border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
-    cursor: pointer; margin-top: 8px; transition: background .15s;
-  }
-  .login-btn:hover { background: #115e59; }
-  .login-error {
-    color: var(--danger); font-size: 13px; margin-top: 12px;
-    min-height: 18px; display: none;
-  }
-  .login-error.visible { display: block; }
-  .header-user {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 12px; opacity: 0.9;
-  }
-  .header-user strong { font-weight: 600; }
-  .header-user button {
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.3);
-    padding: 4px 10px; border-radius: 6px; font-size: 11px;
-    cursor: pointer; color: #fff;
-  }
-  .header-user button:hover { background: rgba(255,255,255,0.28); }
+/* ========== LOGIN ========== */
+#login-overlay {
+position: fixed; inset: 0; z-index: 9999;
+background: linear-gradient(135deg, #0f766e 0%, #0e7490 100%);
+display: flex; align-items: center; justify-content: center;
+}
+#login-overlay.hidden { display: none; }
+.login-box {
+background: #fff; border-radius: 16px;
+padding: 40px 36px; width: 100%; max-width: 400px;
+box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+text-align: center;
+}
+.login-logo {
+font-size: 28px; font-weight: 700; color: #0f766e;
+letter-spacing: -0.5px; margin-bottom: 4px;
+}
+.login-subtitle { font-size: 13px; color: var(–text-soft); margin-bottom: 28px; }
+.login-field { text-align: left; margin-bottom: 16px; }
+.login-field label { display: block; font-size: 12px; font-weight: 600; color: var(–text-soft); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.login-field input {
+width: 100%; padding: 10px 12px; border: 1px solid var(–border-strong);
+border-radius: 8px; font-size: 14px; transition: border .15s;
+outline: none;
+}
+.login-field input:focus { border-color: #0f766e; box-shadow: 0 0 0 3px rgba(15,118,110,0.12); }
+.login-btn {
+width: 100%; padding: 12px; background: #0f766e; color: #fff;
+border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+cursor: pointer; margin-top: 8px; transition: background .15s;
+}
+.login-btn:hover { background: #115e59; }
+.login-error {
+color: var(–danger); font-size: 13px; margin-top: 12px;
+min-height: 18px; display: none;
+}
+.login-error.visible { display: block; }
+.header-user {
+display: flex; align-items: center; gap: 8px;
+font-size: 12px; opacity: 0.9;
+}
+.header-user strong { font-weight: 600; }
+.header-user button {
+background: rgba(255,255,255,0.15);
+border: 1px solid rgba(255,255,255,0.3);
+padding: 4px 10px; border-radius: 6px; font-size: 11px;
+cursor: pointer; color: #fff;
+}
+.header-user button:hover { background: rgba(255,255,255,0.28); }
 </style>
+
 </head>
 <body>
 
 <!-- ========== TELA DE LOGIN ========== -->
+
 <div id="login-overlay">
   <div class="login-box">
     <div class="login-logo">🥩 Costameat</div>
@@ -424,6 +427,7 @@
 <main>
 
   <!-- ============================== ITENS ============================== -->
+
   <section id="panel-itens" class="panel">
     <div class="toolbar">
       <input type="text" id="filter-item" placeholder="Buscar por código ou descrição...">
@@ -460,6 +464,7 @@
   </section>
 
   <!-- ============================== REGIMES ============================== -->
+
   <section id="panel-regimes" class="panel">
     <div class="alert info">
       Cadastre os <b>regimes tributários</b> que serão aplicados aos itens. Cada item terá 1 regime de PIS/COFINS e 1 regime de ICMS.
@@ -509,6 +514,7 @@
   </section>
 
   <!-- ============================== TRIBUTAÇÃO ============================== -->
+
   <section id="panel-tributacao" class="panel">
     <div class="alert info">
       Atribua a cada item um <b>Regime PIS/COFINS</b> e um <b>Regime ICMS</b>. O sistema calcula automaticamente as alíquotas efetivas e o custo líquido de créditos.
@@ -548,6 +554,7 @@
   </section>
 
   <!-- ============================== SALDOS ============================== -->
+
   <section id="panel-saldos" class="panel">
     <div class="alert info">
       Informe manualmente o <b>saldo de implantação</b> (estoque inicial) de cada item com a quantidade e custo unitário.
@@ -589,6 +596,7 @@
   </section>
 
   <!-- ============================== MOVIMENTOS (CMP) ============================== -->
+
   <section id="panel-movimentos" class="panel">
     <div class="alert info">
       Evolução dos movimentos no estoque por item.
@@ -672,6 +680,7 @@
   </section>
 
   <!-- ============================== COMPRAS (POR NF) ============================== -->
+
   <section id="panel-compras" class="panel">
     <div class="alert info">
       Análise das compras a partir dos movimentos de <b>entrada (E)</b> lançados em cada item.
@@ -710,6 +719,7 @@
   </section>
 
   <!-- ============================== VENDAS ============================== -->
+
   <section id="panel-vendas" class="panel">
     <div class="alert info">
       Lançamento e análise de vendas. Cada venda gera <b>movimentos de saída (S)</b> nos itens, e o <b>CMV unitário</b> é calculado automaticamente pelo <b>Preço Médio Ponderado</b> vigente no momento da saída.
@@ -733,8 +743,8 @@
         <option value="trimestre">Trimestre</option>
       </select>
       <button class="btn primary" onclick="openVendaModal()">+ Nova Venda</button>
-      <button class="btn" onclick="document.getElementById('importFaturamentoFile').click()" title="Importar planilha VALOR FATURAMENTO (.xlsx) — colunas: Cliente, Vendedor, Item, Qtde, Faturamento, Imposto, Data">⬆ Importar XLSX</button>
-      <input id="importFaturamentoFile" type="file" accept=".xlsx,.xls" onchange="importFaturamentoXLSX(event)" style="display:none">
+      <button class="btn" onclick="document.getElementById('importFaturamentoFile').click()" title="Importar Relatório 8005 (.xls/.xlsx) — colunas: CODPROD, DESCRICAO, DTFAT, QT, PVENDA, CODCLI, CLIENTE, RCA, etc.">⬆ Importar XLSX</button>
+      <input id="importFaturamentoFile" type="file" accept=".xls,.xlsx" onchange="importFaturamentoXLSX(event)" style="display:none">
       <button class="btn danger" onclick="limparVendas()" title="Remove todas as vendas e seus movimentos de saída no estoque" style="font-weight:700;">🗑 Limpar vendas</button>
       <div style="margin-left:auto" class="muted" id="count-vendas"></div>
     </div>
@@ -760,6 +770,7 @@
   </section>
 
   <!-- ============================== VENDEDORES ============================== -->
+
   <section id="panel-vendedores" class="panel">
     <div class="toolbar">
       <button class="btn primary" onclick="openVendedorModal()">+ Novo Vendedor</button>
@@ -784,6 +795,7 @@
   </section>
 
   <!-- ============================== CUSTO LÍQUIDO ============================== -->
+
   <section id="panel-custo-liquido" class="panel">
     <div class="alert info">
       Visão consolidada: preço de referência de entrada → créditos tributários → custo líquido por item, por grupo.
@@ -816,6 +828,7 @@
   </section>
 
   <!-- ============================== VENDAS ============================== -->
+
   <section id="panel-vendas" class="panel">
     <div class="alert info">
       Vendas importadas viram automaticamente <b>saídas (S)</b> no módulo Movimentos (CMP) do item correspondente.
@@ -833,252 +846,261 @@
       <div style="margin-left:auto" class="muted" id="count-vendas"></div>
     </div>
 
-    <div class="kpis">
-      <div class="kpi"><div class="label">Faturamento Bruto</div><div class="value" id="kpi-v-bruto">—</div><div class="hint" id="kpi-v-qtde">—</div></div>
-      <div class="kpi"><div class="label">Impostos + Comissão</div><div class="value" id="kpi-v-desp">—</div><div class="hint" id="kpi-v-despdet">—</div></div>
-      <div class="kpi"><div class="label">CMV (custo médio)</div><div class="value" id="kpi-v-cmv" style="color:var(--accent);">—</div><div class="hint" id="kpi-v-cmvcob">—</div></div>
-      <div class="kpi"><div class="label">Margem Bruta</div><div class="value" id="kpi-v-margem" style="color:var(--ok);">—</div><div class="hint" id="kpi-v-margempct">—</div></div>
-      <div class="kpi"><div class="label">Clientes</div><div class="value" id="kpi-v-clientes">—</div><div class="hint" id="kpi-v-notas">—</div></div>
-      <div class="kpi"><div class="label">Ticket médio / nota</div><div class="value" id="kpi-v-ticket">—</div><div class="hint">Média por NF</div></div>
-    </div>
+```
+<div class="kpis">
+  <div class="kpi"><div class="label">Faturamento Bruto</div><div class="value" id="kpi-v-bruto">—</div><div class="hint" id="kpi-v-qtde">—</div></div>
+  <div class="kpi"><div class="label">Impostos + Comissão</div><div class="value" id="kpi-v-desp">—</div><div class="hint" id="kpi-v-despdet">—</div></div>
+  <div class="kpi"><div class="label">CMV (custo médio)</div><div class="value" id="kpi-v-cmv" style="color:var(--accent);">—</div><div class="hint" id="kpi-v-cmvcob">—</div></div>
+  <div class="kpi"><div class="label">Margem Bruta</div><div class="value" id="kpi-v-margem" style="color:var(--ok);">—</div><div class="hint" id="kpi-v-margempct">—</div></div>
+  <div class="kpi"><div class="label">Clientes</div><div class="value" id="kpi-v-clientes">—</div><div class="hint" id="kpi-v-notas">—</div></div>
+  <div class="kpi"><div class="label">Ticket médio / nota</div><div class="value" id="kpi-v-ticket">—</div><div class="hint">Média por NF</div></div>
+</div>
 
-    <!-- Sub-tabs -->
-    <div class="tabs" style="position:static; padding:0; margin-bottom:14px; border-bottom:1px solid var(--border);">
-      <div class="tab active" data-vsub="clientes">Por Cliente</div>
-      <div class="tab" data-vsub="produtos">Por Produto</div>
-      <div class="tab" data-vsub="detalhe">Detalhamento</div>
-      <div class="tab" data-vsub="saldos-cmv">Cobertura de Custo</div>
-    </div>
+<!-- Sub-tabs -->
+<div class="tabs" style="position:static; padding:0; margin-bottom:14px; border-bottom:1px solid var(--border);">
+  <div class="tab active" data-vsub="clientes">Por Cliente</div>
+  <div class="tab" data-vsub="produtos">Por Produto</div>
+  <div class="tab" data-vsub="detalhe">Detalhamento</div>
+  <div class="tab" data-vsub="saldos-cmv">Cobertura de Custo</div>
+</div>
 
-    <!-- Sub-panel Clientes -->
-    <div class="vsub-panel" id="vsub-clientes">
-      <div class="toolbar">
-        <input type="text" id="v-filter-cli" placeholder="Buscar cliente...">
-        <label style="font-size:12px;">Ordenar:
-          <select id="v-sort-cli">
-            <option value="bruto">Faturamento</option>
-            <option value="margem">Margem R$</option>
-            <option value="margempct">Margem %</option>
-            <option value="qtde">Quantidade</option>
-          </select>
-        </label>
-      </div>
-      <div class="card">
-        <table id="v-tbl-clientes">
-          <thead><tr>
-            <th style="width:40px;">#</th>
-            <th>Cliente</th>
-            <th class="num" style="width:70px;">NF</th>
-            <th class="num" style="width:90px;">Qtde</th>
-            <th class="num" style="width:110px;">Bruto</th>
-            <th class="num" style="width:100px;">Impostos</th>
-            <th class="num" style="width:90px;">Comissão</th>
-            <th class="num" style="width:110px;">CMV</th>
-            <th class="num" style="width:110px;">Margem R$</th>
-            <th class="num" style="width:80px;">Margem %</th>
-          </tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
+<!-- Sub-panel Clientes -->
+<div class="vsub-panel" id="vsub-clientes">
+  <div class="toolbar">
+    <input type="text" id="v-filter-cli" placeholder="Buscar cliente...">
+    <label style="font-size:12px;">Ordenar:
+      <select id="v-sort-cli">
+        <option value="bruto">Faturamento</option>
+        <option value="margem">Margem R$</option>
+        <option value="margempct">Margem %</option>
+        <option value="qtde">Quantidade</option>
+      </select>
+    </label>
+  </div>
+  <div class="card">
+    <table id="v-tbl-clientes">
+      <thead><tr>
+        <th style="width:40px;">#</th>
+        <th>Cliente</th>
+        <th class="num" style="width:70px;">NF</th>
+        <th class="num" style="width:90px;">Qtde</th>
+        <th class="num" style="width:110px;">Bruto</th>
+        <th class="num" style="width:100px;">Impostos</th>
+        <th class="num" style="width:90px;">Comissão</th>
+        <th class="num" style="width:110px;">CMV</th>
+        <th class="num" style="width:110px;">Margem R$</th>
+        <th class="num" style="width:80px;">Margem %</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
 
-    <!-- Sub-panel Produtos -->
-    <div class="vsub-panel hidden" id="vsub-produtos">
-      <div class="toolbar">
-        <input type="text" id="v-filter-prod" placeholder="Buscar produto...">
-        <label style="font-size:12px;">Ordenar:
-          <select id="v-sort-prod">
-            <option value="bruto">Faturamento</option>
-            <option value="margem">Margem R$</option>
-            <option value="margempct">Margem %</option>
-            <option value="qtde">Quantidade</option>
-          </select>
-        </label>
-      </div>
-      <div class="card">
-        <table id="v-tbl-prod">
-          <thead><tr>
-            <th style="width:40px;">#</th>
-            <th style="width:60px;">Código</th>
-            <th>Produto</th>
-            <th class="num" style="width:70px;">Clientes</th>
-            <th class="num" style="width:90px;">Qtde</th>
-            <th class="num" style="width:100px;">Preço Méd.</th>
-            <th class="num" style="width:110px;">Bruto</th>
-            <th class="num" style="width:110px;">CMV (CMP)</th>
-            <th class="num" style="width:110px;">Margem R$</th>
-            <th class="num" style="width:80px;">Margem %</th>
-          </tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
+<!-- Sub-panel Produtos -->
+<div class="vsub-panel hidden" id="vsub-produtos">
+  <div class="toolbar">
+    <input type="text" id="v-filter-prod" placeholder="Buscar produto...">
+    <label style="font-size:12px;">Ordenar:
+      <select id="v-sort-prod">
+        <option value="bruto">Faturamento</option>
+        <option value="margem">Margem R$</option>
+        <option value="margempct">Margem %</option>
+        <option value="qtde">Quantidade</option>
+      </select>
+    </label>
+  </div>
+  <div class="card">
+    <table id="v-tbl-prod">
+      <thead><tr>
+        <th style="width:40px;">#</th>
+        <th style="width:60px;">Código</th>
+        <th>Produto</th>
+        <th class="num" style="width:70px;">Clientes</th>
+        <th class="num" style="width:90px;">Qtde</th>
+        <th class="num" style="width:100px;">Preço Méd.</th>
+        <th class="num" style="width:110px;">Bruto</th>
+        <th class="num" style="width:110px;">CMV (CMP)</th>
+        <th class="num" style="width:110px;">Margem R$</th>
+        <th class="num" style="width:80px;">Margem %</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
 
-    <!-- Sub-panel Detalhe -->
-    <div class="vsub-panel hidden" id="vsub-detalhe">
-      <div class="toolbar">
-        <input type="text" id="v-filter-det" placeholder="Buscar por cliente, produto ou NF...">
-      </div>
-      <div class="card">
-        <table id="v-tbl-det">
-          <thead><tr>
-            <th style="width:80px;">Data</th>
-            <th>Cliente</th>
-            <th>Produto</th>
-            <th class="num" style="width:70px;">NF</th>
-            <th class="num" style="width:80px;">Qtde</th>
-            <th class="num" style="width:90px;">Fat. Unit.</th>
-            <th class="num" style="width:100px;">Bruto</th>
-            <th class="num" style="width:90px;">Imp.</th>
-            <th class="num" style="width:80px;">Com.</th>
-            <th class="num" style="width:100px;">CMV</th>
-            <th class="num" style="width:100px;">Margem R$</th>
-            <th class="num" style="width:75px;">Margem %</th>
-          </tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
+<!-- Sub-panel Detalhe -->
+<div class="vsub-panel hidden" id="vsub-detalhe">
+  <div class="toolbar">
+    <input type="text" id="v-filter-det" placeholder="Buscar por cliente, produto ou NF...">
+  </div>
+  <div class="card">
+    <table id="v-tbl-det">
+      <thead><tr>
+        <th style="width:80px;">Data</th>
+        <th>Cliente</th>
+        <th>Produto</th>
+        <th class="num" style="width:70px;">NF</th>
+        <th class="num" style="width:80px;">Qtde</th>
+        <th class="num" style="width:90px;">Fat. Unit.</th>
+        <th class="num" style="width:100px;">Bruto</th>
+        <th class="num" style="width:90px;">Imp.</th>
+        <th class="num" style="width:80px;">Com.</th>
+        <th class="num" style="width:100px;">CMV</th>
+        <th class="num" style="width:100px;">Margem R$</th>
+        <th class="num" style="width:75px;">Margem %</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
 
-    <!-- Sub-panel Saldos/Cobertura -->
-    <div class="vsub-panel hidden" id="vsub-saldos-cmv">
-      <div class="alert info" style="margin-bottom:12px;">
-        Mostra a <b>cobertura de custo</b> das vendas: quais itens têm saldo de estoque suficiente / preço médio apurado e quais estão sem custo
-        (item novo, sem saldo inicial nem entradas antes da venda — CMV fica zerado e distorce a margem).
-      </div>
-      <div class="card">
-        <table id="v-tbl-cob">
-          <thead><tr>
-            <th style="width:60px;">Código</th>
-            <th>Produto</th>
-            <th class="num" style="width:90px;">Qtde vendida</th>
-            <th class="num" style="width:110px;">Preço méd. (CMP)</th>
-            <th class="num" style="width:110px;">CMV apurado</th>
-            <th style="width:140px;">Status</th>
-          </tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
+<!-- Sub-panel Saldos/Cobertura -->
+<div class="vsub-panel hidden" id="vsub-saldos-cmv">
+  <div class="alert info" style="margin-bottom:12px;">
+    Mostra a <b>cobertura de custo</b> das vendas: quais itens têm saldo de estoque suficiente / preço médio apurado e quais estão sem custo
+    (item novo, sem saldo inicial nem entradas antes da venda — CMV fica zerado e distorce a margem).
+  </div>
+  <div class="card">
+    <table id="v-tbl-cob">
+      <thead><tr>
+        <th style="width:60px;">Código</th>
+        <th>Produto</th>
+        <th class="num" style="width:90px;">Qtde vendida</th>
+        <th class="num" style="width:110px;">Preço méd. (CMP)</th>
+        <th class="num" style="width:110px;">CMV apurado</th>
+        <th style="width:140px;">Status</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+```
+
   </section>
 
   <!-- ============================== SIMULAÇÃO ============================== -->
+
   <section id="panel-simulacao" class="panel">
     <div class="alert info" style="margin-bottom:14px;">
       <b>Simulação de Cenários</b> — marque os itens que quer incluir na simulação. Os KPIs consolidam apenas os itens selecionados. Nada aqui afeta os dados reais.
     </div>
 
-    <!-- Controles globais -->
-    <div class="toolbar" style="margin-bottom:8px; flex-wrap:wrap; gap:10px;">
-      <div style="display:flex; align-items:center; gap:6px;">
-        <label style="font-weight:600; font-size:13px;">Base de custo:</label>
-        <select id="sim-base" onchange="renderSimulacao()" style="padding:6px 10px; border:1px solid var(--border-strong); border-radius:6px; font-size:13px; background:#fff; font-weight:500;">
-          <option value="pm">PM Líquido atual</option>
-          <option value="ult">Último Custo Líquido</option>
-          <option value="rep">Custo de Reposição</option>
-        </select>
-      </div>
-      <input type="text" id="sim-busca" placeholder="Buscar item…" oninput="renderSimulacao()" style="padding:6px 10px; border:1px solid var(--border-strong); border-radius:6px; font-size:13px; min-width:200px;">
-      <div style="display:flex; align-items:center; gap:6px;">
-        <label style="font-weight:600; font-size:13px; white-space:nowrap;">Comissão %:</label>
-        <input type="number" id="sim-comissao-pct" min="0" max="100" step="0.01" value="0" onchange="simUpdateKpis()"
-          style="width:80px; padding:6px 8px; border:1px solid var(--border-strong); border-radius:6px; font-size:13px;" title="% de comissão sobre a receita para cálculo da margem real">
-      </div>
-      <select id="sim-dept" onchange="renderSimulacao()" style="padding:6px 10px; border:1px solid var(--border-strong); border-radius:6px; font-size:13px; background:#fff;">
-        <option value="">Todos os departamentos</option>
-      </select>
-    </div>
-    <!-- Controles de seleção -->
-    <div class="toolbar" style="margin-bottom:14px; flex-wrap:wrap; gap:8px;">
-      <button class="btn small" onclick="simSelectAllVisible()" title="Marca todos os itens visíveis na tabela">☑ Selecionar visíveis</button>
-      <button class="btn small" onclick="simClearSelection()" title="Desmarca todos">☐ Limpar seleção</button>
-      <button class="btn small" id="sim-btn-apenas-sel" onclick="simToggleApenasSelected()" style="border-color:#0891b2; color:#0891b2;">👁 Mostrar apenas selecionados</button>
-      <button class="btn small danger" onclick="simResetAll()" title="Limpa seleção, qtdes, preços e custos de reposição">🗑 Limpar tudo</button>
-      <button class="btn small primary" onclick="simToggleComparativo()" id="sim-btn-comparativo" style="background:#0f766e; border-color:#0f766e;">⚡ Comparativo</button>
-      <span id="sim-status" style="font-size:12px; color:var(--text-muted); align-self:center;"></span>
-    </div>
+```
+<!-- Controles globais -->
+<div class="toolbar" style="margin-bottom:8px; flex-wrap:wrap; gap:10px;">
+  <div style="display:flex; align-items:center; gap:6px;">
+    <label style="font-weight:600; font-size:13px;">Base de custo:</label>
+    <select id="sim-base" onchange="renderSimulacao()" style="padding:6px 10px; border:1px solid var(--border-strong); border-radius:6px; font-size:13px; background:#fff; font-weight:500;">
+      <option value="pm">PM Líquido atual</option>
+      <option value="ult">Último Custo Líquido</option>
+      <option value="rep">Custo de Reposição</option>
+    </select>
+  </div>
+  <input type="text" id="sim-busca" placeholder="Buscar item…" oninput="renderSimulacao()" style="padding:6px 10px; border:1px solid var(--border-strong); border-radius:6px; font-size:13px; min-width:200px;">
+  <div style="display:flex; align-items:center; gap:6px;">
+    <label style="font-weight:600; font-size:13px; white-space:nowrap;">Comissão %:</label>
+    <input type="number" id="sim-comissao-pct" min="0" max="100" step="0.01" value="0" onchange="simUpdateKpis()"
+      style="width:80px; padding:6px 8px; border:1px solid var(--border-strong); border-radius:6px; font-size:13px;" title="% de comissão sobre a receita para cálculo da margem real">
+  </div>
+  <select id="sim-dept" onchange="renderSimulacao()" style="padding:6px 10px; border:1px solid var(--border-strong); border-radius:6px; font-size:13px; background:#fff;">
+    <option value="">Todos os departamentos</option>
+  </select>
+</div>
+<!-- Controles de seleção -->
+<div class="toolbar" style="margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+  <button class="btn small" onclick="simSelectAllVisible()" title="Marca todos os itens visíveis na tabela">☑ Selecionar visíveis</button>
+  <button class="btn small" onclick="simClearSelection()" title="Desmarca todos">☐ Limpar seleção</button>
+  <button class="btn small" id="sim-btn-apenas-sel" onclick="simToggleApenasSelected()" style="border-color:#0891b2; color:#0891b2;">👁 Mostrar apenas selecionados</button>
+  <button class="btn small danger" onclick="simResetAll()" title="Limpa seleção, qtdes, preços e custos de reposição">🗑 Limpar tudo</button>
+  <button class="btn small primary" onclick="simToggleComparativo()" id="sim-btn-comparativo" style="background:#0f766e; border-color:#0f766e;">⚡ Comparativo</button>
+  <span id="sim-status" style="font-size:12px; color:var(--text-muted); align-self:center;"></span>
+</div>
 
-    <!-- KPIs — só itens selecionados -->
-    <div class="kpis" style="margin-bottom:16px;" id="sim-kpis">
-      <div class="kpi"><div class="label">Selecionados</div><div class="value" id="sim-kpi-itens">0</div></div>
-      <div class="kpi"><div class="label">Receita simulada</div><div class="value" id="sim-kpi-rec">R$ 0,00</div></div>
-      <div class="kpi"><div class="label">CMV simulado</div><div class="value" id="sim-kpi-cmv" style="color:var(--warn);">R$ 0,00</div></div>
-      <div class="kpi"><div class="label">Impostos</div><div class="value" id="sim-kpi-imp" style="color:var(--warn);">R$ 0,00</div><div class="hint" id="sim-kpi-imp-pct">—</div></div>
-      <div class="kpi"><div class="label">Comissão</div><div class="value" id="sim-kpi-com" style="color:var(--warn);">R$ 0,00</div><div class="hint" id="sim-kpi-com-pct">—</div></div>
-      <div class="kpi"><div class="label">Margem Bruta R$</div><div class="value" id="sim-kpi-mar">R$ 0,00</div><div class="hint" id="sim-kpi-pct">—</div></div>
-      <div class="kpi"><div class="label">Margem Real R$</div><div class="value" id="sim-kpi-mar-real">R$ 0,00</div><div class="hint" id="sim-kpi-pct-real">—</div></div>
-      <div class="kpi"><div class="label">Preço mín. pond.</div><div class="value" id="sim-kpi-pmin" style="font-size:13px; color:var(--text-soft);">—</div><div class="hint">break-even (custo base)</div></div>
-    </div>
+<!-- KPIs — só itens selecionados -->
+<div class="kpis" style="margin-bottom:16px;" id="sim-kpis">
+  <div class="kpi"><div class="label">Selecionados</div><div class="value" id="sim-kpi-itens">0</div></div>
+  <div class="kpi"><div class="label">Receita simulada</div><div class="value" id="sim-kpi-rec">R$ 0,00</div></div>
+  <div class="kpi"><div class="label">CMV simulado</div><div class="value" id="sim-kpi-cmv" style="color:var(--warn);">R$ 0,00</div></div>
+  <div class="kpi"><div class="label">Impostos</div><div class="value" id="sim-kpi-imp" style="color:var(--warn);">R$ 0,00</div><div class="hint" id="sim-kpi-imp-pct">—</div></div>
+  <div class="kpi"><div class="label">Comissão</div><div class="value" id="sim-kpi-com" style="color:var(--warn);">R$ 0,00</div><div class="hint" id="sim-kpi-com-pct">—</div></div>
+  <div class="kpi"><div class="label">Margem Bruta R$</div><div class="value" id="sim-kpi-mar">R$ 0,00</div><div class="hint" id="sim-kpi-pct">—</div></div>
+  <div class="kpi"><div class="label">Margem Real R$</div><div class="value" id="sim-kpi-mar-real">R$ 0,00</div><div class="hint" id="sim-kpi-pct-real">—</div></div>
+  <div class="kpi"><div class="label">Preço mín. pond.</div><div class="value" id="sim-kpi-pmin" style="font-size:13px; color:var(--text-soft);">—</div><div class="hint">break-even (custo base)</div></div>
+</div>
 
-    <!-- Comparativo 3 bases (itens selecionados) -->
-    <div id="sim-comparativo-wrapper" style="display:none; margin-bottom:16px;">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-        <span style="font-weight:600; font-size:13px;">Comparativo — 3 Bases de Custo (itens selecionados)</span>
-        <button class="btn small ghost" onclick="simToggleComparativo()" id="sim-btn-comp-fechar">✕ Fechar</button>
-      </div>
-      <div class="card" style="overflow-x:auto;">
-        <table id="sim-comp-table" style="font-size:12px;">
-          <thead>
-            <tr>
-              <th rowspan="2" style="width:60px;">Código</th>
-              <th rowspan="2">Descrição</th>
-              <th rowspan="2" class="num" style="width:70px;">Qtde</th>
-              <th rowspan="2" class="num" style="width:85px;">Preço Venda</th>
-              <th colspan="3" style="text-align:center; background:#f0fdf4; border-left:2px solid #86efac;">PM Líquido</th>
-              <th colspan="3" style="text-align:center; background:#fef9c3; border-left:2px solid #fde047;">Último Custo</th>
-              <th colspan="3" style="text-align:center; background:#fef3c7; border-left:2px solid #fed7aa;">Custo Reposição</th>
-            </tr>
-            <tr>
-              <th class="num" style="width:80px; background:#f0fdf4; border-left:2px solid #86efac;">CMV</th>
-              <th class="num" style="width:80px; background:#f0fdf4;">Margem R$</th>
-              <th class="num" style="width:65px; background:#f0fdf4;">Marg.%</th>
-              <th class="num" style="width:80px; background:#fef9c3; border-left:2px solid #fde047;">CMV</th>
-              <th class="num" style="width:80px; background:#fef9c3;">Margem R$</th>
-              <th class="num" style="width:65px; background:#fef9c3;">Marg.%</th>
-              <th class="num" style="width:80px; background:#fef3c7; border-left:2px solid #fed7aa;">CMV</th>
-              <th class="num" style="width:80px; background:#fef3c7;">Margem R$</th>
-              <th class="num" style="width:65px; background:#fef3c7;">Marg.%</th>
-            </tr>
-          </thead>
-          <tbody id="sim-comp-tbody"></tbody>
-          <tfoot id="sim-comp-tfoot"></tfoot>
-        </table>
-      </div>
-    </div>
+<!-- Comparativo 3 bases (itens selecionados) -->
+<div id="sim-comparativo-wrapper" style="display:none; margin-bottom:16px;">
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+    <span style="font-weight:600; font-size:13px;">Comparativo — 3 Bases de Custo (itens selecionados)</span>
+    <button class="btn small ghost" onclick="simToggleComparativo()" id="sim-btn-comp-fechar">✕ Fechar</button>
+  </div>
+  <div class="card" style="overflow-x:auto;">
+    <table id="sim-comp-table" style="font-size:12px;">
+      <thead>
+        <tr>
+          <th rowspan="2" style="width:60px;">Código</th>
+          <th rowspan="2">Descrição</th>
+          <th rowspan="2" class="num" style="width:70px;">Qtde</th>
+          <th rowspan="2" class="num" style="width:85px;">Preço Venda</th>
+          <th colspan="3" style="text-align:center; background:#f0fdf4; border-left:2px solid #86efac;">PM Líquido</th>
+          <th colspan="3" style="text-align:center; background:#fef9c3; border-left:2px solid #fde047;">Último Custo</th>
+          <th colspan="3" style="text-align:center; background:#fef3c7; border-left:2px solid #fed7aa;">Custo Reposição</th>
+        </tr>
+        <tr>
+          <th class="num" style="width:80px; background:#f0fdf4; border-left:2px solid #86efac;">CMV</th>
+          <th class="num" style="width:80px; background:#f0fdf4;">Margem R$</th>
+          <th class="num" style="width:65px; background:#f0fdf4;">Marg.%</th>
+          <th class="num" style="width:80px; background:#fef9c3; border-left:2px solid #fde047;">CMV</th>
+          <th class="num" style="width:80px; background:#fef9c3;">Margem R$</th>
+          <th class="num" style="width:65px; background:#fef9c3;">Marg.%</th>
+          <th class="num" style="width:80px; background:#fef3c7; border-left:2px solid #fed7aa;">CMV</th>
+          <th class="num" style="width:80px; background:#fef3c7;">Margem R$</th>
+          <th class="num" style="width:65px; background:#fef3c7;">Marg.%</th>
+        </tr>
+      </thead>
+      <tbody id="sim-comp-tbody"></tbody>
+      <tfoot id="sim-comp-tfoot"></tfoot>
+    </table>
+  </div>
+</div>
 
-    <!-- Tabela principal -->
-    <div class="card">
-      <div style="overflow-x:auto;">
-        <table id="sim-table">
-          <thead><tr>
-            <th style="width:36px; text-align:center;">
-              <input type="checkbox" id="sim-chk-all" title="Selecionar/desmarcar todos visíveis" onchange="simChkAllChange(this.checked)" style="cursor:pointer;">
-            </th>
-            <th style="width:60px;">Código</th>
-            <th>Descrição</th>
-            <th style="width:70px;">Depto</th>
-            <th class="num" style="width:95px;">PM Líq.</th>
-            <th class="num" style="width:95px;">Últ. Custo Líq.</th>
-            <th class="num" style="width:110px; background:#fef9c3;">Rep. Bruto</th>
-            <th class="num" style="width:85px; background:#fef9c3; color:#92400e;">Rep. Líq.</th>
-            <th class="num" style="width:90px; background:#f0fdf4; font-weight:700;">Base Ativa</th>
-            <th class="num" style="width:90px; background:#eff6ff;">Qtde Sim.</th>
-            <th class="num" style="width:100px; background:#eff6ff;">Preço Venda</th>
-            <th class="num" style="width:90px;">Receita</th>
-            <th class="num" style="width:90px;">CMV</th>
-            <th class="num" style="width:90px; background:#f0fdf4;">Margem R$</th>
-            <th class="num" style="width:75px; background:#f0fdf4;">Marg.%</th>
-            <th class="num" style="width:90px; background:#fef3c7;" title="Preço mínimo para Margem = 0">Preço Mín.</th>
-          </tr></thead>
-          <tbody id="sim-tbody"></tbody>
-          <tfoot id="sim-tfoot"></tfoot>
-        </table>
-      </div>
-    </div>
+<!-- Tabela principal -->
+<div class="card">
+  <div style="overflow-x:auto;">
+    <table id="sim-table">
+      <thead><tr>
+        <th style="width:36px; text-align:center;">
+          <input type="checkbox" id="sim-chk-all" title="Selecionar/desmarcar todos visíveis" onchange="simChkAllChange(this.checked)" style="cursor:pointer;">
+        </th>
+        <th style="width:60px;">Código</th>
+        <th>Descrição</th>
+        <th style="width:70px;">Depto</th>
+        <th class="num" style="width:95px;">PM Líq.</th>
+        <th class="num" style="width:95px;">Últ. Custo Líq.</th>
+        <th class="num" style="width:110px; background:#fef9c3;">Rep. Bruto</th>
+        <th class="num" style="width:85px; background:#fef9c3; color:#92400e;">Rep. Líq.</th>
+        <th class="num" style="width:90px; background:#f0fdf4; font-weight:700;">Base Ativa</th>
+        <th class="num" style="width:90px; background:#eff6ff;">Qtde Sim.</th>
+        <th class="num" style="width:100px; background:#eff6ff;">Preço Venda</th>
+        <th class="num" style="width:90px;">Receita</th>
+        <th class="num" style="width:90px;">CMV</th>
+        <th class="num" style="width:90px; background:#f0fdf4;">Margem R$</th>
+        <th class="num" style="width:75px; background:#f0fdf4;">Marg.%</th>
+        <th class="num" style="width:90px; background:#fef3c7;" title="Preço mínimo para Margem = 0">Preço Mín.</th>
+      </tr></thead>
+      <tbody id="sim-tbody"></tbody>
+      <tfoot id="sim-tfoot"></tfoot>
+    </table>
+  </div>
+</div>
+```
+
   </section>
 
   <!-- ============================== GRÁFICO MENSAL ============================== -->
+
   <!-- ============================== ESTOQUE ============================== -->
+
   <section id="panel-estoque" class="panel">
     <div class="toolbar" style="flex-wrap:wrap; gap:10px; align-items:center;">
       <div style="display:flex; align-items:center; gap:6px;">
@@ -1098,20 +1120,24 @@
       <div style="margin-left:auto; font-size:12px; color:var(--text-muted);" id="estoque-resumo"></div>
     </div>
 
-    <!-- KPI bar -->
-    <div id="estoque-kpis" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:16px;"></div>
+```
+<!-- KPI bar -->
+<div id="estoque-kpis" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:16px;"></div>
 
-    <div class="card" style="overflow-x:auto;">
-      <table class="data-table">
-        <thead id="estoque-thead"></thead>
-        <tbody id="estoque-tbody"></tbody>
-      </table>
-    </div>
+<div class="card" style="overflow-x:auto;">
+  <table class="data-table">
+    <thead id="estoque-thead"></thead>
+    <tbody id="estoque-tbody"></tbody>
+  </table>
+</div>
+```
+
   </section>
 
 </main>
 
 <!-- MODAL: ITEM -->
+
 <div class="modal-backdrop" id="modal-item">
   <div class="modal">
     <header><h2 id="modal-item-title">Novo item</h2></header>
@@ -1135,6 +1161,7 @@
 </div>
 
 <!-- MODAL: TRIBUTAÇÃO EM LOTE -->
+
 <div class="modal-backdrop" id="modal-bulk-trib">
   <div class="modal">
     <header><h2>Aplicar regimes em lote</h2></header>
@@ -1171,6 +1198,7 @@
 </div>
 
 <!-- MODAL: REGIME PIS/COFINS -->
+
 <div class="modal-backdrop" id="modal-regime-pc">
   <div class="modal">
     <header><h2 id="modal-regime-pc-title">Novo Regime PIS/COFINS</h2></header>
@@ -1193,6 +1221,7 @@
 </div>
 
 <!-- MODAL: REGIME ICMS -->
+
 <div class="modal-backdrop" id="modal-regime-icms">
   <div class="modal">
     <header><h2 id="modal-regime-icms-title">Novo Regime ICMS</h2></header>
@@ -1216,6 +1245,7 @@
 </div>
 
 <!-- MODAL: MOVIMENTO -->
+
 <div class="modal-backdrop" id="modal-mov">
   <div class="modal">
     <header><h2 id="modal-mov-title">Novo movimento</h2></header>
@@ -1255,6 +1285,7 @@
 </div>
 
 <!-- MODAL: VENDA -->
+
 <div class="modal-backdrop" id="modal-venda">
   <div class="modal" style="max-width:880px;">
     <header><h2 id="modal-venda-title">Nova Venda</h2></header>
@@ -1308,6 +1339,7 @@
 </div>
 
 <!-- MODAL: VENDEDOR -->
+
 <div class="modal-backdrop" id="modal-vendedor">
   <div class="modal" style="max-width:460px;">
     <header><h2 id="modal-vendedor-title">Vendedor</h2></header>
@@ -1334,6 +1366,7 @@
 </div>
 
 <!-- MODAL: DETALHE VENDA (drill-down) -->
+
 <div class="modal-backdrop" id="modal-venda-detail">
   <div class="modal" style="max-width:min(1080px,96vw);">
     <header><h2 id="modal-venda-detail-title">Detalhes da Venda</h2></header>
@@ -1346,6 +1379,7 @@
 </div>
 
 <!-- MODAL: EDITAR NF -->
+
 <div class="modal-backdrop" id="modal-nf-edit">
   <div class="modal" style="max-width:min(1000px,96vw);">
     <header>
@@ -1392,7 +1426,9 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 <script>
 /* ========= DADOS INICIAIS — extraídos do Relatório 218 (01/01 a 21/04/2026) ========= */
 const DEPTS = [
@@ -3475,6 +3511,19 @@ function importRel8005CSV(event) {
 // Col E: Faturamento (total R$)
 // Col F: Imposto (total R$)
 // Col G: Data
+/* ===== IMPORTAÇÃO DO RELATÓRIO 8005 (.xls/.xlsx) =====
+   Cabeçalho esperado (linha 1, nomes case-insensitive):
+     CODPROD, DESCRICAO, UNIDADE, CODFAB, EMBALAGEM, DTFAT, DATA_PED,
+     QTCLIPOS, QT, PVENDA, TOTPESO, LITRAGEM, TOTQTUNIT, TOTQTUNITCX,
+     QTUNIT, CODCLI, CLIENTE, CLIENTE_1, ENDERCOB, BAIRROCOB, CEPCOB,
+     EMAIL, TELCOB, DTULTCOMP, ESTCOB, CGCENT, NOMECIDADE, RAMO,
+     DESCRICAO_1, FILIAL, MARCA, MES, CODFILIAL, CATEGORIA,
+     DESCRICAO_2, PRODUTO, RCA, NOME
+
+   Regra: cada linha = 1 venda com 1 item.
+   Duplicatas (linhas idênticas em TODAS as colunas) são ignoradas.
+   Imposto é calculado pelo regime tributário do item (PIS + COFINS + ICMS efetivo).
+*/
 function importFaturamentoXLSX(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -3494,109 +3543,161 @@ function importFaturamentoXLSX(event) {
 
       if (rows.length < 2) { alert("Planilha vazia ou sem dados."); return; }
 
-      // Linha 0 = cabeçalho, dados de 1 em diante
-      let ultimoCliente = null;
-      const grupos = new Map(); // chave: "clienteCod|data|vendedor"
+      // ---- Mapeia cabeçalho por nome (case-insensitive, sem aspas/espaços) ----
+      const norm = s => String(s == null ? "" : s)
+        .replace(/^['"\s]+|['"\s]+$/g, "")
+        .toUpperCase();
+      const header = rows[0].map(norm);
+      const colIdx = name => header.indexOf(name);
 
-      for (let i = 1; i < rows.length; i++) {
-        const r = rows[i];
-        // Col A: cliente (forward-fill)
-        if (r[0] != null && String(r[0]).trim()) ultimoCliente = String(r[0]).trim();
-        const clienteRaw = ultimoCliente || "";
+      const iCodProd = colIdx("CODPROD");
+      const iDescr   = colIdx("DESCRICAO");
+      const iDtFat   = colIdx("DTFAT");
+      const iQt      = colIdx("QT");
+      const iPVenda  = colIdx("PVENDA");
+      const iCodCli  = colIdx("CODCLI");
+      const iCliente = colIdx("CLIENTE");
+      const iRca     = colIdx("RCA");
 
-        const vendedor  = r[1] != null ? String(r[1]).trim() : "";
-        const itemRaw   = r[2] != null ? String(r[2]).trim() : "";
-        const qtdeRaw   = r[3];
-        const fatRaw    = r[4];
-        const impRaw    = r[5];
-        const dataRaw   = r[6];
-
-        if (!itemRaw || !dataRaw) continue;
-
-        // Extrair codigo do item: último token após " - "
-        const codigoMatch = itemRaw.match(/-\s*(\d+)\s*$/);
-        if (!codigoMatch) continue;
-        const codigo   = codigoMatch[1];
-        const descricao = itemRaw.replace(/-\s*\d+\s*$/, "").trim();
-
-        // Extrair codigo do cliente
-        const cliMatch   = clienteRaw.match(/-\s*(\d+)\s*$/);
-        const clienteCod = cliMatch ? cliMatch[1] : "";
-        const clienteNome = clienteRaw.replace(/-\s*\d+\s*$/, "").trim();
-
-        // Normalizar data
-        let dataISO = "";
-        if (dataRaw instanceof Date) {
-          dataISO = dataRaw.toISOString().slice(0, 10);
-        } else {
-          const d = new Date(dataRaw);
-          if (!isNaN(d)) dataISO = d.toISOString().slice(0, 10);
-          else continue;
-        }
-
-        const qtde = Number(qtdeRaw) || 0;
-        const fat  = Number(fatRaw)  || 0;
-        const imp  = Number(impRaw)  || 0;
-        if (qtde === 0) continue;
-
-        const key = `${clienteCod}|${dataISO}|${vendedor}`;
-        if (!grupos.has(key)) {
-          grupos.set(key, {
-            docto:      `FAT-${clienteCod}-${dataISO}`,
-            data:       dataISO,
-            cliente:    clienteNome,
-            clienteCod,
-            vendedor,
-            origem:     'fatxlsx',
-            itens:      [],
-          });
-        }
-        grupos.get(key).itens.push({
-          codigo,
-          descricao,
-          qtde:         Math.round(qtde * 1e6) / 1e6,
-          precoVenda:   qtde > 0 ? Math.round((fat / qtde) * 1e6) / 1e6 : 0,
-          vlVendaTotal: Math.round(fat * 1e4) / 1e4,
-          impostoTotal: Math.round(imp * 1e4) / 1e4,
-          impostoUnit:  qtde > 0 ? Math.round((imp / qtde) * 1e6) / 1e6 : 0,
-          comissaoUnit: 0,
-        });
-      }
-
-      if (grupos.size === 0) {
-        alert("Nenhuma venda extraída. Verifique o formato da planilha.");
+      const obrig = { CODPROD:iCodProd, DESCRICAO:iDescr, DTFAT:iDtFat, QT:iQt,
+                      PVENDA:iPVenda, CODCLI:iCodCli, CLIENTE:iCliente, RCA:iRca };
+      const faltam = Object.entries(obrig).filter(([,v])=>v<0).map(([k])=>k);
+      if (faltam.length) {
+        alert("Cabeçalho do Relatório 8005 inválido.\nColuna(s) não encontrada(s): " + faltam.join(", "));
         return;
       }
 
-      // Verificar duplicatas pela chave docto
-      const existentes = new Set((state.vendas || []).map(v => v.docto));
-      let adicionadas = 0, ignoradas = 0, semItem = new Set();
+      // ---- Helpers ----
+      const limpaTexto = v => {
+        if (v == null) return "";
+        // remove aspas simples envolventes (formato '...')
+        return String(v).replace(/^['"\s]+|['"\s]+$/g, "");
+      };
+      const toISO = d => {
+        if (!d) return "";
+        if (d instanceof Date && !isNaN(d)) return d.toISOString().slice(0,10);
+        const dd = new Date(d);
+        return isNaN(dd) ? "" : dd.toISOString().slice(0,10);
+      };
+      // RCA vem como "970 - DANIELI FELIX DA SILVA" -> mantém formato igual ao já usado
+      // no resto do sistema (campo `vendedor` é uma string única).
 
-      grupos.forEach(v => {
-        if (existentes.has(v.docto)) { ignoradas++; return; }
-        const id = uuid();
-        const itens = v.itens.map(vi => {
-          const item = state.itens.find(i => String(i.codigo) === String(vi.codigo));
-          if (!item) semItem.add(vi.codigo);
-          return { ...vi, itemId: item ? item.id : null };
+      // ---- Processa linhas, detectando duplicatas exatas ----
+      const visto = new Set();         // chave canônica de TODAS as 38 colunas
+      const novasVendas = [];
+      const semItem = new Set();
+      let ignoradasDup = 0, semData = 0, semQtde = 0, semCodigo = 0;
+
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || r.every(c => c == null || String(c).trim() === "")) continue;
+
+        // Chave canônica = todas as colunas concatenadas (normalizadas)
+        const chaveLinha = r.map(c => {
+          if (c instanceof Date) return c.toISOString();
+          return c == null ? "" : String(c).trim();
+        }).join("§");
+        if (visto.has(chaveLinha)) { ignoradasDup++; continue; }
+        visto.add(chaveLinha);
+
+        const codigo     = limpaTexto(r[iCodProd]);
+        const descricao  = limpaTexto(r[iDescr]);
+        const dataISO    = toISO(r[iDtFat]);
+        const qtde       = Number(r[iQt]) || 0;
+        const vlTotal    = Number(r[iPVenda]) || 0;   // PVENDA = valor TOTAL da linha
+        const clienteCod = limpaTexto(r[iCodCli]);
+        const cliente    = limpaTexto(r[iCliente]);
+        const vendedor   = limpaTexto(r[iRca]);
+
+        if (!codigo)  { semCodigo++; continue; }
+        if (!dataISO) { semData++;   continue; }
+        if (qtde === 0) { semQtde++; continue; }
+
+        const precoVenda = vlTotal / qtde;             // unitário derivado
+
+        // Procura item no cadastro p/ pegar regime tributário e calcular imposto
+        const item = state.itens.find(it => String(it.codigo) === String(codigo));
+        if (!item) semItem.add(codigo);
+
+        let impostoUnit = 0;
+        if (item) {
+          const a = aliqsItem(item);
+          const pctImp = ((a.pis||0) + (a.cofins||0) + (a.icmsEf||0)) / 100;
+          impostoUnit = precoVenda * pctImp;
+        }
+        const impostoTotal = qtde * impostoUnit;
+
+        // docto único (e idempotente em re-importações da mesma planilha)
+        const doctoBase = `8005-${clienteCod}-${dataISO}-${codigo}`;
+        let docto = doctoBase, suf = 1;
+        // se já existe outra venda no state OU nesta importação com esse docto,
+        // adiciona sufixo até ficar único
+        const existeNoState = d => (state.vendas||[]).some(v => v.docto === d);
+        const existeNoLote  = d => novasVendas.some(v => v.docto === d);
+        while (existeNoState(docto) || existeNoLote(docto)) {
+          suf++;
+          docto = `${doctoBase}-${suf}`;
+        }
+
+        novasVendas.push({
+          id:         uuid(),
+          docto,
+          data:       dataISO,
+          cliente,
+          clienteCod,
+          vendedor,
+          origem:     'rel8005',
+          itens: [{
+            codigo,
+            descricao,
+            itemId:       item ? item.id : null,
+            qtde:         Math.round(qtde * 1e6) / 1e6,
+            precoVenda:   Math.round(precoVenda * 1e6) / 1e6,
+            vlVendaTotal: Math.round(vlTotal * 1e4) / 1e4,
+            impostoTotal: Math.round(impostoTotal * 1e4) / 1e4,
+            impostoUnit:  Math.round(impostoUnit * 1e6) / 1e6,
+            comissaoUnit: 0,
+          }],
         });
-        const venda = { id, ...v, itens };
-        state.vendas.push(venda);
-        sincronizarMovimentosVenda(venda);
-        adicionadas++;
-      });
+      }
+
+      if (novasVendas.length === 0) {
+        let msg = "Nenhuma venda extraída do Relatório 8005.";
+        if (ignoradasDup) msg += `\n• ${ignoradasDup} linha(s) duplicada(s) ignorada(s)`;
+        if (semData)      msg += `\n• ${semData} sem data válida`;
+        if (semQtde)      msg += `\n• ${semQtde} com quantidade zero`;
+        if (semCodigo)    msg += `\n• ${semCodigo} sem código de produto`;
+        alert(msg);
+        return;
+      }
+
+      // Aplica no state e sincroniza movimentos S
+      novasVendas
+        .sort((a,b) => (a.data||"").localeCompare(b.data||""))
+        .forEach(v => {
+          state.vendas.push(v);
+          sincronizarMovimentosVenda(v);
+        });
 
       persist();
       renderAll();
 
-      let msg = `✅ Importação concluída!\n\n• ${adicionadas} vendas importadas`;
-      if (ignoradas)   msg += `\n• ${ignoradas} ignoradas (já existiam)`;
-      if (semItem.size) msg += `\n• ⚠️ ${semItem.size} código(s) sem cadastro: ${[...semItem].join(', ')}`;
+      let msg = `✅ Relatório 8005 importado!\n\n• ${novasVendas.length} venda(s) adicionada(s)`;
+      if (ignoradasDup) msg += `\n• ${ignoradasDup} duplicata(s) ignorada(s)`;
+      if (semData)      msg += `\n• ${semData} sem data válida`;
+      if (semQtde)      msg += `\n• ${semQtde} com quantidade zero`;
+      if (semCodigo)    msg += `\n• ${semCodigo} sem código de produto`;
+      if (semItem.size) {
+        const lista = [...semItem].slice(0, 10).join(', ');
+        const extra = semItem.size > 10 ? ` e mais ${semItem.size-10}` : '';
+        msg += `\n\n⚠️ ${semItem.size} código(s) sem cadastro de item: ${lista}${extra}`;
+        msg += `\n   (vendas foram criadas, mas CMV/imposto ficam zerados até o item ser cadastrado)`;
+      }
       alert(msg);
 
     } catch(err) {
       console.error("importFaturamentoXLSX:", err);
-      alert("Erro ao processar planilha:\n" + err.message);
+      alert("Erro ao processar Relatório 8005:\n" + err.message);
     }
   };
   reader.readAsArrayBuffer(file);
@@ -6004,9 +6105,13 @@ async function checkSession() {
   }
 })();
 </script>
+
 <script>/* LZ-String 1.5.0 — inlined, sem dependência de CDN */
 var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",n="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$",e={};function t(r,o){if(!e[r]){e[r]={};for(var n=0;n<r.length;n++)e[r][r.charAt(n)]=n}return e[r][o]}var i={compressToBase64:function(r){if(null==r)return"";var n=i._compress(r,6,function(r){return o.charAt(r)});switch(n.length%4){default:case 0:return n;case 1:return n+"===";case 2:return n+"==";case 3:return n+"="}},decompressFromBase64:function(r){return null==r?"":""==r?null:i._decompress(r.length,32,function(n){return t(o,r.charAt(n))})},compressToUTF16:function(o){return null==o?"":i._compress(o,15,function(o){return r(o+32)})+" "},decompressFromUTF16:function(r){return null==r?"":""==r?null:i._decompress(r.length,16384,function(o){return r.charCodeAt(o)-32})},compressToUint8Array:function(r){for(var o=i.compress(r),n=new Uint8Array(2*o.length),e=0,t=o.length;e<t;e++){var s=o.charCodeAt(e);n[2*e]=s>>>8,n[2*e+1]=s%256}return n},decompressFromUint8Array:function(o){if(null==o)return i.decompress(o);for(var n=new Array(o.length/2),e=0,t=n.length;e<t;e++)n[e]=256*o[2*e]+o[2*e+1];var s=[];return n.forEach(function(o){s.push(r(o))}),i.decompress(s.join(""))},compressToEncodedURIComponent:function(r){return null==r?"":i._compress(r,6,function(r){return n.charAt(r)})},decompressFromEncodedURIComponent:function(r){return null==r?"":""==r?null:(r=r.replace(/ /g,"+"),i._decompress(r.length,32,function(o){return t(n,r.charAt(o))}))},compress:function(o){return i._compress(o,16,function(o){return r(o)})},_compress:function(r,o,n){if(null==r)return"";var e,t,i,s={},u={},a="",p="",c="",l=2,f=3,h=2,d=[],m=0,v=0;for(i=0;i<r.length;i+=1)if(a=r.charAt(i),Object.prototype.hasOwnProperty.call(s,a)||(s[a]=f++,u[a]=!0),p=c+a,Object.prototype.hasOwnProperty.call(s,p))c=p;else{if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++),s[p]=f++,c=String(a)}if(""!==c){if(Object.prototype.hasOwnProperty.call(u,c)){if(c.charCodeAt(0)<256){for(e=0;e<h;e++)m<<=1,v==o-1?(v=0,d.push(n(m)),m=0):v++;for(t=c.charCodeAt(0),e=0;e<8;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}else{for(t=1,e=0;e<h;e++)m=m<<1|t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t=0;for(t=c.charCodeAt(0),e=0;e<16;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1}0==--l&&(l=Math.pow(2,h),h++),delete u[c]}else for(t=s[c],e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;0==--l&&(l=Math.pow(2,h),h++)}for(t=2,e=0;e<h;e++)m=m<<1|1&t,v==o-1?(v=0,d.push(n(m)),m=0):v++,t>>=1;for(;;){if(m<<=1,v==o-1){d.push(n(m));break}v++}return d.join("")},decompress:function(r){return null==r?"":""==r?null:i._decompress(r.length,32768,function(o){return r.charCodeAt(o)})},_decompress:function(o,n,e){var t,i,s,u,a,p,c,l=[],f=4,h=4,d=3,m="",v=[],g={val:e(0),position:n,index:1};for(t=0;t<3;t+=1)l[t]=t;for(s=0,a=Math.pow(2,2),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;c=r(s);break;case 2:return""}for(l[3]=c,i=c,v.push(c);;){if(g.index>o)return"";for(s=0,a=Math.pow(2,d),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;switch(c=s){case 0:for(s=0,a=Math.pow(2,8),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 1:for(s=0,a=Math.pow(2,16),p=1;p!=a;)u=g.val&g.position,g.position>>=1,0==g.position&&(g.position=n,g.val=e(g.index++)),s|=(u>0?1:0)*p,p<<=1;l[h++]=r(s),c=h-1,f--;break;case 2:return v.join("")}if(0==f&&(f=Math.pow(2,d),d++),l[c])m=l[c];else{if(c!==h)return null;m=i+i.charAt(0)}v.push(m),l[h++]=i+m.charAt(0),i=m,0==--f&&(f=Math.pow(2,d),d++)}}};return i}();"function"==typeof define&&define.amd?define(function(){return LZString}):"undefined"!=typeof module&&null!=module?module.exports=LZString:"undefined"!=typeof angular&&null!=angular&&angular.module("LZString",[]).factory("LZString",function(){return LZString});
 </script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
 </body>
 </html>
+Importação Vendas: usar Relatório 8005

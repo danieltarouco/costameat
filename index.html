@@ -2207,16 +2207,23 @@ async function importRel218PDF(event) {
       return { peso: last5[0], volume: last5[1], qtde: last5[2], vlrFin: last5[3], vlEntrada: last5[4] };
     }
 
-    const reDataCod    = /^(\d{2}\/\d{2}\/\d{4})\s+(\d{3,8})\s+(.+)$/;
-    const reSubFornec  = /Produtos\s+Listados\s+no\s+Depto.*Total/i;     // subtotal por fornecedor (dentro do depto)
-    const reSubDept    = /Produtos\s+Listados\s+do\s+Fornecedor.*Total/i; // subtotal por departamento
-    const reTotalGeral = /Total\s+Geral/i;
+    // Códigos de produto podem ter 1-8 dígitos (ex: "28" = ASA DE FRANGO existe no cadastro).
+    // O antigo {3,8} ignorava silenciosamente esses itens.
+    const reDataCod    = /^(\d{2}\/\d{2}\/\d{4})\s+(\d{1,8})\s+(.+)$/;
+    // Formatos antigos do Rel.218 (mantidos para compat):
+    const reSubFornecAntigo = /Produtos\s+Listados\s+no\s+Depto.*Total/i;
+    const reSubDeptAntigo   = /Produtos\s+Listados\s+do\s+Fornecedor.*Total/i;
+    // Formato novo (2026+): supplier e dept usam o mesmo rótulo "X Produto(s) Listado(s) Total :"
+    // Distinguidos por máquina de estado (dois subtotais consecutivos = o segundo é o do dept).
+    const reSubGenerico = /Produto\(s\)\s+Listado\(s\).*Total/i;
+    const reTotalGeral  = /Total\s+Geral/i;
     const EMB_UNITS = new Set(["KG","KH","PC","UN","CX","FD","BD","GF","LT","DZ","FR","PCT","SC"]);
 
     let deptCod = "";
     let deptNome = "";
     let fornecCod = "";
     let fornecNome = "";
+    let lastWasSubtotal = false;  // pra distinguir supplier vs dept subtotal no formato novo
 
     const resultados = [];          // linhas de produto parseadas
     const fornecedoresLidos = {};   // { codFornec: nomeFornec }
@@ -2230,24 +2237,44 @@ async function importRel218PDF(event) {
       if (reTotalGeral.test(line)) {
         const t = pegaTotais5(line);
         if (t) { totalGeral = t; console.log("[Rel.218] Total Geral:", t); }
+        lastWasSubtotal = true;
         continue;
       }
-      // ---- SUBTOTAL POR DEPARTAMENTO (antes de subtotal fornec, pois ambas contêm "Produtos Listados") ----
-      if (reSubDept.test(line)) {
+      // ---- SUBTOTAL POR DEPARTAMENTO (formato antigo, rótulo explícito) ----
+      if (reSubDeptAntigo.test(line)) {
         const t = pegaTotais5(line);
         if (t && deptCod) {
           subtotaisDept[deptCod] = t;
-          console.log(`[Rel.218] Subtotal dept ${deptCod}:`, t);
+          console.log(`[Rel.218] Subtotal dept ${deptCod} (formato antigo):`, t);
         }
+        lastWasSubtotal = true;
         continue;
       }
-      // ---- SUBTOTAL POR FORNECEDOR ----
-      if (reSubFornec.test(line)) {
+      // ---- SUBTOTAL POR FORNECEDOR (formato antigo) ----
+      if (reSubFornecAntigo.test(line)) {
         const t = pegaTotais5(line);
         if (t && deptCod && fornecCod) {
           subtotaisFornec[`${deptCod}|${fornecCod}`] = t;
-          console.log(`[Rel.218] Subtotal ${deptCod}|${fornecCod}:`, t);
+          console.log(`[Rel.218] Subtotal ${deptCod}|${fornecCod} (formato antigo):`, t);
         }
+        lastWasSubtotal = true;
+        continue;
+      }
+      // ---- SUBTOTAL GENÉRICO (formato novo: rótulo único pra ambos) ----
+      // Regra: se a linha imediatamente anterior já foi um subtotal, este é o subtotal de DEPT;
+      // senão é o subtotal de FORNECEDOR (acabou de fechar os rows daquele fornec).
+      if (reSubGenerico.test(line)) {
+        const t = pegaTotais5(line);
+        if (t) {
+          if (lastWasSubtotal && deptCod) {
+            subtotaisDept[deptCod] = t;
+            console.log(`[Rel.218] Subtotal dept ${deptCod} (formato novo, inferido):`, t);
+          } else if (deptCod && fornecCod) {
+            subtotaisFornec[`${deptCod}|${fornecCod}`] = t;
+            console.log(`[Rel.218] Subtotal ${deptCod}|${fornecCod} (formato novo, inferido):`, t);
+          }
+        }
+        lastWasSubtotal = true;
         continue;
       }
       // ---- DEPARTAMENTO ----
@@ -2258,6 +2285,7 @@ async function importRel218PDF(event) {
           fornecCod = ""; fornecNome = "";
           console.log(`[Rel.218] DEPARTAMENTO ${deptCod} ${deptNome}`);
         }
+        lastWasSubtotal = false;
         continue;
       }
       // ---- FORNECEDOR ----
@@ -2268,6 +2296,7 @@ async function importRel218PDF(event) {
           fornecedoresLidos[fornecCod] = fornecNome;
           console.log(`[Rel.218] FORNECEDOR ${fornecCod} ${fornecNome}`);
         }
+        lastWasSubtotal = false;
         continue;
       }
 
@@ -2336,6 +2365,7 @@ async function importRel218PDF(event) {
         deptNome,
         fornecCod, fornecNome,
       });
+      lastWasSubtotal = false;  // data row reseta o estado pro state-machine dos subtotais
     }
 
     console.log(`[Rel.218] Parseadas ${resultados.length} linhas. Ignoradas: ${linhasIgnoradas.length}.`);

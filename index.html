@@ -2300,14 +2300,18 @@ async function importRel218PDF(event) {
       // Layout do Rel.218 ancorado em EMB, para FRENTE:
       //   embFound - 1     = Filial
       //   embFound + 0     = Embalagem (KG/CX/...)
-      //   embFound + 1     = Peso (Kg)
+      //   embFound + 1     = Peso (Kg)              ← peso real (com decimais)
       //   embFound + 2     = Volume (m3)
-      //   embFound + 3     = Qtde Entr.        ← aqui
-      //   embFound + 4     = Pr Unitário        ← aqui
+      //   embFound + 3     = Qtde Entr.             ← qtde arredondada (informativa)
+      //   embFound + 4     = Pr Unitário            ← preço de contrato (informativo)
       //   embFound + 5..N-1= colunas financeiras (Ct Fin Ant, C Fin Atual, Vlr Fin Atual, Vl Entrada)
-      //   numericEnd - 1   = Vl. Entrada (última numérica, valor real pago)
+      //   numericEnd - 1   = Vl. Entrada            ← VALOR AUTORITATIVO (= PrUnit × Peso real, já calculado pelo ERP)
       //   numericEnd       = NF (*XXXXX), já tirado
       //   numericEnd + 1   = E, já tirado
+      //
+      // IMPORTANTE: o ERP calcula Vl.Entrada usando o PESO real, não a Qtde arredondada.
+      // Por isso usamos Vl.Entrada como fonte da verdade e derivamos prunit = Vl.Entrada / Qtde.
+      // Se calculássemos valor = qtde × prunit, dava diferença de centavos contra o Total Geral.
       if (numericEnd - embFound < 5) {
         linhasIgnoradas.push({ line, motivo: "poucas colunas numéricas após emb" });
         continue;
@@ -2315,17 +2319,18 @@ async function importRel218PDF(event) {
       const emb           = tokens[embFound].toUpperCase();
       const descricao     = tokens.slice(0, Math.max(0, embFound - 1)).join(" "); // exclui filial
       const qtde          = parseBR(tokens[embFound + 3]);
-      const prunit        = parseBR(tokens[embFound + 4]);
-      const vlEntradaPdf  = parseBR(tokens[numericEnd - 1]);
+      const prunitPdf     = parseBR(tokens[embFound + 4]);            // diagnóstico
+      const vlEntrada     = parseBR(tokens[numericEnd - 1]);          // valor real pago (autoritativo)
+      const prunit        = qtde > 0 ? vlEntrada / qtde : prunitPdf;  // unitário derivado
 
       if (!codprod || qtde <= 0) { linhasIgnoradas.push({ line, motivo: "código ou qtde inválidos" }); continue; }
 
       resultados.push({
         data: toISO(dtRaw),
         codprod, descricao, emb,
-        qtde, prunit,
-        valor: qtde * prunit,
-        vlEntradaPdf,
+        qtde, prunit, prunitPdf,
+        valor: vlEntrada,            // ← agora usa Vl.Entrada do PDF, casa com Total Geral
+        vlEntradaPdf: vlEntrada,
         nf,
         dept: deptCod,
         deptNome,

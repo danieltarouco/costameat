@@ -1941,7 +1941,18 @@ function renderAll() {
 
 /* ======================= PAINEL — visão do mês ======================= */
 // rcaCod que identifica vendas "Cayena"; demais são Equipe Interna.
-const PAINEL_CAYENA_RCA = "88";
+const PAINEL_CAYENA_RCA = "1400";
+
+// Extrai o código RCA de uma venda. Cobre 3 origens:
+//   - R322 import:  v.rcaCod já preenchido
+//   - Rel.8005 XLSX: v.vendedor = "1400 - NOME DO VENDEDOR" (string única)
+//   - Venda manual: v.rcaCod ou v.vendedor (formato livre)
+function painelVendaRca(v) {
+  if (v && v.rcaCod) return String(v.rcaCod).trim();
+  const vend = String((v && v.vendedor) || "").trim();
+  const m = vend.match(/^(\d+)/);     // primeiro número da string
+  return m ? m[1] : "";
+}
 
 let painelAnoMes = (() => {
   const d = new Date();
@@ -2041,7 +2052,7 @@ function renderPainel() {
     impTotal += r.imposto;
     comTotal += r.comissao;
 
-    const isCayena = String(v.rcaCod || "").trim() === PAINEL_CAYENA_RCA;
+    const isCayena = painelVendaRca(v) === PAINEL_CAYENA_RCA;
     if (isCayena) recCayena += r.receita;
     else          recInterna += r.receita;
 
@@ -4601,6 +4612,11 @@ function importFaturamentoXLSX(event) {
           docto = `${doctoBase}-${suf}`;
         }
 
+        // Parseia o campo RCA — pode vir como "1400 - NOME" ou só "1400" ou "1400 NOME"
+        const mRcaParse = vendedor.match(/^(\d+)\s*(?:[-–]\s*)?(.*)$/);
+        const rcaCod  = mRcaParse ? mRcaParse[1] : "";
+        const rcaNome = mRcaParse ? (mRcaParse[2] || "").trim() : "";
+
         novasVendas.push({
           id:         uuid(),
           docto,
@@ -4608,6 +4624,8 @@ function importFaturamentoXLSX(event) {
           cliente,
           clienteCod,
           vendedor,
+          rcaCod,
+          rcaNome,
           origem:     'rel8005',
           itens: [{
             codigo,

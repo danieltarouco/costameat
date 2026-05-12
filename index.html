@@ -62,7 +62,7 @@
 
 .tabs {
 background: #fff;
-border-bottom: 1px solid var(–border);
+border-bottom: 1px solid var(--border);
 padding: 0 24px;
 display: flex;
 gap: 0;
@@ -74,14 +74,14 @@ padding: 12px 16px;
 cursor: pointer;
 font-size: 13px;
 font-weight: 500;
-color: var(–text-soft);
+color: var(--text-soft);
 border-bottom: 2px solid transparent;
 white-space: nowrap;
 }
-.tab:hover { color: var(–text); background: #f8fafc; }
+.tab:hover { color: var(--text); background: #f8fafc; }
 .tab.active {
-color: var(–primary);
-border-bottom-color: var(–primary);
+color: var(--primary);
+border-bottom-color: var(--primary);
 }
 
 main { padding: 20px 24px 60px; max-width: 1600px; margin: 0 auto; }
@@ -95,14 +95,14 @@ gap: 12px;
 margin-bottom: 20px;
 }
 .kpi {
-background: var(–bg-card);
-border: 1px solid var(–border);
+background: var(--bg-card);
+border: 1px solid var(--border);
 border-radius: 8px;
 padding: 14px 16px;
 }
-.kpi .label { color: var(–text-soft); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi .label { color: var(--text-soft); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
 .kpi .value { font-size: 20px; font-weight: 600; margin-top: 4px; }
-.kpi .hint { font-size: 11px; color: var(–text-muted); margin-top: 2px; }
+.kpi .hint { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 
 .toolbar {
 display: flex;
@@ -113,7 +113,7 @@ margin-bottom: 12px;
 }
 .toolbar input[type=text], .toolbar select {
 padding: 7px 10px;
-border: 1px solid var(–border-strong);
+border: 1px solid var(--border-strong);
 border-radius: 6px;
 font-size: 13px;
 background: #fff;
@@ -122,7 +122,7 @@ background: #fff;
 .btn {
 padding: 7px 12px;
 border-radius: 6px;
-border: 1px solid var(–border-strong);
+border: 1px solid var(--border-strong);
 background: #fff;
 font-size: 13px;
 cursor: pointer;
@@ -130,20 +130,20 @@ transition: all .15s;
 }
 .btn:hover { background: #f8fafc; }
 .btn.primary {
-background: var(–primary);
-border-color: var(–primary);
+background: var(--primary);
+border-color: var(--primary);
 color: #fff;
 }
-.btn.primary:hover { background: var(–primary-hover); }
-.btn.danger { color: var(–danger); border-color: #fca5a5; }
+.btn.primary:hover { background: var(--primary-hover); }
+.btn.danger { color: var(--danger); border-color: #fca5a5; }
 .btn.danger:hover { background: #fee2e2; }
-.btn.ghost { background: transparent; border-color: transparent; color: var(–text-soft); }
-.btn.ghost:hover { background: #f1f5f9; color: var(–text); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--text-soft); }
+.btn.ghost:hover { background: #f1f5f9; color: var(--text); }
 .btn.small { padding: 4px 8px; font-size: 12px; }
 
 .card {
-background: var(–bg-card);
-border: 1px solid var(–border);
+background: var(--bg-card);
+border: 1px solid var(--border);
 border-radius: 8px;
 overflow: hidden;
 }
@@ -158,30 +158,30 @@ font-weight: 600;
 font-size: 11px;
 text-transform: uppercase;
 letter-spacing: 0.3px;
-color: var(–text-soft);
-border-bottom: 1px solid var(–border);
+color: var(--text-soft);
+border-bottom: 1px solid var(--border);
 position: sticky; top: 0; z-index: 2;
 }
 tbody td {
 padding: 8px 12px;
-border-bottom: 1px solid var(–border);
+border-bottom: 1px solid var(--border);
 vertical-align: middle;
 }
 tbody tr:hover { background: #f8fafc; }
-tbody tr:nth-child(even) { background: var(–row-alt); }
+tbody tr:nth-child(even) { background: var(--row-alt); }
 tbody tr:nth-child(even):hover { background: #f1f5f9; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
-.muted { color: var(–text-muted); }
+.muted { color: var(--text-muted); }
 .chip {
 display: inline-block;
-background: var(–chip);
+background: var(--chip);
 color: #0369a1;
 padding: 2px 8px;
 border-radius: 10px;
 font-size: 11px;
 font-weight: 500;
 }
-.chip.gray { background: #f1f5f9; color: var(–text-soft); }
+.chip.gray { background: #f1f5f9; color: var(--text-soft); }
 .chip.green { background: #dcfce7; color: #166534; }
 .chip.orange { background: #fed7aa; color: #9a3412; }
 
@@ -194,9 +194,9 @@ font-size: 13px;
 border-radius: 4px;
 font-family: inherit;
 }
-input.inline:hover, select.inline:hover { border-color: var(–border); }
+input.inline:hover, select.inline:hover { border-color: var(--border); }
 input.inline:focus, select.inline:focus {
-border-color: var(–primary);
+border-color: var(--primary);
 background: #fff;
 outline: none;
 }
@@ -222,20 +222,20 @@ box-shadow: 0 20px 60px rgba(0,0,0,0.25);
 }
 .modal header {
 background: #fff;
-color: var(–text);
+color: var(--text);
 padding: 14px 18px;
-border-bottom: 1px solid var(–border);
+border-bottom: 1px solid var(--border);
 position: static;
 }
 .modal header h2 { margin: 0; font-size: 15px; font-weight: 600; }
 .modal .body { padding: 18px; }
-.modal .footer { padding: 12px 18px; border-top: 1px solid var(–border); display: flex; justify-content: flex-end; gap: 8px; }
+.modal .footer { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
 .form-row { margin-bottom: 12px; }
-.form-row label { display: block; font-size: 12px; color: var(–text-soft); margin-bottom: 4px; font-weight: 500; }
+.form-row label { display: block; font-size: 12px; color: var(--text-soft); margin-bottom: 4px; font-weight: 500; }
 .form-row input, .form-row select, .form-row textarea {
 width: 100%;
 padding: 7px 10px;
-border: 1px solid var(–border-strong);
+border: 1px solid var(--border-strong);
 border-radius: 6px;
 font-size: 13px;
 font-family: inherit;
@@ -253,14 +253,14 @@ cursor: pointer;
 }
 .tree .node:hover { background: #f1f5f9; }
 .tree .node.group { font-weight: 600; }
-.tree .node.subgroup { color: var(–text-soft); }
-.tree .count { font-size: 11px; color: var(–text-muted); margin-left: auto; }
-.tree .toggle { width: 14px; color: var(–text-muted); }
+.tree .node.subgroup { color: var(--text-soft); }
+.tree .count { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+.tree .toggle { width: 14px; color: var(--text-muted); }
 
 .split { display: grid; grid-template-columns: 320px 1fr; gap: 16px; }
 @media(max-width: 900px) { .split { grid-template-columns: 1fr; } }
 
-.badge-dept { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: #f1f5f9; color: var(–text-soft); }
+.badge-dept { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: #f1f5f9; color: var(--text-soft); }
 .tax-input { width: 64px !important; text-align: right; }
 .alert {
 padding: 10px 12px;
@@ -278,11 +278,11 @@ background: #f8fafc;
 cursor: pointer;
 font-weight: 600;
 font-size: 13px;
-border: 1px solid var(–border);
+border: 1px solid var(--border);
 border-radius: 6px;
 }
 details.dept-block[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-details.dept-block > div { border: 1px solid var(–border); border-top: none; border-radius: 0 0 6px 6px; }
+details.dept-block > div { border: 1px solid var(--border); border-top: none; border-radius: 0 0 6px 6px; }
 
 .footer-total {
 background: #0f172a;
@@ -291,9 +291,9 @@ color: #fff;
 .footer-total td { padding: 10px 12px; font-weight: 600; }
 
 .hidden { display: none !important; }
-.margin-pos { color: var(–ok); font-weight: 600; }
-.margin-warn { color: var(–warn); font-weight: 600; }
-.margin-neg { color: var(–danger); font-weight: 600; }
+.margin-pos { color: var(--ok); font-weight: 600; }
+.margin-warn { color: var(--warn); font-weight: 600; }
+.margin-neg { color: var(--danger); font-weight: 600; }
 
 .chip-toggle {
 display: inline-flex;
@@ -307,12 +307,12 @@ border: none;
 padding: 4px 10px;
 font-size: 12px;
 cursor: pointer;
-color: var(–text-soft);
+color: var(--text-soft);
 border-radius: 4px;
 }
 .chip-toggle button.active {
 background: #fff;
-color: var(–text);
+color: var(--text);
 box-shadow: 0 1px 2px rgba(0,0,0,0.08);
 }
 
@@ -333,11 +333,11 @@ text-align: center;
 font-size: 28px; font-weight: 700; color: #0f766e;
 letter-spacing: -0.5px; margin-bottom: 4px;
 }
-.login-subtitle { font-size: 13px; color: var(–text-soft); margin-bottom: 28px; }
+.login-subtitle { font-size: 13px; color: var(--text-soft); margin-bottom: 28px; }
 .login-field { text-align: left; margin-bottom: 16px; }
-.login-field label { display: block; font-size: 12px; font-weight: 600; color: var(–text-soft); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.login-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-soft); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 .login-field input {
-width: 100%; padding: 10px 12px; border: 1px solid var(–border-strong);
+width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong);
 border-radius: 8px; font-size: 14px; transition: border .15s;
 outline: none;
 }
@@ -349,7 +349,7 @@ cursor: pointer; margin-top: 8px; transition: background .15s;
 }
 .login-btn:hover { background: #115e59; }
 .login-error {
-color: var(–danger); font-size: 13px; margin-top: 12px;
+color: var(--danger); font-size: 13px; margin-top: 12px;
 min-height: 18px; display: none;
 }
 .login-error.visible { display: block; }
@@ -698,6 +698,8 @@ cursor: pointer; color: #fff;
       </div>
       <button class="btn" onclick="document.getElementById('importRel218PDFFile').click()" title="Importar Rel.218 — Entrada de Mercadoria (PDF)">⬆ Importar Rel.218 (PDF)</button>
       <input id="importRel218PDFFile" type="file" accept=".pdf,application/pdf" onchange="importRel218PDF(event)" style="display:none">
+      <button class="btn" onclick="openAuditImport()" title="Auditoria de movimentos suspeitos (importação corrompida)">🔍 Auditoria</button>
+      <button class="btn danger" id="btn-del-nfs" onclick="deleteFilteredEntries()" title="Excluir todas as NFs de entrada que estão visíveis com o filtro atual">🗑 Excluir NFs filtradas</button>
       <div style="margin-left:auto" class="muted" id="count-compras"></div>
     </div>
     <div class="kpis" style="margin-bottom:12px;">
@@ -1421,6 +1423,41 @@ cursor: pointer; color: #fff;
     <div class="footer">
       <button class="btn ghost" onclick="closeModal('modal-nf-edit')">Cancelar</button>
       <button class="btn primary" onclick="saveNFEdit()">Salvar ajustes</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PREVIEW DA IMPORTAÇÃO Rel.218 -->
+<div class="modal-backdrop" id="modal-import-preview">
+  <div class="modal" style="max-width:min(1100px,96vw);">
+    <header>
+      <h2>Pré-visualização — Importação Rel.218</h2>
+      <div class="muted" style="font-size:12px;margin-top:2px;">A importação só é gravada após reconciliação contra os totais do PDF.</div>
+    </header>
+    <div class="body" id="import-preview-body" style="max-height:75vh;overflow:auto;">
+      <!-- preenchido por renderImportPreview() -->
+    </div>
+    <div class="footer">
+      <button class="btn ghost" onclick="cancelImportRel218()">Cancelar</button>
+      <button class="btn danger" id="import-preview-force" style="display:none;" onclick="confirmImportRel218(true)" title="Importa mesmo com divergência — use com cuidado">⚠ Forçar mesmo assim</button>
+      <button class="btn primary" id="import-preview-confirm" onclick="confirmImportRel218(false)">Confirmar importação</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: AUDITORIA DE IMPORTAÇÕES SUSPEITAS -->
+<div class="modal-backdrop" id="modal-audit-import">
+  <div class="modal" style="max-width:min(1100px,96vw);">
+    <header>
+      <h2>Auditoria de movimentos suspeitos</h2>
+      <div class="muted" style="font-size:12px;margin-top:2px;">Movimentos com qtde, valor unitário ou valor total absurdos — provavelmente vieram de importação corrompida.</div>
+    </header>
+    <div class="body" id="audit-import-body" style="max-height:75vh;overflow:auto;">
+      <!-- preenchido por renderAuditImport() -->
+    </div>
+    <div class="footer">
+      <button class="btn ghost" onclick="closeModal('modal-audit-import')">Fechar</button>
+      <button class="btn danger" id="audit-import-delete" onclick="deleteAuditSelected()">Excluir selecionados</button>
     </div>
   </div>
 </div>
@@ -2161,85 +2198,142 @@ async function importRel218PDF(event) {
       if (p.length === 3 && p[2].length === 4) return `${p[2]}-${p[1].padStart(2,"0")}-${p[0].padStart(2,"0")}`;
       return d;
     }
+    // Pega os últimos 5 números BR de uma linha de totais (peso, volume, qtde, vlrFin, vlEntrada)
+    function pegaTotais5(line) {
+      const tokens = line.split(/\s+/);
+      const nums = tokens.filter(t => /^\d{1,3}(\.\d{3})*(,\d+)?$|^\d+(,\d+)?$/.test(t));
+      if (nums.length < 5) return null;
+      const last5 = nums.slice(-5).map(parseBR);
+      return { peso: last5[0], volume: last5[1], qtde: last5[2], vlrFin: last5[3], vlEntrada: last5[4] };
+    }
 
-    // Linha de dado: começa com data DD/MM/YYYY seguida de código numérico
-    // Formato: DATA CODE DESC ... EMB FILIAL PESO VOLUME QTDE PRUNIT [*NF E]
-    const reDataCod = /^(\d{2}\/\d{2}\/\d{4})\s+(\d{3,8})\s+(.+)$/;
-    const reNF      = /\*?(\d+)\s+E\s*$/;
+    const reDataCod    = /^(\d{2}\/\d{2}\/\d{4})\s+(\d{3,8})\s+(.+)$/;
+    const reSubFornec  = /Produtos\s+Listados\s+no\s+Depto.*Total/i;     // subtotal por fornecedor (dentro do depto)
+    const reSubDept    = /Produtos\s+Listados\s+do\s+Fornecedor.*Total/i; // subtotal por departamento
+    const reTotalGeral = /Total\s+Geral/i;
     const EMB_UNITS = new Set(["KG","KH","PC","UN","CX","FD","BD","GF","LT","DZ","FR","PCT","SC"]);
 
-    let deptAtual = "";
+    let deptCod = "";
+    let deptNome = "";
     let fornecCod = "";
     let fornecNome = "";
 
-    const resultados = []; // { data, codprod, descricao, emb, qtde, prunit, nf, dept, fornecCod, fornecNome }
+    const resultados = [];          // linhas de produto parseadas
+    const fornecedoresLidos = {};   // { codFornec: nomeFornec }
+    const subtotaisFornec = {};     // { "deptCod|fornecCod": {qtde, vlEntrada, ...} }
+    const subtotaisDept   = {};     // { deptCod: {...} }
+    let totalGeral = null;          // {qtde, vlEntrada, ...}
+    const linhasIgnoradas = [];     // [{ line, motivo }]
 
     for (const line of allLines) {
-      // DEPARTAMENTO: XXXXX NOME
-      if (/^DEPARTAMENTO[:\s]+/i.test(line)) {
-        const m = line.match(/DEPARTAMENTO[:\s]+(\d+)\s+(.+)/i);
-        if (m) deptAtual = m[1] + " " + m[2].trim();
+      // ---- TOTAL GERAL (primeiro: contém "Total Geral") ----
+      if (reTotalGeral.test(line)) {
+        const t = pegaTotais5(line);
+        if (t) { totalGeral = t; console.log("[Rel.218] Total Geral:", t); }
         continue;
       }
-      // FORNECEDOR: XXXXX NOME
+      // ---- SUBTOTAL POR DEPARTAMENTO (antes de subtotal fornec, pois ambas contêm "Produtos Listados") ----
+      if (reSubDept.test(line)) {
+        const t = pegaTotais5(line);
+        if (t && deptCod) {
+          subtotaisDept[deptCod] = t;
+          console.log(`[Rel.218] Subtotal dept ${deptCod}:`, t);
+        }
+        continue;
+      }
+      // ---- SUBTOTAL POR FORNECEDOR ----
+      if (reSubFornec.test(line)) {
+        const t = pegaTotais5(line);
+        if (t && deptCod && fornecCod) {
+          subtotaisFornec[`${deptCod}|${fornecCod}`] = t;
+          console.log(`[Rel.218] Subtotal ${deptCod}|${fornecCod}:`, t);
+        }
+        continue;
+      }
+      // ---- DEPARTAMENTO ----
+      if (/^DEPARTAMENTO[:\s]+/i.test(line)) {
+        const m = line.match(/DEPARTAMENTO[:\s]+(\d+)\s+(.+)/i);
+        if (m) {
+          deptCod = m[1]; deptNome = m[2].trim();
+          fornecCod = ""; fornecNome = "";
+          console.log(`[Rel.218] DEPARTAMENTO ${deptCod} ${deptNome}`);
+        }
+        continue;
+      }
+      // ---- FORNECEDOR ----
       if (/^FORNECEDOR[:\s]+/i.test(line)) {
         const m = line.match(/FORNECEDOR[:\s]+(\d+)\s+(.+)/i);
-        if (m) { fornecCod = m[1]; fornecNome = m[2].trim(); }
+        if (m) {
+          fornecCod = m[1]; fornecNome = m[2].trim();
+          fornecedoresLidos[fornecCod] = fornecNome;
+          console.log(`[Rel.218] FORNECEDOR ${fornecCod} ${fornecNome}`);
+        }
         continue;
       }
 
+      // ---- LINHA DE PRODUTO ----
       const mData = line.match(reDataCod);
       if (!mData) continue;
 
-      const dtRaw  = mData[1];
+      const dtRaw   = mData[1];
       const codprod = mData[2];
-      const resto  = mData[3];
+      const resto   = mData[3];
+      const tokens  = resto.split(/\s+/);
 
-      // Extrair NF do final: *XXXXX E ou XXXXX E
-      const mNF = resto.match(reNF);
-      const nf   = mNF ? mNF[1] : "";
-
-      // Tokenizar tudo após código
-      const tokens = resto.split(/\s+/);
-
-      // Encontrar posição da unidade de embalagem (ex: KG, CX, UN...)
-      // Vem logo antes dos campos numéricos finais (filial, peso, volume, qtde, prunit)
-      // Formato: DESC... EMB FILIAL PESO VOLUME QTDE PRUNIT [*NF E]
-      // Dos tokens do final, pular: E, *NF (se houver), prunit, qtde, volume, peso, filial → chegar na EMB
+      // Tira " E" e "*NF" do final, mantém os índices úteis
       let endIdx = tokens.length;
-      // Remover " E" do final
-      if (tokens[endIdx-1] === "E") endIdx--;
-      // Remover "*NF" ou só número se for o NF
-      if (endIdx > 0 && /^\*?\d+$/.test(tokens[endIdx-1])) endIdx--;
-      // Agora os últimos campos: PRUNIT, QTDE, VOLUME, PESO, FILIAL (5 campos numéricos)
-      // porém filial pode ser "1" e os outros decimais BR
+      if (endIdx > 0 && tokens[endIdx-1] === "E") endIdx--;
+      let nf = "";
+      if (endIdx > 0 && /^\*?\d+$/.test(tokens[endIdx-1])) {
+        nf = tokens[endIdx-1].replace(/^\*/, "");
+        endIdx--;
+      }
       const numericEnd = endIdx;
-      // prunit  = tokens[numericEnd-1]
-      // qtde    = tokens[numericEnd-2]
-      // volume  = tokens[numericEnd-3]
-      // peso    = tokens[numericEnd-4]
-      // filial  = tokens[numericEnd-5]
-      // emb     = tokens[numericEnd-6]
-      let embIdx = numericEnd - 6;
-      // Buscar a posição real da embalagem (pode variar)
-      // Vamos procurar de trás para frente pelo primeiro token que é unidade conhecida
+
+      // Acha a coluna EMB (KG/CX/UN...) varrendo de trás pra frente
       let embFound = -1;
       for (let i = numericEnd - 1; i >= 0; i--) {
         if (EMB_UNITS.has(tokens[i].toUpperCase())) { embFound = i; break; }
       }
-      if (embFound === -1) continue; // linha sem unidade reconhecida, pular
+      if (embFound === -1) { linhasIgnoradas.push({ line, motivo: "sem embalagem reconhecida" }); continue; }
 
-      const emb      = tokens[embFound].toUpperCase();
-      const descricao = tokens.slice(0, embFound).join(" ");
-      const prunit   = numericEnd >= 1 ? parseBR(tokens[numericEnd - 1]) : 0;
-      const qtde     = numericEnd >= 2 ? parseBR(tokens[numericEnd - 2]) : 0;
+      // Layout do Rel.218 ancorado em EMB, para FRENTE:
+      //   embFound - 1     = Filial
+      //   embFound + 0     = Embalagem (KG/CX/...)
+      //   embFound + 1     = Peso (Kg)
+      //   embFound + 2     = Volume (m3)
+      //   embFound + 3     = Qtde Entr.        ← aqui
+      //   embFound + 4     = Pr Unitário        ← aqui
+      //   embFound + 5..N-1= colunas financeiras (Ct Fin Ant, C Fin Atual, Vlr Fin Atual, Vl Entrada)
+      //   numericEnd - 1   = Vl. Entrada (última numérica, valor real pago)
+      //   numericEnd       = NF (*XXXXX), já tirado
+      //   numericEnd + 1   = E, já tirado
+      if (numericEnd - embFound < 5) {
+        linhasIgnoradas.push({ line, motivo: "poucas colunas numéricas após emb" });
+        continue;
+      }
+      const emb           = tokens[embFound].toUpperCase();
+      const descricao     = tokens.slice(0, Math.max(0, embFound - 1)).join(" "); // exclui filial
+      const qtde          = parseBR(tokens[embFound + 3]);
+      const prunit        = parseBR(tokens[embFound + 4]);
+      const vlEntradaPdf  = parseBR(tokens[numericEnd - 1]);
 
-      if (!codprod || qtde <= 0) continue;
+      if (!codprod || qtde <= 0) { linhasIgnoradas.push({ line, motivo: "código ou qtde inválidos" }); continue; }
 
-      resultados.push({ data: toISO(dtRaw), codprod, descricao, emb, qtde, prunit, nf, fornecCod, fornecNome });
+      resultados.push({
+        data: toISO(dtRaw),
+        codprod, descricao, emb,
+        qtde, prunit,
+        valor: qtde * prunit,
+        vlEntradaPdf,
+        nf,
+        dept: deptCod,
+        deptNome,
+        fornecCod, fornecNome,
+      });
     }
 
-    console.log("[Rel.218] Linhas parseadas:", resultados.length, resultados.slice(0, 5));
+    console.log(`[Rel.218] Parseadas ${resultados.length} linhas. Ignoradas: ${linhasIgnoradas.length}.`);
 
     if (resultados.length === 0) {
       const amostra = allLines.slice(0, 30).join("\n");
@@ -2247,55 +2341,55 @@ async function importRel218PDF(event) {
       return;
     }
 
-    // Chave de deduplicação: NF|CODPROD
-    const existentes = new Set();
-    state.itens.forEach(it => {
-      (it.movimentos || []).forEach(m => {
-        if (m.tipo === "E" && m.docto) existentes.add(`${m.docto}|${it.codigo}`);
-      });
-    });
+    // ---- Reconciliação contra os totais do PDF ----
+    const TOL_QTDE  = 0.5;   // tolerância em quantidade (kg / un)
+    const TOL_VALOR = 0.50;  // tolerância em R$
 
-    let novasLinhas = 0, ignoradas = 0, itensCriados = 0;
-
-    for (const r of resultados) {
-      const dupKey = `${r.nf}|${r.codprod}`;
-      if (existentes.has(dupKey)) { ignoradas++; continue; }
-      existentes.add(dupKey);
-
-      const vlTot = r.prunit * r.qtde;
-
-      let item = state.itens.find(it => String(it.codigo) === String(r.codprod));
-      if (!item) {
-        item = {
-          id: uuid(), codigo: r.codprod, descricao: r.descricao, dept: "", fornecedor: r.fornecCod,
-          emb: r.emb, ultPreco: null, ultData: null, regimePc: null, regimeIcms: null,
-          saldoQtde: null, saldoCusto: null, saldoData: null, saldoObs: "", movimentos: [],
-          pendenteCadastro: true
-        };
-        state.itens.push(item);
-        itensCriados++;
-      } else {
-        // Atualizar emb se veio do PDF e item não tinha
-        if (!item.emb && r.emb) item.emb = r.emb;
-      }
-
-      // Atualizar último preço
-      if (r.prunit > 0 && (!item.ultData || r.data >= item.ultData)) {
-        item.ultPreco = r.prunit;
-        item.ultData  = r.data;
-      }
-
-      item.movimentos.push({ id: uuid(), tipo: "E", data: r.data, docto: r.nf, lancto: "", qtde: r.qtde, valor: vlTot });
-      novasLinhas++;
+    function somaBucket(filtro) {
+      return resultados.filter(filtro).reduce((acc, r) => ({
+        qtde: acc.qtde + r.qtde,
+        valor: acc.valor + r.valor,
+      }), { qtde: 0, valor: 0 });
     }
 
-    if (novasLinhas === 0) {
-      alert(`⚠️ Nenhuma linha nova importada.\n${ignoradas} linha(s) já existiam (mesma NF + produto).`);
-      return;
+    const reconciliacao = { total: null, fornec: [], dept: [], problemas: [] };
+
+    if (totalGeral) {
+      const somaTot = somaBucket(() => true);
+      const okQ = Math.abs(somaTot.qtde  - totalGeral.qtde)      <= TOL_QTDE;
+      const okV = Math.abs(somaTot.valor - totalGeral.vlEntrada) <= TOL_VALOR;
+      reconciliacao.total = { pdf: totalGeral, parsed: somaTot, okQtde: okQ, okValor: okV };
+      if (!okQ || !okV) reconciliacao.problemas.push("Total Geral diverge do PDF.");
+    } else {
+      reconciliacao.problemas.push("Total Geral não encontrado no PDF — não foi possível auditar o total.");
     }
 
-    persist(); renderAll();
-    alert(`✅ Rel.218 importado!\n• ${novasLinhas} entradas lançadas\n• ${ignoradas} ignoradas (já existiam)\n• ${itensCriados} item(ns) criado(s) automaticamente${itensCriados > 0 ? "\n\n⏳ Acesse a aba Itens para completar o cadastro dos pendentes." : ""}`);
+    for (const key of Object.keys(subtotaisFornec)) {
+      const [d, f] = key.split("|");
+      const pdfSub = subtotaisFornec[key];
+      const soma   = somaBucket(r => r.dept === d && r.fornecCod === f);
+      const okQ    = Math.abs(soma.qtde  - pdfSub.qtde)      <= TOL_QTDE;
+      const okV    = Math.abs(soma.valor - pdfSub.vlEntrada) <= TOL_VALOR;
+      reconciliacao.fornec.push({ dept: d, fornecCod: f, fornecNome: fornecedoresLidos[f] || f, pdf: pdfSub, parsed: soma, okQtde: okQ, okValor: okV });
+      if (!okQ || !okV) reconciliacao.problemas.push(`Fornec ${f} (${fornecedoresLidos[f]||"?"}) dept ${d}: diverge.`);
+    }
+
+    for (const d of Object.keys(subtotaisDept)) {
+      const pdfSub = subtotaisDept[d];
+      const soma   = somaBucket(r => r.dept === d);
+      const okQ    = Math.abs(soma.qtde  - pdfSub.qtde)      <= TOL_QTDE;
+      const okV    = Math.abs(soma.valor - pdfSub.vlEntrada) <= TOL_VALOR;
+      reconciliacao.dept.push({ dept: d, pdf: pdfSub, parsed: soma, okQtde: okQ, okValor: okV });
+      if (!okQ || !okV) reconciliacao.problemas.push(`Dept ${d}: diverge.`);
+    }
+
+    reconciliacao.allOk = reconciliacao.problemas.length === 0;
+
+    // Guarda para o passo de confirmação
+    pendingImportRel218 = { resultados, reconciliacao, fornecedoresLidos, linhasIgnoradas };
+
+    renderImportPreview();
+    openModal("modal-import-preview");
 
   } catch (err) {
     console.error("Erro Rel.218:", err);
@@ -2303,6 +2397,513 @@ async function importRel218PDF(event) {
   } finally {
     if (btn) { btn.textContent = origText; btn.disabled = false; }
   }
+}
+
+/* =================== IMPORTAÇÃO Rel.218 — preview + reconciliação =================== */
+let pendingImportRel218 = null;
+
+function escapeHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function renderImportPreview() {
+  const p = pendingImportRel218;
+  if (!p) return;
+  const { resultados, reconciliacao, fornecedoresLidos, linhasIgnoradas } = p;
+  const root = document.getElementById("import-preview-body");
+  const fmtBR = v => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtQt = v => v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+
+  // Bloco de reconciliação
+  let reconHtml = "";
+
+  if (reconciliacao.total) {
+    const t  = reconciliacao.total;
+    const ok = t.okQtde && t.okValor;
+    reconHtml += `<div style="background:${ok?'#dcfce7':'#fee2e2'};color:${ok?'#166534':'#991b1b'};padding:12px 14px;border-radius:6px;margin-bottom:10px;">
+      <div style="font-weight:600;margin-bottom:4px;">${ok ? '✅ Total Geral confere com o PDF' : '❌ Total Geral DIVERGE do PDF'}</div>
+      <div style="font-size:12px;">
+        Qtde: PDF <b>${fmtQt(t.pdf.qtde)}</b> × parseado <b>${fmtQt(t.parsed.qtde)}</b> (diferença ${fmtQt(t.parsed.qtde - t.pdf.qtde)})<br>
+        Valor: PDF <b>R$ ${fmtBR(t.pdf.vlEntrada)}</b> × parseado <b>R$ ${fmtBR(t.parsed.valor)}</b> (diferença R$ ${fmtBR(t.parsed.valor - t.pdf.vlEntrada)})
+      </div>
+    </div>`;
+  } else {
+    reconHtml += `<div style="background:#fef3c7;color:#78350f;padding:12px 14px;border-radius:6px;margin-bottom:10px;font-size:13px;">
+      ⚠️ Não foi encontrado <b>Total Geral</b> no PDF. Sem auditoria total — confira manualmente.
+    </div>`;
+  }
+
+  // Por departamento
+  if (reconciliacao.dept.length > 0) {
+    const probsD = reconciliacao.dept.filter(d => !d.okQtde || !d.okValor);
+    reconHtml += `<details ${probsD.length > 0 ? "open" : ""} style="margin-bottom:8px;">
+      <summary style="cursor:pointer;font-weight:600;padding:6px 0;">
+        Por Departamento — ${reconciliacao.dept.length - probsD.length} OK / ${probsD.length} divergência(s)
+      </summary>
+      <table style="width:100%;font-size:12px;margin-top:6px;">
+        <thead style="background:#f8fafc;"><tr>
+          <th style="text-align:left;padding:4px 6px;">Dept</th>
+          <th class="num" style="padding:4px 6px;">Qtde PDF</th>
+          <th class="num" style="padding:4px 6px;">Qtde Parsed</th>
+          <th class="num" style="padding:4px 6px;">Valor PDF</th>
+          <th class="num" style="padding:4px 6px;">Valor Parsed</th>
+          <th style="padding:4px 6px;">Status</th>
+        </tr></thead>
+        <tbody>${reconciliacao.dept.map(d => {
+          const ok = d.okQtde && d.okValor;
+          return `<tr style="background:${ok?'transparent':'#fee2e2'};">
+            <td style="padding:4px 6px;">${escapeHtml(d.dept)}</td>
+            <td class="num" style="padding:4px 6px;">${fmtQt(d.pdf.qtde)}</td>
+            <td class="num" style="padding:4px 6px;">${fmtQt(d.parsed.qtde)}</td>
+            <td class="num" style="padding:4px 6px;">R$ ${fmtBR(d.pdf.vlEntrada)}</td>
+            <td class="num" style="padding:4px 6px;">R$ ${fmtBR(d.parsed.valor)}</td>
+            <td style="padding:4px 6px;">${ok ? "✅" : "❌"}</td>
+          </tr>`;
+        }).join("")}</tbody>
+      </table>
+    </details>`;
+  }
+
+  // Por fornecedor
+  if (reconciliacao.fornec.length > 0) {
+    const probsF = reconciliacao.fornec.filter(f => !f.okQtde || !f.okValor);
+    reconHtml += `<details ${probsF.length > 0 ? "open" : ""} style="margin-bottom:8px;">
+      <summary style="cursor:pointer;font-weight:600;padding:6px 0;">
+        Por Fornecedor — ${reconciliacao.fornec.length - probsF.length} OK / ${probsF.length} divergência(s)
+      </summary>
+      <table style="width:100%;font-size:12px;margin-top:6px;">
+        <thead style="background:#f8fafc;"><tr>
+          <th style="text-align:left;padding:4px 6px;">Dept</th>
+          <th style="text-align:left;padding:4px 6px;">Fornec</th>
+          <th class="num" style="padding:4px 6px;">Qtde PDF</th>
+          <th class="num" style="padding:4px 6px;">Qtde Parsed</th>
+          <th class="num" style="padding:4px 6px;">Valor PDF</th>
+          <th class="num" style="padding:4px 6px;">Valor Parsed</th>
+          <th style="padding:4px 6px;">Status</th>
+        </tr></thead>
+        <tbody>${reconciliacao.fornec.map(f => {
+          const ok = f.okQtde && f.okValor;
+          return `<tr style="background:${ok?'transparent':'#fee2e2'};">
+            <td style="padding:4px 6px;">${escapeHtml(f.dept)}</td>
+            <td style="padding:4px 6px;">${escapeHtml(f.fornecCod)} ${escapeHtml(f.fornecNome)}</td>
+            <td class="num" style="padding:4px 6px;">${fmtQt(f.pdf.qtde)}</td>
+            <td class="num" style="padding:4px 6px;">${fmtQt(f.parsed.qtde)}</td>
+            <td class="num" style="padding:4px 6px;">R$ ${fmtBR(f.pdf.vlEntrada)}</td>
+            <td class="num" style="padding:4px 6px;">R$ ${fmtBR(f.parsed.valor)}</td>
+            <td style="padding:4px 6px;">${ok ? "✅" : "❌"}</td>
+          </tr>`;
+        }).join("")}</tbody>
+      </table>
+    </details>`;
+  }
+
+  // Linhas ignoradas (diagnóstico)
+  if (linhasIgnoradas.length > 0) {
+    reconHtml += `<details style="margin-bottom:8px;">
+      <summary style="cursor:pointer;font-weight:600;padding:6px 0;color:var(--warn);">
+        ⚠️ ${linhasIgnoradas.length} linha(s) ignorada(s) durante o parse
+      </summary>
+      <div style="background:#fffbeb;padding:8px;border-radius:4px;margin-top:6px;font-size:11px;font-family:monospace;max-height:200px;overflow:auto;">
+        ${linhasIgnoradas.slice(0, 30).map(l => `<div>[${escapeHtml(l.motivo)}] ${escapeHtml(l.line.substring(0, 200))}</div>`).join("")}
+        ${linhasIgnoradas.length > 30 ? `<div class="muted">... e mais ${linhasIgnoradas.length - 30}</div>` : ""}
+      </div>
+    </details>`;
+  }
+
+  // Amostra das linhas parseadas
+  const sample = resultados.slice(0, 30);
+  const rowsHtml = sample.map(r => `
+    <tr>
+      <td style="padding:4px 6px;">${fmtDate(r.data)}</td>
+      <td style="padding:4px 6px;"><b>${escapeHtml(r.codprod)}</b></td>
+      <td style="padding:4px 6px;">${escapeHtml(r.descricao.length > 38 ? r.descricao.slice(0,38)+"…" : r.descricao)}</td>
+      <td style="padding:4px 6px;">${escapeHtml(r.fornecCod)}</td>
+      <td style="padding:4px 6px;">${escapeHtml(r.dept)}</td>
+      <td style="padding:4px 6px;">${escapeHtml(r.nf)}</td>
+      <td class="num" style="padding:4px 6px;">${fmtQt(r.qtde)}</td>
+      <td class="num" style="padding:4px 6px;">${r.prunit.toLocaleString("pt-BR",{minimumFractionDigits:3, maximumFractionDigits:4})}</td>
+      <td class="num" style="padding:4px 6px;">R$ ${fmtBR(r.valor)}</td>
+    </tr>`).join("");
+
+  root.innerHTML = `
+    ${reconHtml}
+    <div style="margin-top:14px;margin-bottom:6px;">
+      <b>Linhas parseadas:</b> ${resultados.length} ${resultados.length > 30 ? `<span class="muted">(exibindo as 30 primeiras)</span>` : ""}
+    </div>
+    <div style="overflow:auto;max-height:40vh;border:1px solid var(--border);border-radius:6px;">
+      <table style="width:100%;font-size:12px;border-collapse:collapse;">
+        <thead style="background:#f8fafc;position:sticky;top:0;">
+          <tr>
+            <th style="text-align:left;padding:6px;">Data</th>
+            <th style="text-align:left;padding:6px;">Cód</th>
+            <th style="text-align:left;padding:6px;">Descrição</th>
+            <th style="text-align:left;padding:6px;">Fornec</th>
+            <th style="text-align:left;padding:6px;">Dept</th>
+            <th style="text-align:left;padding:6px;">NF</th>
+            <th class="num" style="padding:6px;">Qtde</th>
+            <th class="num" style="padding:6px;">Pr Unit</th>
+            <th class="num" style="padding:6px;">Valor</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>
+  `;
+
+  const btnConfirm = document.getElementById("import-preview-confirm");
+  const btnForce   = document.getElementById("import-preview-force");
+  if (reconciliacao.allOk) {
+    btnConfirm.disabled = false;
+    btnConfirm.textContent = `✅ Confirmar importação (${resultados.length} linhas)`;
+    btnForce.style.display = "none";
+  } else {
+    btnConfirm.disabled = true;
+    btnConfirm.textContent = "❌ Reconciliação falhou";
+    btnForce.style.display = "inline-flex";
+  }
+}
+
+async function confirmImportRel218(forcar) {
+  const p = pendingImportRel218;
+  if (!p) return;
+  const { resultados, reconciliacao } = p;
+  if (!reconciliacao.allOk && !forcar) {
+    alert("Há divergências na reconciliação. Use 'Forçar mesmo assim' se realmente quiser importar.");
+    return;
+  }
+  if (forcar && !reconciliacao.allOk) {
+    const ok = confirm("⚠️ ATENÇÃO\n\nVocê está prestes a importar DADOS COM DIVERGÊNCIAS de reconciliação contra o PDF.\n\n" + reconciliacao.problemas.slice(0, 5).join("\n") + (reconciliacao.problemas.length > 5 ? `\n... e mais ${reconciliacao.problemas.length-5}.` : "") + "\n\nTem certeza?");
+    if (!ok) return;
+  }
+
+  // Dedup por NF|CODPROD
+  const existentes = new Set();
+  state.itens.forEach(it => {
+    (it.movimentos || []).forEach(m => {
+      if (m.tipo === "E" && m.docto) existentes.add(`${m.docto}|${it.codigo}`);
+    });
+  });
+
+  let novasLinhas = 0, ignoradas = 0, itensCriados = 0;
+
+  for (const r of resultados) {
+    const dupKey = `${r.nf}|${r.codprod}`;
+    if (existentes.has(dupKey)) { ignoradas++; continue; }
+    existentes.add(dupKey);
+
+    let item = state.itens.find(it => String(it.codigo) === String(r.codprod));
+    if (!item) {
+      item = {
+        id: uuid(), codigo: r.codprod, descricao: r.descricao, dept: r.dept || "",
+        fornecedor: r.fornecCod, emb: r.emb,
+        ultPreco: null, ultData: null, regimePc: null, regimeIcms: null,
+        saldoQtde: null, saldoCusto: null, saldoData: null, saldoObs: "", movimentos: [],
+        pendenteCadastro: true
+      };
+      state.itens.push(item);
+      itensCriados++;
+    } else {
+      if (!item.emb && r.emb) item.emb = r.emb;
+    }
+
+    if (r.prunit > 0 && (!item.ultData || r.data >= item.ultData)) {
+      item.ultPreco = r.prunit;
+      item.ultData  = r.data;
+    }
+
+    item.movimentos.push({
+      id: uuid(), tipo: "E",
+      data: r.data, docto: r.nf, lancto: "",
+      qtde: r.qtde, valor: r.valor,
+      fornecedor: r.fornecCod,   // Bug A fix: movimento guarda fornec próprio
+    });
+    novasLinhas++;
+  }
+
+  pendingImportRel218 = null;
+  closeModal("modal-import-preview");
+
+  if (novasLinhas === 0) {
+    alert(`⚠️ Nenhuma linha nova importada.\n${ignoradas} linha(s) já existiam (mesma NF + produto).`);
+    return;
+  }
+
+  await persist(); renderAll();
+  const sufixoForcado = (forcar && !reconciliacao.allOk) ? "\n\n⚠️ ATENÇÃO: importação FORÇADA com divergências." : "";
+  const sufixoPendentes = itensCriados > 0 ? "\n\n⏳ Acesse a aba Itens para completar o cadastro dos pendentes." : "";
+  alert(`✅ Rel.218 importado!\n• ${novasLinhas} entradas lançadas\n• ${ignoradas} ignoradas (já existiam)\n• ${itensCriados} item(ns) criado(s) automaticamente${sufixoForcado}${sufixoPendentes}`);
+}
+
+function cancelImportRel218() {
+  pendingImportRel218 = null;
+  closeModal("modal-import-preview");
+}
+
+/* =================== AUDITORIA DE MOVIMENTOS SUSPEITOS =================== */
+// Limiares para "absurdo" — calibrados para distribuidora de alimentos (carnes, queijos).
+// Preços unitários >R$ 500/kg ou quantidades >50.000kg em UMA NF são fortes indícios de corrupção.
+const AUDIT_LIMITES = {
+  qtdeMax:   50000,      // qtde > 50.000 unidades/kg em uma única entrada
+  prunitMax: 500,        // R$ 500 por kg/un (picanha boa é ~R$ 100/kg)
+  valorMax:  1000000,    // R$ 1 milhão em uma única entrada
+};
+
+// Chave composta para identificar movimentos sem id (dados legados do seed).
+function movSignature(mov) {
+  return `${mov.docto||""}|${mov.data||""}|${mov.qtde}|${mov.valor}|${mov.tipo||""}`;
+}
+
+function findAuditMovements() {
+  const suspeitos = [];
+  state.itens.forEach(item => {
+    (item.movimentos || []).forEach((mov, idx) => {
+      if (mov.tipo !== "E") return;
+      const qt = Number(mov.qtde || 0);
+      const vl = Number(mov.valor || 0);
+      const pu = qt > 0 ? vl / qt : 0;
+      const motivos = [];
+      if (qt > AUDIT_LIMITES.qtdeMax)   motivos.push(`qtde ${qt.toLocaleString("pt-BR")} > ${AUDIT_LIMITES.qtdeMax.toLocaleString("pt-BR")}`);
+      if (pu > AUDIT_LIMITES.prunitMax) motivos.push(`R$/un ${pu.toFixed(2)} > ${AUDIT_LIMITES.prunitMax}`);
+      if (vl > AUDIT_LIMITES.valorMax)  motivos.push(`valor R$ ${vl.toLocaleString("pt-BR",{minimumFractionDigits:2})} > limite`);
+      if (qt < 0 || vl < 0)             motivos.push("qtde ou valor negativo");
+      if (motivos.length > 0) {
+        suspeitos.push({ item, mov, idx, qt, vl, pu, motivos, sig: movSignature(mov) });
+      }
+    });
+  });
+  return suspeitos;
+}
+
+function openAuditImport() {
+  renderAuditImport();
+  openModal("modal-audit-import");
+}
+
+function renderAuditImport() {
+  const suspeitos = findAuditMovements();
+  const body = document.getElementById("audit-import-body");
+  const btnDel = document.getElementById("audit-import-delete");
+
+  if (suspeitos.length === 0) {
+    body.innerHTML = `<div style="text-align:center;padding:32px;background:#dcfce7;color:#166534;border-radius:8px;">
+      ✅ Nenhum movimento suspeito encontrado.<br>
+      <small>Critérios: qtde > ${AUDIT_LIMITES.qtdeMax.toLocaleString("pt-BR")}, preço unitário > R$ ${AUDIT_LIMITES.prunitMax}, valor > R$ ${(AUDIT_LIMITES.valorMax/1e6).toFixed(0)}M</small>
+    </div>`;
+    btnDel.disabled = true;
+    btnDel.textContent = "Excluir selecionados";
+    return;
+  }
+
+  const fmtBR = v => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtQt = v => v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+
+  body.innerHTML = `
+    <div style="background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:6px;margin-bottom:12px;">
+      <b>${suspeitos.length} movimento(s) suspeito(s)</b> — marque os que quer excluir.
+      <div style="font-size:12px;margin-top:4px;">Limiares: qtde > ${AUDIT_LIMITES.qtdeMax.toLocaleString("pt-BR")} • R$/un > ${AUDIT_LIMITES.prunitMax} • valor > R$ ${(AUDIT_LIMITES.valorMax/1e6).toFixed(0)}M</div>
+    </div>
+    <div style="margin-bottom:8px;">
+      <button class="btn small" onclick="toggleAuditAll(true)">Marcar todos</button>
+      <button class="btn small ghost" onclick="toggleAuditAll(false)">Desmarcar todos</button>
+    </div>
+    <div style="overflow:auto;max-height:60vh;border:1px solid var(--border);border-radius:6px;">
+      <table style="width:100%;font-size:12px;border-collapse:collapse;">
+        <thead style="background:#f8fafc;position:sticky;top:0;">
+          <tr>
+            <th style="width:30px;padding:6px;"></th>
+            <th style="text-align:left;padding:6px;">Data</th>
+            <th style="text-align:left;padding:6px;">NF</th>
+            <th style="text-align:left;padding:6px;">Cód</th>
+            <th style="text-align:left;padding:6px;">Descrição</th>
+            <th class="num" style="padding:6px;">Qtde</th>
+            <th class="num" style="padding:6px;">Valor</th>
+            <th class="num" style="padding:6px;">R$/un</th>
+            <th style="text-align:left;padding:6px;">Motivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${suspeitos.map((s, idx) => `
+            <tr style="background:#fef2f2;border-bottom:1px solid var(--border);">
+              <td style="padding:6px;text-align:center;">
+                <input type="checkbox" class="audit-chk" data-idx="${idx}" data-sig="${escapeHtml(s.sig)}" data-item-id="${escapeHtml(s.item.id || "")}">
+              </td>
+              <td style="padding:6px;">${fmtDate(s.mov.data)}</td>
+              <td style="padding:6px;"><b>${escapeHtml(s.mov.docto || "")}</b></td>
+              <td style="padding:6px;">${escapeHtml(s.item.codigo)}</td>
+              <td style="padding:6px;">${escapeHtml((s.item.descricao||"").length > 40 ? s.item.descricao.slice(0,40)+"…" : s.item.descricao)}</td>
+              <td class="num" style="padding:6px;">${fmtQt(s.qt)}</td>
+              <td class="num" style="padding:6px;color:#991b1b;font-weight:600;">R$ ${fmtBR(s.vl)}</td>
+              <td class="num" style="padding:6px;color:#991b1b;">R$ ${fmtBR(s.pu)}</td>
+              <td style="padding:6px;font-size:11px;color:#991b1b;">${escapeHtml(s.motivos.join(" • "))}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+  btnDel.disabled = false;
+  btnDel.textContent = `Excluir selecionados (0)`;
+
+  // Atualizar contador no botão a cada mudança de checkbox
+  body.querySelectorAll(".audit-chk").forEach(chk => {
+    chk.addEventListener("change", () => {
+      const n = body.querySelectorAll(".audit-chk:checked").length;
+      btnDel.textContent = `Excluir selecionados (${n})`;
+      btnDel.disabled = n === 0;
+    });
+  });
+}
+
+function toggleAuditAll(state_) {
+  document.querySelectorAll("#audit-import-body .audit-chk").forEach(c => { c.checked = state_; });
+  const n = document.querySelectorAll("#audit-import-body .audit-chk:checked").length;
+  const btn = document.getElementById("audit-import-delete");
+  btn.textContent = `Excluir selecionados (${n})`;
+  btn.disabled = n === 0;
+}
+
+async function deleteAuditSelected() {
+  const marcados = [...document.querySelectorAll("#audit-import-body .audit-chk:checked")];
+  if (marcados.length === 0) return;
+  const ok = confirm(`Excluir definitivamente ${marcados.length} movimento(s)?\n\nEssa ação NÃO pode ser desfeita. Os dados saem do banco.`);
+  if (!ok) return;
+
+  let removidos = 0;
+  // Agrupa por itemId → conjunto de assinaturas a remover
+  const porItem = new Map();
+  marcados.forEach(chk => {
+    const itemId = chk.dataset.itemId;
+    const sig    = chk.dataset.sig;
+    if (!porItem.has(itemId)) porItem.set(itemId, new Set());
+    porItem.get(itemId).add(sig);
+  });
+
+  for (const [itemId, sigs] of porItem.entries()) {
+    const item = state.itens.find(i => i.id === itemId);
+    if (!item) continue;
+    const before = (item.movimentos || []).length;
+    item.movimentos = (item.movimentos || []).filter(m => !sigs.has(movSignature(m)));
+    removidos += before - item.movimentos.length;
+  }
+
+  // Recalcular ultPreco/ultData para itens afetados
+  state.itens.forEach(it => {
+    const entradas = (it.movimentos || []).filter(m => m.tipo === "E");
+    if (entradas.length === 0) {
+      it.ultPreco = null; it.ultData = null;
+    } else {
+      const mais = entradas.reduce((a, b) => (a.data >= b.data ? a : b));
+      const pu = mais.qtde > 0 ? mais.valor / mais.qtde : null;
+      it.ultPreco = pu;
+      it.ultData  = mais.data;
+    }
+  });
+
+  await persist();
+  renderAuditImport();   // re-render do modal
+  renderAll();            // re-render das telas
+  alert(`✅ ${removidos} movimento(s) excluído(s).`);
+}
+
+/* =================== EXCLUIR NFs DE ENTRADA FILTRADAS =================== */
+async function deleteFilteredEntries() {
+  const entradas = getComprasFiltered();
+  if (entradas.length === 0) {
+    alert("Nenhuma entrada visível com o filtro atual.");
+    return;
+  }
+
+  // Agrupa por NF (docto + fornecedor)
+  const mapaNFs = new Map();
+  entradas.forEach(e => {
+    const k = `${e.docto}|${e.fornecedor}`;
+    if (!mapaNFs.has(k)) mapaNFs.set(k, {
+      docto: e.docto, fornecedor: e.fornecedor,
+      itens: [], valor: 0, dataMin: e.data, dataMax: e.data
+    });
+    const g = mapaNFs.get(k);
+    g.itens.push(e);
+    g.valor += e.valor;
+    if (e.data < g.dataMin) g.dataMin = e.data;
+    if (e.data > g.dataMax) g.dataMax = e.data;
+  });
+  const nfs = [...mapaNFs.values()].sort((a, b) => a.dataMax.localeCompare(b.dataMax));
+
+  // Descreve o filtro atual pra deixar claro o que vai sair
+  const txt   = (document.getElementById("filter-compras").value || "").trim();
+  const de    = document.getElementById("filter-compras-de").value;
+  const ate   = document.getElementById("filter-compras-ate").value;
+  const grupo = document.getElementById("filter-compras-grupo").value;
+  const descFiltros = [];
+  if (de)    descFiltros.push(`a partir de ${fmtDate(de)}`);
+  if (ate)   descFiltros.push(`até ${fmtDate(ate)}`);
+  if (grupo) descFiltros.push(`grupo ${grupo} (${deptName(grupo)})`);
+  if (txt)   descFiltros.push(`busca "${txt}"`);
+  const semFiltro = descFiltros.length === 0;
+
+  const totalValor = nfs.reduce((s, n) => s + n.valor, 0);
+  const totalLinhas = nfs.reduce((s, n) => s + n.itens.length, 0);
+  const fmtBR = v => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  let msg = "";
+  if (semFiltro) {
+    msg += `⚠️ ATENÇÃO: NENHUM FILTRO ATIVO.\nIsso vai excluir TODAS as NFs de entrada do sistema (${nfs.length} NFs / ${totalLinhas} linhas / R$ ${fmtBR(totalValor)}).\n\n`;
+  } else {
+    msg += `Vai excluir ${nfs.length} NF(s) de entrada — ${totalLinhas} linha(s) — total R$ ${fmtBR(totalValor)}.\n\nFiltro ativo: ${descFiltros.join(", ")}.\n\n`;
+  }
+  msg += `Período das NFs: ${fmtDate(nfs[0].dataMax)} até ${fmtDate(nfs[nfs.length-1].dataMax)}\n\n`;
+  msg += `NFs (primeiras 10):\n`;
+  msg += nfs.slice(0, 10).map(n => `• NF ${n.docto} (${fornecName(n.fornecedor)}) — ${fmtDate(n.dataMax)} — R$ ${fmtBR(n.valor)}`).join("\n");
+  if (nfs.length > 10) msg += `\n... e mais ${nfs.length - 10}`;
+  msg += `\n\nEssa ação NÃO pode ser desfeita. Continuar?`;
+
+  if (!confirm(msg)) return;
+
+  // Segunda confirmação se for "tudo"
+  if (semFiltro) {
+    const conf2 = prompt(`Para confirmar a exclusão de TODAS as NFs, digite EXCLUIR TUDO:`);
+    if (conf2 !== "EXCLUIR TUDO") {
+      alert("Exclusão cancelada.");
+      return;
+    }
+  }
+
+  // Monta conjunto de assinaturas (itemId + movSig) a excluir
+  const aExcluir = new Map(); // itemId -> Set<movSig>
+  entradas.forEach(e => {
+    if (!aExcluir.has(e.itemId)) aExcluir.set(e.itemId, new Set());
+    aExcluir.get(e.itemId).add(e.movSig);
+  });
+
+  let removidos = 0;
+  for (const [itemId, sigs] of aExcluir.entries()) {
+    const item = state.itens.find(i => i.id === itemId);
+    if (!item) continue;
+    const before = (item.movimentos || []).length;
+    item.movimentos = (item.movimentos || []).filter(m => {
+      if (m.tipo !== "E") return true; // só mexe em entradas
+      return !sigs.has(movSignature(m));
+    });
+    removidos += before - item.movimentos.length;
+  }
+
+  // Recalcular ultPreco / ultData
+  state.itens.forEach(it => {
+    const ents = (it.movimentos || []).filter(m => m.tipo === "E");
+    if (ents.length === 0) {
+      it.ultPreco = null; it.ultData = null;
+    } else {
+      const mais = ents.reduce((a, b) => (a.data >= b.data ? a : b));
+      it.ultPreco = mais.qtde > 0 ? mais.valor / mais.qtde : null;
+      it.ultData  = mais.data;
+    }
+  });
+
+  await persist();
+  renderAll();
+  alert(`✅ ${removidos} linha(s) excluída(s) de ${nfs.length} NF(s).`);
 }
 
 function populateSelectsDepts() {
@@ -2859,12 +3460,13 @@ function getEntradas() {
       const creditoPc = valor * pcPct;
       lista.push({
         itemId: i.id, codigo: i.codigo, descricao: i.descricao, dept: i.dept,
-        fornecedor: i.fornecedor,
+        fornecedor: m.fornecedor || i.fornecedor,
         data: m.data, docto: m.docto || "(sem NF)", lancto: m.lancto,
         qtde: Number(m.qtde||0),
         valor, creditoIcms, creditoPc,
         creditoTotal: creditoIcms + creditoPc,
         liquido: valor - creditoIcms - creditoPc,
+        movSig: movSignature(m),
       });
     });
   });
@@ -2901,6 +3503,11 @@ function renderCompras() {
 
   // KPIs
   const nfsUnicas = new Set(entradas.map(e => (e.docto||"") + "|" + (e.fornecedor||""))).size;
+  const btnDelNfs = document.getElementById("btn-del-nfs");
+  if (btnDelNfs) {
+    btnDelNfs.textContent = `🗑 Excluir NFs filtradas (${nfsUnicas})`;
+    btnDelNfs.disabled = nfsUnicas === 0;
+  }
   const somaBruto = entradas.reduce((s,e) => s + e.valor, 0);
   const somaCredIcms = entradas.reduce((s,e) => s + e.creditoIcms, 0);
   const somaCredPc = entradas.reduce((s,e) => s + e.creditoPc, 0);

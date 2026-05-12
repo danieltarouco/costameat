@@ -2150,22 +2150,32 @@ function renderPainelPizza(recPorDept, total) {
   const slices = entries.map(([dept, val], i) => {
     const pct = val / total;
     const ang = pct * Math.PI * 2;
-    const x1 = cx + r * Math.cos(acc);
-    const y1 = cy + r * Math.sin(acc);
-    const x2 = cx + r * Math.cos(acc + ang);
-    const y2 = cy + r * Math.sin(acc + ang);
+    const startAng = acc;
+    const midAng   = acc + ang / 2;
+    const endAng   = acc + ang;
+    const x1 = cx + r * Math.cos(startAng);
+    const y1 = cy + r * Math.sin(startAng);
+    const x2 = cx + r * Math.cos(endAng);
+    const y2 = cy + r * Math.sin(endAng);
     const large = ang > Math.PI ? 1 : 0;
-    acc += ang;
+    acc = endAng;
     // Caso só haja um grupo (pct=1), círculo completo
     const path = entries.length === 1
       ? `M ${cx-r} ${cy} A ${r} ${r} 0 1 0 ${cx+r} ${cy} A ${r} ${r} 0 1 0 ${cx-r} ${cy} Z`
       : `M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${large} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
-    return { path, color: COLORS[i % COLORS.length], dept, val, pct };
+    // Posição do label: 62% do raio (entries.length===1 → centro)
+    const labelR = entries.length === 1 ? 0 : r * 0.62;
+    const lx = cx + labelR * Math.cos(midAng);
+    const ly = cy + labelR * Math.sin(midAng);
+    // Só mostra label se fatia >= 4% (evita texto pegando no slice de 0,3%)
+    const showLabel = pct >= 0.04;
+    return { path, color: COLORS[i % COLORS.length], dept, val, pct, lx, ly, showLabel };
   });
 
   container.innerHTML = `
     <svg viewBox="0 0 200 200" style="width:100%; max-width:200px; display:block; margin:0 auto 14px;">
       ${slices.map(s => `<path d="${s.path}" fill="${s.color}" stroke="#fff" stroke-width="1.5"><title>${escapeHtml(deptName(s.dept))} — ${fmtMoney(s.val)} (${(s.pct*100).toFixed(1)}%)</title></path>`).join("")}
+      ${slices.filter(s => s.showLabel).map(s => `<text x="${s.lx.toFixed(1)}" y="${s.ly.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#fff" stroke="rgba(0,0,0,0.35)" stroke-width="0.4" paint-order="stroke fill" style="pointer-events:none;">${(s.pct*100).toFixed(s.pct >= 0.1 ? 0 : 1)}%</text>`).join("")}
     </svg>
     <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
       ${slices.map(s => `

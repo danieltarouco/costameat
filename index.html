@@ -1290,6 +1290,11 @@
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
         <span>Simulação</span>
       </div>
+      <div class="tab" data-tab="auditoria" data-title="Auditoria de Estoque" data-subtitle="Itens com saldo negativo e como corrigir">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Auditoria</span>
+        <span id="auditoria-count-badge" class="chip red hidden" style="margin-left:auto; font-size:10px; padding:1px 6px;">0</span>
+      </div>
     </div>
 
     <div style="flex:1;"></div>
@@ -1797,6 +1802,51 @@
     </div>
   </section>
 
+
+  <!-- ============================== AUDITORIA ============================== -->
+
+  <section id="panel-auditoria" class="panel">
+    <div class="alert warn" style="margin-bottom:14px;">
+      <div>
+        <b>Por que estoque negativo é um problema?</b><br>
+        Quando uma saída acontece sem entrada correspondente, o sistema usa o último custo conhecido ou zero — distorcendo o CMV, a margem e o CMP do item. Os casos abaixo precisam de atenção.
+      </div>
+    </div>
+
+    <div class="kpis painel-kpis-grid" id="audit-kpis" style="margin-bottom:18px;"></div>
+
+    <div class="toolbar" style="margin-bottom:12px;">
+      <div class="chip-toggle">
+        <button class="active" data-audfilter="problemas" onclick="setAuditFilter('problemas')">Com problema</button>
+        <button data-audfilter="negativo-atual" onclick="setAuditFilter('negativo-atual')">Negativo agora</button>
+        <button data-audfilter="historico" onclick="setAuditFilter('historico')">Só histórico</button>
+        <button data-audfilter="todos" onclick="setAuditFilter('todos')">Todos</button>
+      </div>
+      <input type="text" id="audit-search" placeholder="Buscar por código ou descrição..." style="min-width:240px;">
+      <div style="margin-left:auto;" class="muted" id="audit-count">—</div>
+    </div>
+
+    <div class="card">
+      <div style="overflow-x:auto;">
+        <table id="audit-table">
+          <thead>
+            <tr>
+              <th style="width:75px;">Código</th>
+              <th>Descrição</th>
+              <th style="width:130px;">Grupo</th>
+              <th style="width:120px;">Status</th>
+              <th class="num" style="width:110px;">Saldo atual (kg)</th>
+              <th class="num" style="width:110px;">Pior negativo (kg)</th>
+              <th style="width:100px;">Primeiro neg.</th>
+              <th>Sugestão de correção</th>
+              <th style="width:130px;"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
   <!-- ============================== SIMULAÇÃO ============================== -->
 
@@ -2729,6 +2779,8 @@ function renderAll() {
   renderVendas();
   renderVendedores();
   renderPainel();
+  // Auditoria só atualiza o badge no menu (não renderiza tabela se não estiver visível)
+  try { renderAuditoria(); } catch (_) {}
 }
 
 /* ======================= PAINEL — visão do mês ======================= */
@@ -7866,6 +7918,271 @@ function deleteRegimeIcms() {
 }
 
 /* ======================= EVENTOS ======================= */
+/* ======================= AUDITORIA DE ESTOQUE NEGATIVO ======================= */
+
+// Simula a evolução do saldo de cada item ao longo do tempo
+// e identifica problemas (saldo final negativo, negativo histórico, vendas sem entrada prévia).
+function auditarEstoqueNegativo() {
+  const hoje = new Date().toISOString().slice(0,10);
+  const resultados = [];
+
+  state.itens.forEach(item => {
+    const movs = (item.movimentos || []).slice().sort((a,b) => {
+      const da = a.data || "", db = b.data || "";
+      if (da !== db) return da.localeCompare(db);
+      if (a.tipo !== b.tipo) return a.tipo === "E" ? -1 : 1; // entradas antes de saídas no mesmo dia
+      return 0;
+    });
+
+    const saldoInicial = Number(item.saldoQtde || 0);
+    let saldo = saldoInicial;
+    let piorNeg = 0;
+    let dataPiorNeg = null;
+    let dataPrimeiroNeg = null;
+    let eventosNegativos = 0;
+    let primeiraSaidaQtde = 0;
+    let primeiraSaidaSemEntradaAntes = null;
+    let teveEntradaAntesDaPrimeiraSaida = saldoInicial > 0;
+
+    movs.forEach(m => {
+      const qm = Number(m.qtde || 0);
+      if (m.tipo === "E") {
+        saldo += qm;
+        if (!teveEntradaAntesDaPrimeiraSaida) teveEntradaAntesDaPrimeiraSaida = true;
+      } else if (m.tipo === "S") {
+        if (!teveEntradaAntesDaPrimeiraSaida && primeiraSaidaSemEntradaAntes == null) {
+          primeiraSaidaSemEntradaAntes = m.data;
+          primeiraSaidaQtde = qm;
+        }
+        saldo -= qm;
+        if (saldo < 0) {
+          eventosNegativos++;
+          if (dataPrimeiroNeg == null) dataPrimeiroNeg = m.data;
+          if (saldo < piorNeg) { piorNeg = saldo; dataPiorNeg = m.data; }
+        }
+      } else if (m.tipo === "A") {
+        // ajuste: usa valor se houver, senão soma
+        saldo += qm * (m.sinal || 1);
+      }
+    });
+
+    const totalEntradas = movs.filter(m => m.tipo === "E").reduce((s,m) => s + Number(m.qtde||0), 0);
+    const totalSaidas   = movs.filter(m => m.tipo === "S").reduce((s,m) => s + Number(m.qtde||0), 0);
+    const saldoFinal    = saldo;
+    const temProblema   = piorNeg < 0 || saldoFinal < -0.0001;
+    if (!temProblema) return;
+
+    // Status
+    let status;
+    if (saldoFinal < -0.0001) status = "negativo-atual";
+    else if (piorNeg < 0)     status = "historico";
+    else                      status = "ok";
+
+    // Sugestões
+    const sugestoes = [];
+    if (primeiraSaidaSemEntradaAntes && !teveEntradaAntesDaPrimeiraSaida === false) {
+      // teveEntradaAntesDaPrimeiraSaida ficou true depois — significa que a primeira saída foi sem entrada,
+      // mas houve uma entrada depois. Esse é o caso clássico de "venda antes da compra".
+    }
+    if (saldoInicial === 0 && totalSaidas > totalEntradas) {
+      sugestoes.push("Sem saldo inicial cadastrado: vá em **Saldos** e cadastre o saldo de implantação do item.");
+    }
+    if (primeiraSaidaSemEntradaAntes && saldoInicial === 0) {
+      sugestoes.push(`A primeira saída foi em **${fmtDate(primeiraSaidaSemEntradaAntes)}** sem nenhuma entrada antes. Importe um Rel.218 mais antigo OU registre saldo de implantação.`);
+    }
+    if (saldoFinal < -0.0001) {
+      const falta = Math.abs(saldoFinal);
+      sugestoes.push(`Saldo final negativo (faltam **${fmtNum(falta)} kg**). Provavelmente está faltando uma NF de entrada. Verifique o Rel.218 do período.`);
+    }
+    if (piorNeg < 0 && saldoFinal >= -0.0001) {
+      sugestoes.push(`O saldo recuperou-se, mas ficou negativo em **${fmtDate(dataPiorNeg)}** (${fmtNum(Math.abs(piorNeg))} kg). Saídas foram registradas antes das entradas correspondentes — confira as datas dos movimentos.`);
+    }
+    if (totalEntradas > 0 && totalSaidas > totalEntradas * 1.5) {
+      sugestoes.push(`Saídas (**${fmtNum(totalSaidas)} kg**) excedem entradas (**${fmtNum(totalEntradas)} kg**) em mais de 50%. Pode haver duplicidade de saídas ou erro de digitação na quantidade.`);
+    }
+    if (sugestoes.length === 0) {
+      sugestoes.push("Revisar a sequência cronológica dos movimentos.");
+    }
+
+    resultados.push({
+      item,
+      status,
+      saldoInicial,
+      saldoFinal,
+      piorNeg,
+      dataPiorNeg,
+      dataPrimeiroNeg,
+      eventosNegativos,
+      totalEntradas,
+      totalSaidas,
+      teveEntradaAntesDaPrimeiraSaida,
+      primeiraSaidaSemEntradaAntes,
+      sugestoes,
+    });
+  });
+
+  // Ordena: negativo agora > pior pior > código
+  resultados.sort((a,b) => {
+    const rank = s => s === "negativo-atual" ? 0 : 1;
+    if (rank(a.status) !== rank(b.status)) return rank(a.status) - rank(b.status);
+    if (a.piorNeg !== b.piorNeg) return a.piorNeg - b.piorNeg;
+    return String(a.item.codigo).localeCompare(String(b.item.codigo), "pt-BR", {numeric: true});
+  });
+  return resultados;
+}
+
+let auditFilter = "problemas";
+function setAuditFilter(v) {
+  auditFilter = v;
+  document.querySelectorAll('#panel-auditoria .chip-toggle button').forEach(b => b.classList.toggle("active", b.dataset.audfilter === v));
+  renderAuditoria();
+}
+
+function renderAuditoria() {
+  const resultados = auditarEstoqueNegativo();
+  const txt = (document.getElementById("audit-search")?.value || "").toLowerCase();
+
+  // KPIs
+  const kpiHost = document.getElementById("audit-kpis");
+  const negAgora = resultados.filter(r => r.status === "negativo-atual").length;
+  const histor   = resultados.filter(r => r.status === "historico").length;
+  const totalItens = state.itens.length;
+  const piorAtual = resultados.filter(r => r.status === "negativo-atual").reduce((s,r) => s + Math.abs(r.saldoFinal), 0);
+  if (kpiHost) {
+    kpiHost.innerHTML = `
+      <div class="kpi">
+        <div class="label">Itens auditados</div>
+        <div class="value" style="color:var(--text);">${totalItens}</div>
+        <div class="hint">total no cadastro</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Negativo agora</div>
+        <div class="value" style="color:${negAgora > 0 ? 'var(--danger)' : 'var(--ok)'};">${negAgora}</div>
+        <div class="hint">${negAgora > 0 ? `${fmtNum(piorAtual)} kg faltam` : 'tudo certo'}</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Só histórico</div>
+        <div class="value" style="color:${histor > 0 ? 'var(--warn)' : 'var(--ok)'};">${histor}</div>
+        <div class="hint">recuperou-se depois</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Saúde do estoque</div>
+        <div class="value" style="color:${(negAgora+histor) === 0 ? 'var(--ok)' : (negAgora > 0 ? 'var(--danger)' : 'var(--warn)')};">${totalItens > 0 ? Math.round(((totalItens - resultados.length)/totalItens)*100) : 100}%</div>
+        <div class="hint">itens sem problema</div>
+      </div>
+    `;
+  }
+
+  // Badge no menu
+  const badge = document.getElementById("auditoria-count-badge");
+  if (badge) {
+    if (negAgora > 0) {
+      badge.textContent = negAgora;
+      badge.classList.remove("hidden");
+    } else {
+      badge.classList.add("hidden");
+    }
+  }
+
+  // Filtragem
+  let listaFiltrada = resultados.filter(r => {
+    if (auditFilter === "negativo-atual" && r.status !== "negativo-atual") return false;
+    if (auditFilter === "historico"      && r.status !== "historico") return false;
+    if (auditFilter === "problemas"      && !["negativo-atual","historico"].includes(r.status)) return false;
+    if (txt) {
+      const blob = `${r.item.codigo} ${r.item.descricao||""}`.toLowerCase();
+      if (!blob.includes(txt)) return false;
+    }
+    return true;
+  });
+  if (auditFilter === "todos") {
+    // Inclui também itens sem problema
+    const idsComProblema = new Set(resultados.map(r => r.item.id));
+    const okItens = state.itens.filter(i => !idsComProblema.has(i.id) && (!txt || `${i.codigo} ${i.descricao||""}`.toLowerCase().includes(txt)));
+    okItens.forEach(item => {
+      const movs = (item.movimentos||[]);
+      const saldoFinal = Number(item.saldoQtde||0) + movs.filter(m=>m.tipo==="E").reduce((s,m)=>s+Number(m.qtde||0),0) - movs.filter(m=>m.tipo==="S").reduce((s,m)=>s+Number(m.qtde||0),0);
+      listaFiltrada.push({
+        item, status: "ok",
+        saldoInicial: Number(item.saldoQtde||0),
+        saldoFinal, piorNeg: 0, dataPiorNeg: null, dataPrimeiroNeg: null,
+        eventosNegativos: 0,
+        totalEntradas: movs.filter(m=>m.tipo==="E").reduce((s,m)=>s+Number(m.qtde||0),0),
+        totalSaidas:   movs.filter(m=>m.tipo==="S").reduce((s,m)=>s+Number(m.qtde||0),0),
+        teveEntradaAntesDaPrimeiraSaida: true,
+        primeiraSaidaSemEntradaAntes: null,
+        sugestoes: ["Sem problemas detectados."],
+      });
+    });
+    listaFiltrada.sort((a,b) => String(a.item.codigo).localeCompare(String(b.item.codigo), "pt-BR", {numeric:true}));
+  }
+
+  document.getElementById("audit-count").textContent = `${listaFiltrada.length} item(s)`;
+
+  const tbody = document.querySelector("#audit-table tbody");
+  if (!listaFiltrada.length) {
+    tbody.innerHTML = emptyTableRow(9, "✅", "Nenhum problema encontrado", auditFilter === "problemas" ? "Todos os itens estão com saldo consistente." : "Tente outro filtro ou termo de busca.");
+    return;
+  }
+
+  tbody.innerHTML = listaFiltrada.map(r => {
+    const item = r.item;
+    const statusChip = r.status === "negativo-atual"
+      ? `<span class="chip red"><b>● Negativo agora</b></span>`
+      : r.status === "historico"
+      ? `<span class="chip orange">Histórico</span>`
+      : `<span class="chip green">OK</span>`;
+
+    const saldoColor   = r.saldoFinal < -0.0001 ? "var(--danger)" : r.saldoFinal === 0 ? "var(--text-muted)" : "var(--text)";
+    const saldoFmt     = r.saldoFinal < 0 ? `<b style="color:${saldoColor};">${fmtNum(r.saldoFinal)}</b>` : fmtNum(r.saldoFinal);
+    const piorFmt      = r.piorNeg < 0 ? `<b style="color:var(--danger);">${fmtNum(r.piorNeg)}</b>` : '<span class="muted">—</span>';
+    const dataNegFmt   = r.dataPrimeiroNeg ? fmtDate(r.dataPrimeiroNeg) : '<span class="muted">—</span>';
+    const sugHtml = r.sugestoes.map(s => `<div style="margin:2px 0;">• ${s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')}</div>`).join("");
+
+    return `<tr>
+      <td><b>${item.codigo}</b></td>
+      <td>${escapeHtml(item.descricao||"")}</td>
+      <td><span class="badge-dept">${item.dept} ${escapeHtml(deptName(item.dept))}</span></td>
+      <td>${statusChip}</td>
+      <td class="num">${saldoFmt}</td>
+      <td class="num">${piorFmt}</td>
+      <td>${dataNegFmt}</td>
+      <td style="font-size:12px; line-height:1.45;">${sugHtml}</td>
+      <td>
+        <button class="btn small" onclick="auditOpenMovimentos('${item.id}')" title="Ver movimentos">📊</button>
+        <button class="btn small" onclick="auditOpenSaldo('${item.id}')" title="Cadastrar saldo inicial">📝</button>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+// Ações rápidas a partir da auditoria
+function auditOpenMovimentos(itemId) {
+  // Navega para aba Movimentos e seleciona o item
+  const navTab = document.querySelector('.app-sidebar .tab[data-tab="movimentos"]');
+  if (navTab) navTab.click();
+  setTimeout(() => {
+    const sel = document.getElementById("mov-item-select");
+    if (sel) {
+      sel.value = itemId;
+      sel.dispatchEvent(new Event("change"));
+    }
+  }, 80);
+}
+
+function auditOpenSaldo(itemId) {
+  // Navega para Saldos com filtro no item (se possível)
+  const navTab = document.querySelector('.app-sidebar .tab[data-tab="saldos"]');
+  if (navTab) {
+    navTab.click();
+    setTimeout(() => {
+      const f = document.getElementById("filter-saldo");
+      const item = state.itens.find(x => x.id === itemId);
+      if (f && item) { f.value = item.codigo; f.dispatchEvent(new Event("input")); }
+    }, 80);
+  }
+}
+
 const TAB_RENDERERS = {
   "painel": () => renderPainel(),
   "itens": () => renderItens(),
@@ -7879,6 +8196,7 @@ const TAB_RENDERERS = {
   "vendedores": () => renderVendedores(),
   "simulacao": () => renderSimulacao(),
   "estoque": () => renderEstoque(),
+  "auditoria": () => renderAuditoria(),
 };
 // Nav primário (sidebar): só pega os .tab dentro de .app-sidebar
 document.querySelectorAll(".app-sidebar .tab[data-tab]").forEach(t => {
@@ -7942,6 +8260,7 @@ safeListen("mov-item-select", "change", renderMovimentos);
 
 // Vendas: filtros e data no modal
 ["filter-vendas","filter-vendas-de","filter-vendas-ate"].forEach(id=>safeListen(id, "input", renderVendas));
+safeListen("audit-search", "input", renderAuditoria);
 safeListen("filter-vendas-gran", "change", renderVendas);
 safeListen("m-venda-data", "change", () => { renderVendaItensTable(); });
 safeListen("v-filter-det","input", renderVendas);

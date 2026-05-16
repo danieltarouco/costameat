@@ -1333,15 +1333,26 @@
         </div>
       </div>
       <div class="topbar-actions">
-        <button class="btn small" onclick="exportJSON()">
+        <button class="btn small primary" onclick="document.getElementById('importRel218PDFFile').click()" title="Importar Rel.218 — Entrada de Mercadoria (PDF)">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importar Compras
+        </button>
+        <button class="btn small primary" onclick="document.getElementById('importFaturamentoFile').click()" title="Importar Relatório 8005 (.xls/.xlsx) — vendas">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importar Vendas
+        </button>
+        <span style="width:1px; height:24px; background:var(--border); margin:0 4px;"></span>
+        <button class="btn small" onclick="exportJSON()" title="Exportar dados (JSON)">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Exportar
         </button>
-        <button class="btn small" onclick="document.getElementById('importFile').click()">
+        <button class="btn small" onclick="document.getElementById('importFile').click()" title="Importar backup (JSON)">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Importar
         </button>
         <input id="importFile" type="file" accept="application/json" onchange="importJSON(event)" style="display:none">
+        <input id="importRel218PDFFile" type="file" accept=".pdf,application/pdf" onchange="importRel218PDF(event)" style="display:none">
+        <input id="importFaturamentoFile" type="file" accept=".xls,.xlsx" onchange="importFaturamentoXLSX(event)" style="display:none">
       </div>
     </header>
 
@@ -1657,8 +1668,6 @@
         <button data-view="item" onclick="setComprasView('item')">Por item</button>
         <button data-view="grupo" onclick="setComprasView('grupo')">Por grupo</button>
       </div>
-      <button class="btn" onclick="document.getElementById('importRel218PDFFile').click()" title="Importar Rel.218 — Entrada de Mercadoria (PDF)">⬆ Importar Rel.218 (PDF)</button>
-      <input id="importRel218PDFFile" type="file" accept=".pdf,application/pdf" onchange="importRel218PDF(event)" style="display:none">
       <button class="btn" onclick="openAuditImport()" title="Auditoria de movimentos suspeitos (importação corrompida)">🔍 Auditoria</button>
       <button class="btn danger" id="btn-del-nfs" onclick="deleteFilteredEntries()" title="Excluir todas as NFs de entrada que estão visíveis com o filtro atual">🗑 Excluir NFs filtradas</button>
       <div style="margin-left:auto" class="muted" id="count-compras"></div>
@@ -1706,8 +1715,6 @@
         <option value="trimestre">Trimestre</option>
       </select>
       <button class="btn primary" onclick="openVendaModal()">+ Nova Venda</button>
-      <button class="btn" onclick="document.getElementById('importFaturamentoFile').click()" title="Importar Relatório 8005 (.xls/.xlsx) — colunas: CODPROD, DESCRICAO, DTFAT, QT, PVENDA, CODCLI, CLIENTE, RCA, etc.">⬆ Importar XLSX</button>
-      <input id="importFaturamentoFile" type="file" accept=".xls,.xlsx" onchange="importFaturamentoXLSX(event)" style="display:none">
       <button class="btn danger" onclick="limparVendas()" title="Remove todas as vendas e seus movimentos de saída no estoque" style="font-weight:700;">🗑 Limpar vendas</button>
       <div style="margin-left:auto" class="muted" id="count-vendas"></div>
     </div>
@@ -1790,156 +1797,6 @@
     </div>
   </section>
 
-  <!-- ============================== VENDAS ============================== -->
-
-  <section id="panel-vendas" class="panel">
-    <div class="alert info">
-      Vendas importadas viram automaticamente <b>saídas (S)</b> no módulo Movimentos (CMP) do item correspondente.
-      O <b>CMV</b> de cada venda é o valor da saída calculado pelo custo médio ponderado do dia.
-      Assim, Rentabilidade por Cliente e por Produto usam o mesmo custo que aparece no estoque.
-    </div>
-    <div class="toolbar">
-      <label style="font-weight:500;">Período:</label>
-      <input type="date" id="vendas-de" title="Data inicial">
-      <input type="date" id="vendas-ate" title="Data final">
-      <button class="btn" onclick="document.getElementById('importVendasFile').click()">⬆︎ Importar vendas (JSON)</button>
-      <input id="importVendasFile" type="file" accept="application/json" onchange="importVendasJSON(event)" style="display:none">
-      <button class="btn" onclick="exportVendasJSON()">⬇︎ Exportar vendas</button>
-      <button class="btn danger" onclick="limparVendas()" title="Remove todas as vendas e suas saídas vinculadas no estoque" style="font-weight:700;letter-spacing:.03em;">🗑 Limpar vendas</button>
-      <div style="margin-left:auto" class="muted" id="count-vendas"></div>
-    </div>
-
-```
-<div class="kpis">
-  <div class="kpi"><div class="label">Faturamento Bruto</div><div class="value" id="kpi-v-bruto">—</div><div class="hint" id="kpi-v-qtde">—</div></div>
-  <div class="kpi"><div class="label">Impostos + Comissão</div><div class="value" id="kpi-v-desp">—</div><div class="hint" id="kpi-v-despdet">—</div></div>
-  <div class="kpi"><div class="label">CMV (custo médio)</div><div class="value" id="kpi-v-cmv" style="color:var(--accent);">—</div><div class="hint" id="kpi-v-cmvcob">—</div></div>
-  <div class="kpi"><div class="label">Margem Bruta</div><div class="value" id="kpi-v-margem" style="color:var(--ok);">—</div><div class="hint" id="kpi-v-margempct">—</div></div>
-  <div class="kpi"><div class="label">Clientes</div><div class="value" id="kpi-v-clientes">—</div><div class="hint" id="kpi-v-notas">—</div></div>
-  <div class="kpi"><div class="label">Ticket médio / nota</div><div class="value" id="kpi-v-ticket">—</div><div class="hint">Média por NF</div></div>
-</div>
-
-<!-- Sub-tabs -->
-<div class="tabs" style="position:static; padding:0; margin-bottom:14px; border-bottom:1px solid var(--border);">
-  <div class="tab active" data-vsub="clientes">Por Cliente</div>
-  <div class="tab" data-vsub="produtos">Por Produto</div>
-  <div class="tab" data-vsub="detalhe">Detalhamento</div>
-  <div class="tab" data-vsub="saldos-cmv">Cobertura de Custo</div>
-</div>
-
-<!-- Sub-panel Clientes -->
-<div class="vsub-panel" id="vsub-clientes">
-  <div class="toolbar">
-    <input type="text" id="v-filter-cli" placeholder="Buscar cliente...">
-    <label style="font-size:12px;">Ordenar:
-      <select id="v-sort-cli">
-        <option value="bruto">Faturamento</option>
-        <option value="margem">Margem R$</option>
-        <option value="margempct">Margem %</option>
-        <option value="qtde">Quantidade</option>
-      </select>
-    </label>
-  </div>
-  <div class="card">
-    <table id="v-tbl-clientes">
-      <thead><tr>
-        <th style="width:40px;">#</th>
-        <th>Cliente</th>
-        <th class="num" style="width:70px;">NF</th>
-        <th class="num" style="width:90px;">Qtde</th>
-        <th class="num" style="width:110px;">Bruto</th>
-        <th class="num" style="width:100px;">Impostos</th>
-        <th class="num" style="width:90px;">Comissão</th>
-        <th class="num" style="width:110px;">CMV</th>
-        <th class="num" style="width:110px;">Margem R$</th>
-        <th class="num" style="width:80px;">Margem %</th>
-      </tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Sub-panel Produtos -->
-<div class="vsub-panel hidden" id="vsub-produtos">
-  <div class="toolbar">
-    <input type="text" id="v-filter-prod" placeholder="Buscar produto...">
-    <label style="font-size:12px;">Ordenar:
-      <select id="v-sort-prod">
-        <option value="bruto">Faturamento</option>
-        <option value="margem">Margem R$</option>
-        <option value="margempct">Margem %</option>
-        <option value="qtde">Quantidade</option>
-      </select>
-    </label>
-  </div>
-  <div class="card">
-    <table id="v-tbl-prod">
-      <thead><tr>
-        <th style="width:40px;">#</th>
-        <th style="width:60px;">Código</th>
-        <th>Produto</th>
-        <th class="num" style="width:70px;">Clientes</th>
-        <th class="num" style="width:90px;">Qtde</th>
-        <th class="num" style="width:100px;">Preço Méd.</th>
-        <th class="num" style="width:110px;">Bruto</th>
-        <th class="num" style="width:110px;">CMV (CMP)</th>
-        <th class="num" style="width:110px;">Margem R$</th>
-        <th class="num" style="width:80px;">Margem %</th>
-      </tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Sub-panel Detalhe -->
-<div class="vsub-panel hidden" id="vsub-detalhe">
-  <div class="toolbar">
-    <input type="text" id="v-filter-det" placeholder="Buscar por cliente, produto ou NF...">
-  </div>
-  <div class="card">
-    <table id="v-tbl-det">
-      <thead><tr>
-        <th style="width:80px;">Data</th>
-        <th>Cliente</th>
-        <th>Produto</th>
-        <th class="num" style="width:70px;">NF</th>
-        <th class="num" style="width:80px;">Qtde</th>
-        <th class="num" style="width:90px;">Fat. Unit.</th>
-        <th class="num" style="width:100px;">Bruto</th>
-        <th class="num" style="width:90px;">Imp.</th>
-        <th class="num" style="width:80px;">Com.</th>
-        <th class="num" style="width:100px;">CMV</th>
-        <th class="num" style="width:100px;">Margem R$</th>
-        <th class="num" style="width:75px;">Margem %</th>
-      </tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Sub-panel Saldos/Cobertura -->
-<div class="vsub-panel hidden" id="vsub-saldos-cmv">
-  <div class="alert info" style="margin-bottom:12px;">
-    Mostra a <b>cobertura de custo</b> das vendas: quais itens têm saldo de estoque suficiente / preço médio apurado e quais estão sem custo
-    (item novo, sem saldo inicial nem entradas antes da venda — CMV fica zerado e distorce a margem).
-  </div>
-  <div class="card">
-    <table id="v-tbl-cob">
-      <thead><tr>
-        <th style="width:60px;">Código</th>
-        <th>Produto</th>
-        <th class="num" style="width:90px;">Qtde vendida</th>
-        <th class="num" style="width:110px;">Preço méd. (CMP)</th>
-        <th class="num" style="width:110px;">CMV apurado</th>
-        <th style="width:140px;">Status</th>
-      </tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
-```
-
-  </section>
 
   <!-- ============================== SIMULAÇÃO ============================== -->
 
@@ -6074,6 +5931,22 @@ function getVendasConsolidadas() {
   return [...mapa.values()];
 }
 
+function applyDefaultVendasFilter() {
+  // Por padrão, filtra do dia 1 ao último dia do mês corrente
+  const deEl  = document.getElementById("filter-vendas-de");
+  const ateEl = document.getElementById("filter-vendas-ate");
+  if (!deEl || !ateEl) return;
+  if (!deEl.value && !ateEl.value) {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = hoje.getMonth() + 1;
+    const ultDia = new Date(ano, mes, 0).getDate();
+    const mm = String(mes).padStart(2, "0");
+    deEl.value  = `${ano}-${mm}-01`;
+    ateEl.value = `${ano}-${mm}-${String(ultDia).padStart(2,"0")}`;
+  }
+}
+
 function getVendasFiltered() {
   const txt = (document.getElementById("filter-vendas").value||"").toLowerCase();
   const de = document.getElementById("filter-vendas-de").value;
@@ -6131,25 +6004,28 @@ function renderVendas() {
       <th style="width:90px;">NF</th>
       <th>Cliente</th>
       <th class="num" style="width:50px;">Itens</th>
+      <th class="num" style="width:95px;">Qtde (kg)</th>
       <th class="num" style="width:110px;">Receita</th>
       <th class="num" style="width:105px;">CMV</th>
-      <th class="num" style="width:100px;">Imposto</th>
       <th class="num" style="width:100px;">Comissão</th>
       <th class="num" style="width:110px;">Margem Real</th>
       <th class="num" style="width:75px;">Marg. %</th>
       <th style="width:70px;"></th>
     </tr>`;
     const linhas = vendas.slice().sort((a,b) => (b.data||"").localeCompare(a.data||""));
+    let qtTotal = 0;
     tbody.innerHTML = linhas.map(v => {
       const r = vendaResumo(v);
+      const qt = (v.itens||[]).reduce((s, vi) => s + Number(vi.qtde||0), 0);
+      qtTotal += qt;
       return `<tr>
         <td>${fmtDate(v.data)}</td>
         <td><b>${v.docto||"—"}</b></td>
         <td>${v.cliente||"—"}</td>
         <td class="num">${(v.itens||[]).length}</td>
+        <td class="num">${fmtNum(qt)}</td>
         <td class="num">${fmtMoney(r.receita)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(r.cmv)}</td>
-        <td class="num" style="color:var(--warn);">${fmtMoney(r.imposto)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(r.comissao)}</td>
         <td class="num" style="font-weight:600; color:${r.margemReal>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(r.margemReal)}</td>
         <td class="num">${r.margemRealPct==null?"—":r.margemRealPct.toFixed(2)+"%"}</td>
@@ -6158,9 +6034,9 @@ function renderVendas() {
     }).join("");
     tfoot.innerHTML = `<tr class="footer-total">
       <td colspan="4" style="text-align:right;">TOTAL</td>
+      <td class="num">${fmtNum(qtTotal)}</td>
       <td class="num">${fmtMoney(rec)}</td>
       <td class="num">${fmtMoney(cmv)}</td>
-      <td class="num">${fmtMoney(imp)}</td>
       <td class="num">${fmtMoney(com)}</td>
       <td class="num">${fmtMoney(margemReal)}</td>
       <td class="num">${rec>0?((margemReal/rec)*100).toFixed(2)+"%":"—"}</td>
@@ -6194,24 +6070,23 @@ function renderVendas() {
       <th style="width:65px;">Código</th>
       <th>Descrição</th>
       <th style="width:135px;">Grupo</th>
-      <th class="num" style="width:80px;">Qtde</th>
+      <th class="num" style="width:90px;">Qtde (kg)</th>
       <th class="num" style="width:95px;">Venda Unit.</th>
       <th class="num" style="width:95px;">CMV Unit.</th>
-      <th class="num" style="width:80px;">Imp. Unit.</th>
-      <th class="num" style="width:80px;">Com. Unit.</th>
-      <th class="num" style="width:105px;">Receita</th>
-      <th class="num" style="width:100px;">CMV</th>
-      <th class="num" style="width:90px;">Imposto</th>
-      <th class="num" style="width:90px;">Comissão</th>
-      <th class="num" style="width:105px;">Margem Real</th>
-      <th class="num" style="width:70px;">Marg. %</th>
+      <th class="num" style="width:90px;">Com. Unit.</th>
+      <th class="num" style="width:110px;">Receita</th>
+      <th class="num" style="width:105px;">CMV</th>
+      <th class="num" style="width:100px;">Comissão</th>
+      <th class="num" style="width:110px;">Margem Real</th>
+      <th class="num" style="width:75px;">Marg. %</th>
       <th style="width:65px;"></th>
     </tr>`;
+    let qtTotal = 0;
     tbody.innerHTML = linhas.map(g => {
+      qtTotal += g.qtde;
       const mr = g.receita - g.cmv - g.imposto - g.comissao;
       const vu = g.qtde > 0 ? g.receita/g.qtde : 0;
       const cu = g.qtde > 0 ? g.cmv/g.qtde : 0;
-      const iu = g.qtde > 0 ? g.imposto/g.qtde : 0;
       const comu = g.qtde > 0 ? g.comissao/g.qtde : 0;
       const mp = g.receita > 0 ? (mr/g.receita)*100 : null;
       return `<tr>
@@ -6221,11 +6096,9 @@ function renderVendas() {
         <td class="num">${fmtNum(g.qtde)}</td>
         <td class="num">${fmtMoney(vu)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(cu)}</td>
-        <td class="num" style="color:var(--warn);">${fmtMoney(iu)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(comu)}</td>
         <td class="num">${fmtMoney(g.receita)}</td>
         <td class="num">${fmtMoney(g.cmv)}</td>
-        <td class="num">${fmtMoney(g.imposto)}</td>
         <td class="num">${fmtMoney(g.comissao)}</td>
         <td class="num" style="font-weight:600; color:${mr>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(mr)}</td>
         <td class="num">${mp==null?"—":mp.toFixed(2)+"%"}</td>
@@ -6233,25 +6106,26 @@ function renderVendas() {
       </tr>`;
     }).join("");
     tfoot.innerHTML = `<tr class="footer-total">
-      <td colspan="8" style="text-align:right;">TOTAL</td>
+      <td colspan="3" style="text-align:right;">TOTAL</td>
+      <td class="num">${fmtNum(qtTotal)}</td>
+      <td colspan="3"></td>
       <td class="num">${fmtMoney(rec)}</td>
       <td class="num">${fmtMoney(cmv)}</td>
-      <td class="num">${fmtMoney(imp)}</td>
       <td class="num">${fmtMoney(com)}</td>
       <td class="num">${fmtMoney(margemReal)}</td>
       <td class="num">${rec>0?((margemReal/rec)*100).toFixed(2)+"%":"—"}</td>
       <td></td>
     </tr>`;
   } else if (vendasView === "cliente") {
-    // Por cliente
     const mapa = new Map();
     vendas.forEach(v => {
       const cli = v.cliente || "(sem cliente)";
-      if (!mapa.has(cli)) mapa.set(cli, { cliente: cli, vendas: [], qtdeItens: 0, receita: 0, cmv: 0, imposto: 0, comissao: 0 });
+      if (!mapa.has(cli)) mapa.set(cli, { cliente: cli, vendas: [], qtde: 0, qtdeItens: 0, receita: 0, cmv: 0, imposto: 0, comissao: 0 });
       const g = mapa.get(cli);
       g.vendas.push(v);
       const r = vendaResumo(v);
       g.qtdeItens += (v.itens||[]).length;
+      g.qtde += (v.itens||[]).reduce((s, vi) => s + Number(vi.qtde||0), 0);
       g.receita += r.receita; g.cmv += r.cmv;
       g.imposto += r.imposto; g.comissao += r.comissao;
     });
@@ -6260,24 +6134,26 @@ function renderVendas() {
       <th>Cliente</th>
       <th class="num" style="width:80px;">Vendas</th>
       <th class="num" style="width:70px;">Itens</th>
+      <th class="num" style="width:95px;">Qtde (kg)</th>
       <th class="num" style="width:110px;">Receita</th>
       <th class="num" style="width:105px;">CMV</th>
-      <th class="num" style="width:100px;">Imposto</th>
       <th class="num" style="width:100px;">Comissão</th>
       <th class="num" style="width:115px;">Margem Real</th>
       <th class="num" style="width:75px;">Marg. %</th>
       <th style="width:70px;"></th>
     </tr>`;
+    let qtTotal = 0;
     tbody.innerHTML = linhas.map(g => {
+      qtTotal += g.qtde;
       const mr = g.receita - g.cmv - g.imposto - g.comissao;
       const mp = g.receita > 0 ? (mr/g.receita)*100 : null;
       return `<tr>
         <td><b>${g.cliente}</b></td>
         <td class="num">${g.vendas.length}</td>
         <td class="num">${g.qtdeItens}</td>
+        <td class="num">${fmtNum(g.qtde)}</td>
         <td class="num">${fmtMoney(g.receita)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(g.cmv)}</td>
-        <td class="num" style="color:var(--warn);">${fmtMoney(g.imposto)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(g.comissao)}</td>
         <td class="num" style="font-weight:600; color:${mr>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(mr)}</td>
         <td class="num">${mp==null?"—":mp.toFixed(2)+"%"}</td>
@@ -6286,26 +6162,26 @@ function renderVendas() {
     }).join("");
     tfoot.innerHTML = `<tr class="footer-total">
       <td colspan="3" style="text-align:right;">TOTAL</td>
+      <td class="num">${fmtNum(qtTotal)}</td>
       <td class="num">${fmtMoney(rec)}</td>
       <td class="num">${fmtMoney(cmv)}</td>
-      <td class="num">${fmtMoney(imp)}</td>
       <td class="num">${fmtMoney(com)}</td>
       <td class="num">${fmtMoney(margemReal)}</td>
       <td class="num">${rec>0?((margemReal/rec)*100).toFixed(2)+"%":"—"}</td>
       <td></td>
     </tr>`;
   } else if (vendasView === "rca") {
-    // Por Vendedor (representante = NOME do Rel.8005, ou rca/supervisor de outros formatos)
     const mapa = new Map();
     vendas.forEach(v => {
       const vendedor = v.representante || v.rca || v.supervisor || "(sem vendedor)";
       const sup = v.supervisor || v.rcaNome || "";
-      if (!mapa.has(vendedor)) mapa.set(vendedor, { vendedor, supervisor: sup, clientes: new Set(), vendas: [], qtdeItens: 0, receita: 0, cmv: 0, imposto: 0, comissao: 0 });
+      if (!mapa.has(vendedor)) mapa.set(vendedor, { vendedor, supervisor: sup, clientes: new Set(), vendas: [], qtde: 0, qtdeItens: 0, receita: 0, cmv: 0, imposto: 0, comissao: 0 });
       const g = mapa.get(vendedor);
       g.vendas.push(v);
       g.clientes.add(v.cliente || "");
       const r = vendaResumo(v);
       g.qtdeItens += (v.itens||[]).length;
+      g.qtde += (v.itens||[]).reduce((s, vi) => s + Number(vi.qtde||0), 0);
       g.receita += r.receita; g.cmv += r.cmv;
       g.imposto += r.imposto; g.comissao += r.comissao;
     });
@@ -6315,14 +6191,16 @@ function renderVendas() {
       <th>Supervisor</th>
       <th class="num" style="width:80px;">Clientes</th>
       <th class="num" style="width:70px;">Itens</th>
+      <th class="num" style="width:95px;">Qtde (kg)</th>
       <th class="num" style="width:115px;">Receita</th>
       <th class="num" style="width:110px;">CMV</th>
-      <th class="num" style="width:100px;">Imposto</th>
       <th class="num" style="width:100px;">Comissão</th>
       <th class="num" style="width:115px;">Margem Real</th>
       <th class="num" style="width:75px;">Marg. %</th>
     </tr>`;
+    let qtTotal = 0;
     tbody.innerHTML = linhas.map(g => {
+      qtTotal += g.qtde;
       const mr = g.receita - g.cmv - g.imposto - g.comissao;
       const mp = g.receita > 0 ? (mr/g.receita)*100 : null;
       return `<tr>
@@ -6330,9 +6208,9 @@ function renderVendas() {
         <td class="muted">${g.supervisor}</td>
         <td class="num">${g.clientes.size}</td>
         <td class="num">${g.qtdeItens}</td>
+        <td class="num">${fmtNum(g.qtde)}</td>
         <td class="num">${fmtMoney(g.receita)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(g.cmv)}</td>
-        <td class="num" style="color:var(--warn);">${fmtMoney(g.imposto)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(g.comissao)}</td>
         <td class="num" style="font-weight:600; color:${mr>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(mr)}</td>
         <td class="num">${mp==null?"—":mp.toFixed(2)+"%"}</td>
@@ -6340,9 +6218,9 @@ function renderVendas() {
     }).join("");
     tfoot.innerHTML = `<tr class="footer-total">
       <td colspan="4" style="text-align:right;">TOTAL</td>
+      <td class="num">${fmtNum(qtTotal)}</td>
       <td class="num">${fmtMoney(rec)}</td>
       <td class="num">${fmtMoney(cmv)}</td>
-      <td class="num">${fmtMoney(imp)}</td>
       <td class="num">${fmtMoney(com)}</td>
       <td class="num">${fmtMoney(margemReal)}</td>
       <td class="num">${rec>0?((margemReal/rec)*100).toFixed(2)+"%":"—"}</td>
@@ -8138,7 +8016,7 @@ function applyUserUI(usuario) {
 
   if (!isAdmin) {
     if (adminSection) adminSection.style.display = "none";
-    document.querySelectorAll(".topbar-actions button[onclick*='exportJSON'], .topbar-actions button[onclick*='importFile']")
+    document.querySelectorAll(".topbar-actions button[onclick*='exportJSON'], .topbar-actions button[onclick*='importFile'], .topbar-actions button[onclick*='importRel218'], .topbar-actions button[onclick*='importFaturamento']")
       .forEach(b => b.style.display = "none");
     ["regimes", "saldos"].forEach(tab => {
       const el = document.querySelector(`.app-sidebar .tab[data-tab="${tab}"]`);
@@ -8244,6 +8122,7 @@ async function doLogin() {
   showAppLoading("Carregando seus dados…");
   try {
     await loadState();
+    applyDefaultVendasFilter();
     renderAll();
     showToast(`Bem-vindo, ${info.nome || data.user.email.split("@")[0]}!`, "ok");
   } finally {
@@ -8284,6 +8163,7 @@ async function checkSession() {
     showAppLoading("Restaurando sua sessão…");
     try {
       await loadState();
+      applyDefaultVendasFilter();
       renderAll();
     } finally {
       hideAppLoading();

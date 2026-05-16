@@ -1599,7 +1599,12 @@
         <input type="date" id="filter-mov-de" title="Data inicial" onchange="renderMovimentos()" style="padding:5px 8px; font-size:12px; border:1px solid var(--border-strong); border-radius:6px; background:#fff;">
         <span style="color:var(--text-muted); font-size:12px;">até</span>
         <input type="date" id="filter-mov-ate" title="Data final" onchange="renderMovimentos()" style="padding:5px 8px; font-size:12px; border:1px solid var(--border-strong); border-radius:6px; background:#fff;">
-        <button class="btn ghost" style="font-size:11px; padding:4px 8px;" onclick="document.getElementById('filter-mov-de').value=''; document.getElementById('filter-mov-ate').value=''; renderMovimentos();">✕ Limpar</button>
+        <button class="btn ghost" style="font-size:11px; padding:4px 8px;" onclick="document.getElementById('filter-mov-de').value=''; document.getElementById('filter-mov-ate').value=''; renderMovimentos();">✕</button>
+      </div>
+      <div class="chip-toggle" style="margin-left:12px;">
+        <button class="active" data-movtipo="todos" onclick="setMovTipoFiltro('todos')">Todos</button>
+        <button data-movtipo="E" onclick="setMovTipoFiltro('E')">Entradas</button>
+        <button data-movtipo="S" onclick="setMovTipoFiltro('S')">Saídas</button>
       </div>
       <div style="margin-left:auto" class="muted" id="mov-resumo"></div>
     </div>
@@ -4592,6 +4597,13 @@ function fecharMovItemDropdown() {
   if (dd) dd.style.display = "none";
 }
 
+let movTipoFiltro = "todos"; // todos | E | S
+function setMovTipoFiltro(v) {
+  movTipoFiltro = v;
+  document.querySelectorAll('.chip-toggle button[data-movtipo]').forEach(b => b.classList.toggle("active", b.dataset.movtipo === v));
+  renderMovimentos();
+}
+
 function renderMovimentos() {
   populateMovSelect();
   const sel = document.getElementById("mov-item-select");
@@ -4611,6 +4623,8 @@ function renderMovimentos() {
     tbody.innerHTML = emptyTableRow(13, "🔍", "Selecione um item acima", "Escolha um item para visualizar a evolução dos movimentos no tempo.");
     btn.disabled = true;
     resumo.textContent = "";
+    const aviso = document.getElementById("mov-aviso-negativo");
+    if (aviso) aviso.remove();
     return;
   }
   const item = state.itens.find(x => x.id === id);
@@ -4624,6 +4638,44 @@ function renderMovimentos() {
   document.getElementById("mov-header-sub").textContent = `Grupo ${item.dept} ${deptName(item.dept)} · Fornecedor ${fornecName(item.fornecedor)} · Embalagem ${item.emb||"—"}${regimeInfo}`;
 
   const todasLinhas = calcEvolucao(item);
+
+  // Identifica a 1ª data em que o saldo ficou negativo (após qualquer movimento)
+  let dataPrimeiroNeg = null;
+  let movIdPrimeiroNeg = null;
+  let qtdeNoNeg = null;
+  for (const l of todasLinhas) {
+    if (l.tipo === "INICIAL" || l.tipo === "ABERTURA") continue;
+    if (l.qtdeSaldo < -0.0001) {
+      dataPrimeiroNeg = l.data;
+      movIdPrimeiroNeg = l.movId;
+      qtdeNoNeg = l.qtdeSaldo;
+      break;
+    }
+  }
+
+  // Banner de aviso (acima da tabela) com a data do 1º negativo
+  let avisoEl = document.getElementById("mov-aviso-negativo");
+  if (dataPrimeiroNeg) {
+    if (!avisoEl) {
+      avisoEl = document.createElement("div");
+      avisoEl.id = "mov-aviso-negativo";
+      avisoEl.className = "alert danger";
+      avisoEl.style.margin = "12px 18px 0";
+      headerEl.parentNode.insertBefore(avisoEl, headerEl.nextSibling);
+    }
+    avisoEl.innerHTML = `
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:1px;">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      <div>
+        <b>Estoque negativo</b> — saldo deste item ficou negativo pela primeira vez em <b>${fmtDate(dataPrimeiroNeg)}</b> (${fmtNum(qtdeNoNeg)} kg).
+        Veja a linha destacada em vermelho abaixo. Isso distorce o CMP e o CMV. Confira a aba <b>Auditoria</b> para sugestões de correção.
+      </div>
+    `;
+  } else if (avisoEl) {
+    avisoEl.remove();
+  }
   const filterDe  = document.getElementById("filter-mov-de")?.value  || "";
   const filterAte = document.getElementById("filter-mov-ate")?.value || "";
   const temFiltro = filterDe || filterAte;
@@ -4671,9 +4723,8 @@ function renderMovimentos() {
       : [];
     const linhaAbertura = anteriores.length
       ? { ...anteriores[anteriores.length-1], tipo: "ABERTURA" }
-      : { ...todasLinhas[0], tipo: "ABERTURA" };  // usa linha inicial se não há nada antes
+      : { ...todasLinhas[0], tipo: "ABERTURA" };
 
-    // Movimentos dentro do filtro
     const movsDoPeriodo = todasLinhas.filter(l => {
       if (l.tipo === "INICIAL") return false;
       if (!l.data) return !filterDe;
@@ -4686,11 +4737,18 @@ function renderMovimentos() {
     linhasVisiveis = todasLinhas;
   }
 
+  // Aplica filtro E/S — preserva linhas de saldo inicial/abertura
+  if (movTipoFiltro === "E" || movTipoFiltro === "S") {
+    linhasVisiveis = linhasVisiveis.filter(l =>
+      l.tipo === "INICIAL" || l.tipo === "ABERTURA" || l.tipo === movTipoFiltro);
+  }
+
   const totalMovs = (item.movimentos||[]).length;
   const totalDentro = linhasVisiveis.filter(l => l.tipo !== "INICIAL" && l.tipo !== "ABERTURA").length;
+  const filtroLabel = movTipoFiltro === "E" ? " · só entradas" : movTipoFiltro === "S" ? " · só saídas" : "";
   resumo.textContent = temFiltro
-    ? `${totalDentro} mov. no período · ${totalMovs} total`
-    : `${totalMovs} movimentos · ${todasLinhas.length} linhas`;
+    ? `${totalDentro} mov. no período${filtroLabel} · ${totalMovs} total`
+    : `${totalDentro} movimentos${filtroLabel} · ${totalMovs} total`;
 
   tbody.innerHTML = linhasVisiveis.map((l, idx) => {
     if (l.tipo === "INICIAL" || l.tipo === "ABERTURA") {
@@ -4715,23 +4773,38 @@ function renderMovimentos() {
     const chip = l.tipo === "E"
       ? `<span class="chip green">E</span>`
       : `<span class="chip orange">S</span>`;
-    // Verifica se é movimento de NF (tem docto e é entrada) — bloqueado para edição direta
     const movObj = l.movId ? (item.movimentos||[]).find(m => m.id === l.movId) : null;
     const isNFMov = l.tipo === "E" && movObj && movObj.docto && !movObj.vendaId;
     const isAjustada = isNFMov && movObj.qtdeOrig != null;
     const editBtn = isNFMov
       ? `<button class="btn small ghost" style="color:#92400e;" title="Editável via aba Compras (por NF)" onclick="openNFEdit('${movObj.docto}')">✏ NF</button>`
       : (l.movId ? `<button class="btn small ghost" onclick="openMovModal('${l.movId}')">✎</button>` : "");
-    const rowBg = isAjustada ? ' style="background:#fefce8;"' : '';
-    return `<tr${rowBg}>
-      <td>${fmtDate(l.data)}</td>
+
+    const isPrimeiroNeg = movIdPrimeiroNeg && l.movId === movIdPrimeiroNeg;
+    const saldoNeg = l.qtdeSaldo < -0.0001;
+    let rowStyle = "";
+    if (isPrimeiroNeg) {
+      rowStyle = ' style="background:#fef2f2; border-left:3px solid var(--danger);"';
+    } else if (saldoNeg) {
+      rowStyle = ' style="background:#fff7f7;"';
+    } else if (isAjustada) {
+      rowStyle = ' style="background:#fefce8;"';
+    }
+    const saldoQtdeCell = saldoNeg
+      ? `<b style="color:var(--danger);">${fmtNum(l.qtdeSaldo)}</b>`
+      : fmtNum(l.qtdeSaldo);
+    const tagPrimeiroNeg = isPrimeiroNeg
+      ? ' <span style="font-size:10px;background:var(--danger);color:#fff;padding:2px 6px;border-radius:8px;font-weight:600;margin-left:4px;">1º negativo</span>'
+      : '';
+    return `<tr${rowStyle}>
+      <td>${fmtDate(l.data)}${tagPrimeiroNeg}</td>
       <td>${l.lancto||""}</td>
       <td>${l.docto||""}${isAjustada?' <span style="font-size:10px;color:#92400e;background:#fde047;padding:1px 4px;border-radius:8px;">ajust.</span>':''}</td>
       <td>${chip}</td>
       <td class="num">${fmtNum(l.qtdeMov)}</td>
       <td class="num">${fmtMoney(l.valorMov)}</td>
       <td class="num" style="color:var(--ok); border-right:2px solid var(--border-strong);">${fmtMoney(l.valorLiqMov)}</td>
-      <td class="num">${fmtNum(l.qtdeSaldo)}</td>
+      <td class="num">${saldoQtdeCell}</td>
       <td class="num">${fmtMoney(l.valorSaldo)}</td>
       <td class="num" style="color:var(--ok);">${fmtMoney(l.valorLiqSaldo)}</td>
       <td class="num"><b>${fmtMoney(l.precoMedio)}</b></td>

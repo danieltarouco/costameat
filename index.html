@@ -14,29 +14,31 @@
 
   :root {
     /* — Cores neutras — */
-    --bg-app: #f5f6f8;
+    --bg-app: #fafaf9;
     --bg-card: #ffffff;
-    --bg-soft: #f8fafc;
-    --bg-softer: #f1f5f9;
-    --bg-dark: #0f172a;
-    --row-alt: #fafbfc;
-    --border: #e5e7eb;
-    --border-strong: #d1d5db;
-    --border-focus: rgba(15, 118, 110, 0.28);
+    --bg-soft: #f5f5f4;
+    --bg-softer: #f0efed;
+    --bg-dark: #1c1917;
+    --row-alt: #fafaf9;
+    --border: #e7e5e4;
+    --border-strong: #d6d3d1;
+    --border-focus: rgba(153, 27, 27, 0.22);
 
     /* — Texto — */
-    --text: #0f172a;
-    --text-soft: #475569;
-    --text-muted: #94a3b8;
+    --text: #1c1917;
+    --text-soft: #57534e;
+    --text-muted: #a8a29e;
     --text-inverse: #ffffff;
 
-    /* — Marca / acentos — */
-    --primary: #0f766e;          /* teal — ação primária */
-    --primary-hover: #0e6b63;
-    --primary-soft: #ecfdf5;
-    --primary-strong: #115e59;
-    --accent: #0891b2;
-    --brand: #b91c1c;            /* vermelho Costameat (carne) — usar com parcimônia */
+    /* — Marca: VERMELHO COSTAMEAT como protagonista — */
+    --primary: #991b1b;          /* burgundy — cor primária */
+    --primary-hover: #7f1d1d;
+    --primary-soft: #fef2f2;
+    --primary-strong: #7f1d1d;
+    --primary-deeper: #450a0a;
+    --accent: #0f766e;           /* teal vira accent secundário (controladoria/finance) */
+    --accent-soft: #ecfdf5;
+    --brand: #991b1b;
     --brand-soft: #fef2f2;
 
     /* — Estados — */
@@ -118,87 +120,273 @@
   ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: var(--r-pill); border: 2px solid var(--bg-app); }
   ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-  /* ===================== HEADER ===================== */
-  header {
-    background: linear-gradient(135deg, #0f766e 0%, #0e7490 60%, #0369a1 100%);
-    color: var(--text-inverse);
-    padding: var(--s-4) var(--s-6);
+  /* ===================== APP SHELL (sidebar + topbar + content) ===================== */
+  .app-shell {
+    display: grid;
+    grid-template-columns: 248px 1fr;
+    min-height: 100vh;
+    background: var(--bg-app);
+  }
+
+  /* ===================== SIDEBAR ===================== */
+  .app-sidebar {
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 30;
+  }
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 22px 20px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-brand-mark {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deeper) 100%);
+    border-radius: var(--r-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px -4px rgba(153, 27, 27, 0.5);
+    flex-shrink: 0;
+  }
+  .sidebar-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+  .sidebar-brand-name {
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .sidebar-brand-tag {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+  }
+  .sidebar-section {
+    padding: var(--s-4) 12px var(--s-2);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 4px 12px;
+    gap: 1px;
+    flex: 1;
+  }
+  /* Nav item (reusa .tab para JS) */
+  .app-sidebar .tab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-soft);
+    border-radius: var(--r-md);
+    border: none;
+    background: transparent;
+    white-space: nowrap;
+    transition: background var(--t-fast), color var(--t-fast);
+    position: static;
+    top: auto;
+    border-bottom: none;
+  }
+  .app-sidebar .tab .nav-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: color var(--t-fast);
+  }
+  .app-sidebar .tab:hover {
+    background: var(--bg-soft);
+    color: var(--text);
+  }
+  .app-sidebar .tab:hover .nav-icon { color: var(--text-soft); }
+  .app-sidebar .tab.active {
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 600;
+    border-bottom: none;
+  }
+  .app-sidebar .tab.active .nav-icon { color: var(--primary); }
+  .sidebar-footer {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sidebar-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-deeper));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .sidebar-user {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.2;
+  }
+  .sidebar-user-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .sidebar-user-email {
+    font-size: 11px;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .sidebar-logout {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+    width: 30px;
+    height: 30px;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--t-fast);
+    flex-shrink: 0;
+  }
+  .sidebar-logout:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+    border-color: #fca5a5;
+  }
+
+  /* ===================== TOPBAR ===================== */
+  .app-content { display: flex; flex-direction: column; min-width: 0; }
+  .app-topbar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
     gap: var(--s-3);
-    box-shadow: var(--shadow-md);
-    position: sticky; top: 0; z-index: 20;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    flex-wrap: wrap;
   }
-  header h1 {
+  .topbar-title {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+  .topbar-title h1 {
     margin: 0;
-    font-size: var(--fs-xl);
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    display: flex;
-    align-items: center;
-    gap: var(--s-2);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
   }
-  header .subtitle {
-    opacity: 0.85;
-    font-size: var(--fs-sm);
+  .topbar-title .subtitle {
+    font-size: 12.5px;
+    color: var(--text-muted);
     margin-top: 2px;
-    font-weight: 400;
   }
-  header .actions { display: flex; gap: var(--s-2); flex-wrap: wrap; align-items: center; }
-  header button {
-    background: rgba(255,255,255,0.12);
-    color: var(--text-inverse);
-    border: 1px solid rgba(255,255,255,0.22);
-    padding: 6px 12px;
-    border-radius: var(--r-md);
-    font-size: var(--fs-sm);
-    font-weight: 500;
-    cursor: pointer;
-    transition: background var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
-  }
-  header button:hover { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.35); }
-  header button:active { transform: translateY(1px); }
-
-  /* ===================== TABS ===================== */
-  .tabs {
-    background: var(--bg-card);
-    border-bottom: 1px solid var(--border);
-    padding: 0 var(--s-6);
+  .topbar-actions {
     display: flex;
-    gap: 2px;
-    position: sticky; top: 63px; z-index: 10;
-    overflow-x: auto;
-    scrollbar-width: thin;
+    gap: var(--s-2);
+    align-items: center;
+    flex-wrap: wrap;
   }
-  .tab {
-    padding: var(--s-3) var(--s-4);
-    cursor: pointer;
-    font-size: var(--fs-md);
-    font-weight: 500;
+  .topbar-actions .btn {
+    font-size: 12.5px;
+  }
+  .sidebar-toggle {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--border);
     color: var(--text-soft);
-    border-bottom: 2px solid transparent;
-    white-space: nowrap;
-    transition: color var(--t-fast), background var(--t-fast), border-color var(--t-base);
-    position: relative;
-    top: 1px;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    margin-right: 4px;
   }
-  .tab:hover { color: var(--text); background: var(--bg-soft); }
-  .tab.active {
-    color: var(--primary);
-    border-bottom-color: var(--primary);
-    font-weight: 600;
-  }
+  .sidebar-toggle:hover { background: var(--bg-soft); }
 
   /* ===================== MAIN / PANELS ===================== */
-  main { padding: var(--s-5) var(--s-6) var(--s-8); max-width: 1600px; margin: 0 auto; }
+  .app-main { padding: 28px; flex: 1; max-width: 1500px; width: 100%; }
   .panel { display: none; }
   .panel.active { display: block; animation: fadeIn var(--t-slow) both; }
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: none; }
+  }
+  /* Compatibilidade: estilos antigos de <header> e <nav.tabs> (não usados agora, mas mantidos defensivamente) */
+  header.legacy-header { display: none; }
+
+  /* ===================== SUB-TABS (dentro dos panels) ===================== */
+  .panel .tabs {
+    background: transparent;
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+    display: flex;
+    gap: 2px;
+    position: static;
+    overflow-x: auto;
+    margin-bottom: var(--s-4);
+  }
+  .panel .tabs .tab {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-soft);
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    border-radius: 0;
+    white-space: nowrap;
+    transition: color var(--t-fast), border-color var(--t-fast);
+  }
+  .panel .tabs .tab:hover { color: var(--text); background: var(--bg-soft); }
+  .panel .tabs .tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: transparent;
+    font-weight: 600;
   }
 
   /* ===================== KPIs ===================== */
@@ -319,11 +507,45 @@
   .card {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: var(--r-lg);
+    border-radius: var(--r-xl);
     overflow: hidden;
     box-shadow: var(--shadow-xs);
   }
-  .card + .card { margin-top: var(--s-4); }
+  .card + .card { margin-top: var(--s-5); }
+  .card-header {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3);
+  }
+  .card-header h2,
+  .card-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .card-header .card-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* Page-header pattern (usado dentro de cada panel) */
+  .page-section {
+    margin-bottom: var(--s-6);
+  }
+  .page-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 var(--s-3);
+  }
 
   /* ===================== TABLES ===================== */
   table { width: 100%; border-collapse: collapse; font-size: var(--fs-md); }
@@ -580,7 +802,10 @@
   /* ===================== LOGIN ===================== */
   #login-overlay {
     position: fixed; inset: 0; z-index: 9999;
-    background: radial-gradient(circle at top left, #115e59 0%, #0f766e 35%, #0e7490 70%, #0c4a6e 100%);
+    background:
+      radial-gradient(circle at 20% 20%, rgba(254, 226, 226, 0.15), transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08), transparent 50%),
+      linear-gradient(135deg, #450a0a 0%, #7f1d1d 40%, #991b1b 100%);
     display: flex; align-items: center; justify-content: center;
     padding: var(--s-4);
   }
@@ -607,14 +832,14 @@
     justify-content: center;
     border-radius: var(--r-xl);
     background: var(--bg-card);
-    box-shadow: 0 8px 20px -8px rgba(15, 118, 110, 0.55);
+    box-shadow: 0 8px 20px -8px rgba(153, 27, 27, 0.55);
   }
   .login-mark svg { display: block; }
   .login-logo {
     font-size: var(--fs-3xl);
-    font-weight: 700;
-    color: var(--primary);
-    letter-spacing: -0.02em;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.025em;
     margin-bottom: var(--s-1);
     line-height: 1.1;
   }
@@ -786,6 +1011,32 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ===================== SIDEBAR DRAWER (mobile) ===================== */
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 25, 23, 0.4);
+    z-index: 29;
+    animation: backdropIn var(--t-base) both;
+  }
+  @media (max-width: 980px) {
+    .app-shell { grid-template-columns: 1fr; }
+    .app-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 100vh;
+      transform: translateX(-100%);
+      transition: transform var(--t-base);
+      box-shadow: var(--shadow-lg);
+    }
+    body.sidebar-open .app-sidebar { transform: translateX(0); }
+    body.sidebar-open .sidebar-backdrop { display: block; }
+    .sidebar-toggle { display: inline-flex; }
+  }
+
   /* ===================== PAINEL GRID ===================== */
   .painel-kpis-grid {
     display: grid;
@@ -833,13 +1084,13 @@
         <svg viewBox="0 0 48 48" width="44" height="44">
           <defs>
             <linearGradient id="login-mark-grad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#0f766e"/>
-              <stop offset="100%" stop-color="#0e7490"/>
+              <stop offset="0%" stop-color="#991b1b"/>
+              <stop offset="100%" stop-color="#450a0a"/>
             </linearGradient>
           </defs>
           <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#login-mark-grad)"/>
-          <path d="M14 30 L18 16 L24 28 L30 14 L34 30 Z" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.5)" stroke-width="0.5" stroke-linejoin="round"/>
-          <circle cx="24" cy="36" r="1.8" fill="#fff" opacity="0.9"/>
+          <path d="M10 32 L16 18 L22 28 L28 14 L34 24 L40 18" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+          <circle cx="34" cy="24" r="2" fill="#fff"/>
         </svg>
       </div>
       <div class="login-logo">Costameat</div>
@@ -878,65 +1129,169 @@
   </div>
 </div>
 
-<header>
-  <div>
-    <h1>Costameat — Custos de Entrada</h1>
-    <div class="subtitle">Análise de custos de entrada e custo médio ponderado</div>
-  </div>
-  <div class="actions" style="align-items:center;">
-    <div class="header-user" id="header-user-info" style="display:none;">
-      <span>👤 <strong id="header-user-name"></strong></span>
-      <button onclick="doLogout()">Sair</button>
+<div class="app-shell">
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="app-sidebar" id="app-sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 17l4-8 4 6 5-10 5 14"/>
+        </svg>
+      </div>
+      <div class="sidebar-brand-text">
+        <span class="sidebar-brand-name">Costameat</span>
+        <span class="sidebar-brand-tag">Custos & Margem</span>
+      </div>
     </div>
-    <button id="btn-reseed" onclick="adminReseed()" title="Reinicializa os dados com os movimentos do Rel.218 (apaga vendas e saldos)">🔄 Reinicializar dados</button>
-    <button onclick="exportJSON()">⬇︎ Exportar JSON</button>
-    <button onclick="document.getElementById('importFile').click()">⬆︎ Importar JSON</button>
-    <input id="importFile" type="file" accept="application/json" onchange="importJSON(event)" style="display:none">
-  </div>
-</header>
 
-<nav class="tabs">
-  <div class="tab active" data-tab="painel">📊 Painel</div>
-  <div class="tab" data-tab="itens">Itens (Cadastro)</div>
-  <div class="tab" data-tab="regimes">Regimes Tributários</div>
-  <div class="tab" data-tab="tributacao">Tributação</div>
-  <div class="tab" data-tab="saldos">Saldos de Implantação</div>
-  <div class="tab" data-tab="movimentos">Movimentos (CMP)</div>
-  <div class="tab" data-tab="compras">Compras (por NF)</div>
-  <div class="tab" data-tab="vendas">Vendas</div>
-  <div class="tab" data-tab="vendedores">Vendedores</div>
-  <div class="tab" data-tab="custo-liquido">Custo Líquido</div>
-  <div class="tab" data-tab="simulacao">⚡ Simulação</div>
-  <div class="tab" data-tab="estoque">📦 Estoque</div>
-</nav>
+    <div class="sidebar-section">Visão</div>
+    <div class="sidebar-nav">
+      <div class="tab active" data-tab="painel" data-title="Painel" data-subtitle="Visão consolidada do mês">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        <span>Painel</span>
+      </div>
+    </div>
 
-<!-- tab Amarração removida: Grupo é agora o Departamento (fixo do relatório) -->
+    <div class="sidebar-section">Cadastros</div>
+    <div class="sidebar-nav">
+      <div class="tab" data-tab="itens" data-title="Itens" data-subtitle="Cadastro de produtos e custos">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <span>Itens</span>
+      </div>
+      <div class="tab" data-tab="regimes" data-title="Regimes Tributários" data-subtitle="PIS/COFINS e ICMS">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>Regimes</span>
+      </div>
+      <div class="tab" data-tab="tributacao" data-title="Tributação" data-subtitle="Alíquotas por item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Tributação</span>
+      </div>
+      <div class="tab" data-tab="vendedores" data-title="Vendedores" data-subtitle="RCAs e comissões">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Vendedores</span>
+      </div>
+    </div>
 
-<main>
+    <div class="sidebar-section">Operação</div>
+    <div class="sidebar-nav">
+      <div class="tab" data-tab="compras" data-title="Compras" data-subtitle="Entradas por NF (Rel.218)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span>Compras</span>
+      </div>
+      <div class="tab" data-tab="vendas" data-title="Vendas" data-subtitle="Faturamento e margem">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        <span>Vendas</span>
+      </div>
+      <div class="tab" data-tab="movimentos" data-title="Movimentos" data-subtitle="Custo Médio Ponderado">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        <span>Movimentos</span>
+      </div>
+      <div class="tab" data-tab="estoque" data-title="Estoque" data-subtitle="Saldos atuais">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <span>Estoque</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">Análise</div>
+    <div class="sidebar-nav">
+      <div class="tab" data-tab="saldos" data-title="Saldos de Implantação" data-subtitle="Estoque inicial e ajustes">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+        <span>Saldos</span>
+      </div>
+      <div class="tab" data-tab="custo-liquido" data-title="Custo Líquido" data-subtitle="Custo médio líquido de créditos">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Custo Líquido</span>
+      </div>
+      <div class="tab" data-tab="simulacao" data-title="Simulação" data-subtitle="Cenários what-if">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <span>Simulação</span>
+      </div>
+    </div>
+
+    <div style="flex:1;"></div>
+
+    <div class="sidebar-footer" id="sidebar-user-info" style="display:none;">
+      <div class="sidebar-avatar" id="sidebar-avatar">D</div>
+      <div class="sidebar-user">
+        <div class="sidebar-user-name" id="sidebar-user-name">—</div>
+        <div class="sidebar-user-email" id="sidebar-user-email">—</div>
+      </div>
+      <button class="sidebar-logout" onclick="doLogout()" title="Sair">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Backdrop pro drawer mobile -->
+  <div class="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+  <!-- ===================== CONTENT ===================== -->
+  <div class="app-content">
+    <header class="app-topbar">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Abrir menu" title="Menu">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="topbar-title">
+          <h1 id="topbar-page-title">Painel</h1>
+          <div class="subtitle" id="topbar-page-subtitle">Visão consolidada do mês</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn small ghost" id="btn-reseed" onclick="adminReseed()" title="Reinicializa os dados com os movimentos do Rel.218 (apaga vendas e saldos)">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+          Reinicializar
+        </button>
+        <button class="btn small" onclick="exportJSON()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar
+        </button>
+        <button class="btn small" onclick="document.getElementById('importFile').click()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importar
+        </button>
+        <input id="importFile" type="file" accept="application/json" onchange="importJSON(event)" style="display:none">
+      </div>
+    </header>
+
+<main class="app-main">
 
   <!-- ============================== PAINEL ============================== -->
 
   <section id="panel-painel" class="panel active">
-    <div class="toolbar" style="margin-bottom:16px;">
-      <div style="font-size:15px; font-weight:600; color:var(--text);">📊 Painel — visão do mês</div>
-      <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
-        <button class="btn small" onclick="painelChangeMonth(-1)" title="Mês anterior">◀</button>
-        <select id="painel-mes" style="padding:6px 10px; border:1px solid var(--border-strong); border-radius:6px; font-size:14px; background:#fff;"></select>
-        <button class="btn small" onclick="painelChangeMonth(1)" title="Próximo mês">▶</button>
-        <button class="btn small ghost" onclick="painelToHoje()" title="Voltar ao mês corrente">Hoje</button>
+    <div class="page-section" style="display:flex; align-items:center; gap:var(--s-2); margin-bottom:var(--s-5);">
+      <div class="chip-toggle" style="background:var(--bg-card); border:1px solid var(--border);">
+        <button onclick="painelChangeMonth(-1)" title="Mês anterior" aria-label="Mês anterior">‹</button>
+        <select id="painel-mes" style="padding:5px 10px; border:none; background:transparent; font-size:13px; font-weight:600; color:var(--text); outline:none; cursor:pointer; min-width:120px;"></select>
+        <button onclick="painelChangeMonth(1)" title="Próximo mês" aria-label="Próximo mês">›</button>
       </div>
+      <button class="btn small ghost" onclick="painelToHoje()" title="Voltar ao mês corrente">Hoje</button>
     </div>
 
     <div id="painel-kpis" class="kpis painel-kpis-grid"></div>
 
     <div class="painel-main-grid">
-      <div class="card" style="padding:16px;">
-        <h3 style="margin:0 0 14px; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; color:var(--text-soft);">Faturamento por Grupo</h3>
-        <div id="painel-pizza"></div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3>Faturamento por grupo</h3>
+            <div class="card-subtitle">Distribuição da receita do mês</div>
+          </div>
+        </div>
+        <div style="padding:20px 22px 22px;">
+          <div id="painel-pizza"></div>
+        </div>
       </div>
-      <div class="card" style="padding:16px;">
-        <h3 style="margin:0 0 14px; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; color:var(--text-soft);">Venda por dia <span class="muted" style="font-weight:400; text-transform:none; letter-spacing:0; font-size:11px;">— valor no topo / % de margem dentro da barra</span></h3>
-        <div id="painel-barras" style="overflow-x:auto;"></div>
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3>Venda por dia</h3>
+            <div class="card-subtitle">Valor no topo · margem dentro da barra · linha pontilhada = média</div>
+          </div>
+        </div>
+        <div style="padding:20px 22px 22px;">
+          <div id="painel-barras" style="overflow-x:auto;"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -1652,6 +2007,8 @@
   </section>
 
 </main>
+  </div><!-- /app-content -->
+</div><!-- /app-shell -->
 
 <!-- MODAL: ITEM -->
 
@@ -7554,17 +7911,30 @@ const TAB_RENDERERS = {
   "simulacao": () => renderSimulacao(),
   "estoque": () => renderEstoque(),
 };
-document.querySelectorAll(".tab").forEach(t => {
+// Nav primário (sidebar): só pega os .tab dentro de .app-sidebar
+document.querySelectorAll(".app-sidebar .tab[data-tab]").forEach(t => {
   t.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".app-sidebar .tab[data-tab]").forEach(x=>x.classList.remove("active"));
     document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
     t.classList.add("active");
-    document.getElementById("panel-"+t.dataset.tab).classList.add("active");
+    const targetPanel = document.getElementById("panel-"+t.dataset.tab);
+    if (targetPanel) targetPanel.classList.add("active");
+    // Atualiza título da topbar
+    const titleEl = document.getElementById("topbar-page-title");
+    const subEl   = document.getElementById("topbar-page-subtitle");
+    if (titleEl) titleEl.textContent = t.dataset.title || t.textContent.trim();
+    if (subEl)   subEl.textContent   = t.dataset.subtitle || "";
+    // Fecha o drawer mobile se estava aberto
+    document.body.classList.remove("sidebar-open");
     // Re-renderiza o painel ao ativar (garante dados atualizados)
     const r = TAB_RENDERERS[t.dataset.tab];
     if (r) { try { r(); } catch(e) { console.error("Erro ao renderizar "+t.dataset.tab, e); } }
   });
 });
+
+function toggleSidebar() {
+  document.body.classList.toggle("sidebar-open");
+}
 function safeListen(id, ev, fn) {
   const el = document.getElementById(id);
   if (el) el.addEventListener(ev, fn);
@@ -7648,28 +8018,38 @@ function getUserInfo(email) {
 
 function applyUserUI(usuario) {
   document.getElementById("login-overlay").classList.add("hidden");
-  const infoEl = document.getElementById("header-user-info");
-  const nameEl = document.getElementById("header-user-name");
-  if (infoEl) infoEl.style.display = "flex";
-  if (nameEl) nameEl.textContent = usuario.nome;
+
+  // Atualiza footer da sidebar
+  const sbInfo   = document.getElementById("sidebar-user-info");
+  const sbAvatar = document.getElementById("sidebar-avatar");
+  const sbName   = document.getElementById("sidebar-user-name");
+  const sbEmail  = document.getElementById("sidebar-user-email");
+  if (sbInfo)   sbInfo.style.display = "flex";
+  if (sbAvatar) sbAvatar.textContent = (usuario.nome || usuario.email || "U").trim().charAt(0).toUpperCase();
+  if (sbName)   sbName.textContent   = usuario.nome || "Usuário";
+  if (sbEmail)  sbEmail.textContent  = usuario.email || "";
+
   if (usuario.role !== "admin") {
-    // Ocultar botões de export/import e reseed do header
-    document.querySelectorAll("header .actions button[onclick*='exportJSON'], header .actions button[onclick*='importFile'], #btn-reseed")
+    // Esconde botões admin no topbar
+    const reseed = document.getElementById("btn-reseed");
+    if (reseed) reseed.style.display = "none";
+    document.querySelectorAll(".topbar-actions button[onclick*='exportJSON'], .topbar-actions button[onclick*='importFile']")
       .forEach(b => b.style.display = "none");
-    // Ocultar abas restritas ao admin
+    // Esconde itens da sidebar restritos
     ["regimes", "saldos"].forEach(tab => {
-      const el = document.querySelector(`.tab[data-tab="${tab}"]`);
+      const el = document.querySelector(`.app-sidebar .tab[data-tab="${tab}"]`);
       if (el) el.style.display = "none";
     });
-    // Se a aba ativa for uma aba restrita, ir para Itens
-    const activeTab = document.querySelector(".tab.active");
+    const activeTab = document.querySelector(".app-sidebar .tab.active");
     if (activeTab && ["regimes","saldos"].includes(activeTab.dataset.tab)) {
-      document.querySelector('.tab[data-tab="itens"]').click();
+      document.querySelector('.app-sidebar .tab[data-tab="itens"]').click();
     }
   } else {
-    // Admin: garantir que abas apareçam
+    const reseed = document.getElementById("btn-reseed");
+    if (reseed) reseed.style.display = "";
+    document.querySelectorAll(".topbar-actions button").forEach(b => b.style.display = "");
     ["regimes", "saldos"].forEach(tab => {
-      const el = document.querySelector(`.tab[data-tab="${tab}"]`);
+      const el = document.querySelector(`.app-sidebar .tab[data-tab="${tab}"]`);
       if (el) el.style.display = "";
     });
   }
@@ -7772,12 +8152,13 @@ async function doLogout() {
   await sbClient.auth.signOut();
   currentUser = null;
   document.getElementById("login-overlay").classList.remove("hidden");
-  document.getElementById("login-email").value = "";
-  document.getElementById("login-senha").value = "";
+  const senhaEl = document.getElementById("login-senha");
+  if (senhaEl) senhaEl.value = "";
   document.getElementById("login-error").classList.remove("visible");
-  const infoEl = document.getElementById("header-user-info");
-  if (infoEl) infoEl.style.display = "none";
-  document.querySelectorAll("header .actions button").forEach(b => b.style.display = "");
+  const sbInfo = document.getElementById("sidebar-user-info");
+  if (sbInfo) sbInfo.style.display = "none";
+  document.querySelectorAll(".topbar-actions button").forEach(b => b.style.display = "");
+  document.body.classList.remove("sidebar-open");
 }
 
 async function checkSession() {

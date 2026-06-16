@@ -3539,6 +3539,154 @@ async function importRel218PDF(event) {
       return { peso: last5[0], volume: last5[1], qtde: last5[2], vlrFin: last5[3], vlEntrada: last5[4] };
     }
 
+    // ========== PARSER FORMATO NOVO (2026+) — analítico por NF ==========
+    // Layout (uma linha do PDF):
+    //   NF header:  DD/MM/YYYY transId *NF tipo serie DD/MM/YYYY N dias codFornec nomeFornec[CGC] UF vlTotal vlIPI
+    //   Item:       codigo descricao... filial(1) embalagem(KG) UN(KG) qt prunit custoFinAnt custoFinAtual codFiscal(4dig) op(E)
+    //   Rodapé:     "NNN Notas Listadas Total : 11.933.880,77 0,00"
+    // O Vl.Total da NF entra no cabeçalho do bloco (não há Vl.Entrada por item — derivamos qtde × prunit).
+    function parseRel218Novo(lines) {
+      const resultados = [];
+      const fornecedoresLidos = {};
+      const linhasIgnoradas = [];
+      const subtotaisNF = {};       // { nfNum: { vlTotalHeader, codFornec, somaItens } }
+      let totalGeral = null;
+      let nfAtual = null;
+
+      const reTotalFinal = /^(\d+)\s+Notas\s+Listadas\s+Total\s*:?\s*([\d.,]+)\s+([\d.,]+)\s*$/i;
+      const reNFInicio   = /^(\d{2}\/\d{2}\/\d{4})\s+(\d+)\s+\*(\d+)\s+/;
+
+      for (const rawLine of lines) {
+        const line = (rawLine || "").trim();
+        if (!line) continue;
+
+        // Linhas de cabeçalho/menu do relatório
+        if (/^(Filial:|Período|Nº\s+Nota|Nº\s+Trans|Fornecedor:|Departamento:|Comprador:|Operação:|Índice:|Seção:|Produto:|Dt\.\s+Entrada|Código\s+Produto|C\.Pagar|Nr\.\s+Lanc|Page\s+\d)/i.test(line)) continue;
+        if (/^218\s*-\s*Rel/i.test(line)) continue;
+        if (/^Filial\s*$/.test(line) || /^Filial\s+\d+\s*$/.test(line)) continue;
+        if (/^\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}:\d{2}$/.test(line)) continue;  // timestamp do PDF
+        if (/^até\s+/i.test(line) || /^Venda$/i.test(line) || /^nenhum/i.test(line)) continue;
+
+        // Total final
+        const mTot = line.match(reTotalFinal);
+        if (mTot) {
+          totalGeral = {
+            notas: parseInt(mTot[1], 10),
+            qtde: 0,
+            vlEntrada: parseBR(mTot[2]),
+            ipi: parseBR(mTot[3]),
+          };
+          continue;
+        }
+
+        // Cabeçalho de NF
+        if (reNFInicio.test(line)) {
+          const tokens = line.split(/\s+/);
+          if (tokens.length < 12) { linhasIgnoradas.push({ line, motivo: "NF: poucos tokens" }); continue; }
+
+          const ipiStr   = tokens[tokens.length - 1];
+          const totalStr = tokens[tokens.length - 2];
+          const uf       = tokens[tokens.length - 3];
+
+          const isNum = s => /^-?[\d.,]+$/.test(s);
+          if (!isNum(ipiStr) || !isNum(totalStr) || !/^[A-Z]{2}$/.test(uf)) {
+            linhasIgnoradas.push({ line, motivo: "NF: padrão UF/total não reconhecido" });
+            continue;
+          }
+
+          // Localiza "dias" / "dia" (entre prazo e codFornec)
+          let diasIdx = -1;
+          for (let j = 6; j < Math.min(12, tokens.length); j++) {
+            if (/^dias?$/i.test(tokens[j])) { diasIdx = j; break; }
+          }
+          if (diasIdx < 0) { linhasIgnoradas.push({ line, motivo: 'NF: âncora "dias" não localizada' }); continue; }
+
+          // Localiza CGC: token (ou sufixo do último token de nome) com 10+ dígitos
+          let cgcDigits = "";
+          let nameEndIdx = tokens.length - 3;
+          const lastBeforeUf = tokens[tokens.length - 4];
+          if (/^[\d.\/\-]{10,}$/.test(lastBeforeUf)) {
+            cgcDigits = lastBeforeUf.replace(/\D/g, "");
+            nameEndIdx = tokens.length - 4;
+          } else {
+            const m = lastBeforeUf.match(/(\d[\d.\/\-]{9,})$/);
+            if (m) {
+              cgcDigits = m[1].replace(/\D/g, "");
+              tokens[tokens.length - 4] = lastBeforeUf.slice(0, lastBeforeUf.length - m[1].length);
+              nameEndIdx = tokens.length - 3;
+            }
+          }
+
+          const dataEntrada = tokens[0];
+          const nf          = tokens[2].replace(/^\*/, "");
+          const codFornec   = tokens[diasIdx + 1] || "";
+          const nomeFornec  = tokens.slice(diasIdx + 2, nameEndIdx).join(" ").replace(/\s+/g, " ").trim();
+
+          if (nomeFornec) fornecedoresLidos[codFornec] = nomeFornec;
+
+          nfAtual = {
+            data: toISO(dataEntrada),
+            nf, codFornec, nomeFornec, cgc: cgcDigits, uf,
+            vlTotal: parseBR(totalStr),
+            vlIPI: parseBR(ipiStr),
+            somaItens: 0,
+          };
+          if (!subtotaisNF[nf]) {
+            subtotaisNF[nf] = { vlTotalHeader: nfAtual.vlTotal, codFornec, fornecNome: nomeFornec, somaItens: 0 };
+          }
+          continue;
+        }
+
+        // Linha de item (precisa de NF ativa)
+        if (!nfAtual) continue;
+        const tokens = line.split(/\s+/);
+        if (tokens.length < 10) continue;
+
+        const op            = tokens[tokens.length - 1];
+        const codFiscalStr  = tokens[tokens.length - 2];
+        if (!/^[A-Z]$/.test(op) || !/^\d{4}$/.test(codFiscalStr)) continue;
+
+        const custoAtualStr = tokens[tokens.length - 3];
+        const custoAntStr   = tokens[tokens.length - 4];
+        const prunitStr     = tokens[tokens.length - 5];
+        const qtStr         = tokens[tokens.length - 6];
+        const numOK = s => /^-?[\d.,]+$/.test(s);
+        if (![custoAtualStr, custoAntStr, prunitStr, qtStr].every(numOK)) continue;
+
+        const filial = tokens[tokens.length - 9];
+        if (!/^\d+$/.test(filial)) continue;
+
+        const codigo = tokens[0];
+        if (!/^\d+$/.test(codigo)) continue;
+
+        const emb         = tokens[tokens.length - 8];
+        const descricao   = tokens.slice(1, tokens.length - 9).join(" ").trim();
+        const qtde        = parseBR(qtStr);
+        const prunit      = parseBR(prunitStr);
+        if (qtde <= 0 || prunit <= 0) { linhasIgnoradas.push({ line, motivo: "item com qtde/prunit zerado" }); continue; }
+
+        const valor = qtde * prunit;
+        nfAtual.somaItens += valor;
+        subtotaisNF[nfAtual.nf].somaItens += valor;
+
+        resultados.push({
+          data: nfAtual.data,
+          codprod: codigo,
+          descricao, emb,
+          qtde, prunit, prunitPdf: prunit,
+          valor,
+          vlEntradaPdf: valor,
+          nf: nfAtual.nf,
+          dept: "",
+          deptNome: "",
+          fornecCod: nfAtual.codFornec,
+          fornecNome: nfAtual.nomeFornec,
+        });
+      }
+
+      return { resultados, fornecedoresLidos, linhasIgnoradas, totalGeral, subtotaisNF };
+    }
+
     // Códigos de produto podem ter 1-8 dígitos (ex: "28" = ASA DE FRANGO existe no cadastro).
     // O antigo {3,8} ignorava silenciosamente esses itens.
     const reDataCod    = /^(\d{2}\/\d{2}\/\d{4})\s+(\d{1,8})\s+(.+)$/;
@@ -3559,12 +3707,31 @@ async function importRel218PDF(event) {
 
     const resultados = [];          // linhas de produto parseadas
     const fornecedoresLidos = {};   // { codFornec: nomeFornec }
-    const subtotaisFornec = {};     // { "deptCod|fornecCod": {qtde, vlEntrada, ...} }
-    const subtotaisDept   = {};     // { deptCod: {...} }
+    const subtotaisFornec = {};     // { "deptCod|fornecCod": {qtde, vlEntrada, ...} } (formato antigo)
+    const subtotaisDept   = {};     // { deptCod: {...} } (formato antigo)
     let totalGeral = null;          // {qtde, vlEntrada, ...}
     const linhasIgnoradas = [];     // [{ line, motivo }]
+    let subtotaisNF = {};           // { nf: {vlTotalHeader, somaItens, ...} } (formato novo)
+
+    // ---- Detecta formato do PDF ----
+    const formato = allLines.some(l => /Notas\s+Listadas\s+Total/i.test(l)) ? "novo"
+                  : allLines.some(l => /Total\s+Geral/i.test(l) || /Produto\(s\)\s+Listado\(s\)/i.test(l) || /Produtos\s+Listados/i.test(l)) ? "antigo"
+                  : "antigo";
+    console.log("[Rel.218] Formato detectado:", formato);
+
+    if (formato === "novo") {
+      const out = parseRel218Novo(allLines);
+      out.resultados.forEach(r => resultados.push(r));
+      Object.assign(fornecedoresLidos, out.fornecedoresLidos);
+      out.linhasIgnoradas.forEach(li => linhasIgnoradas.push(li));
+      totalGeral = out.totalGeral;
+      subtotaisNF = out.subtotaisNF;
+      console.log(`[Rel.218] Formato novo: ${out.resultados.length} itens em ${Object.keys(out.subtotaisNF).length} NF(s).`);
+    }
 
     for (const line of allLines) {
+      if (formato === "novo") break;  // já processado acima
+
       // ---- TOTAL GERAL (primeiro: contém "Total Geral") ----
       if (reTotalGeral.test(line)) {
         const t = pegaTotais5(line);
@@ -3719,16 +3886,39 @@ async function importRel218PDF(event) {
       }), { qtde: 0, valor: 0 });
     }
 
-    const reconciliacao = { total: null, fornec: [], dept: [], problemas: [] };
+    const reconciliacao = { total: null, fornec: [], dept: [], nf: [], problemas: [], formato };
 
     if (totalGeral) {
       const somaTot = somaBucket(() => true);
-      const okQ = Math.abs(somaTot.qtde  - totalGeral.qtde)      <= TOL_QTDE;
-      const okV = Math.abs(somaTot.valor - totalGeral.vlEntrada) <= TOL_VALOR;
+      // No formato novo, a qtde total do rodapé não está disponível — só validamos valor
+      const validaQtde = formato !== "novo";
+      const okQ = !validaQtde ? true : Math.abs(somaTot.qtde - totalGeral.qtde) <= TOL_QTDE;
+      // Tolerância relativa pra novo (0,5% ou R$ 1, o maior) — pequena variação de centavo é aceitável
+      const tolValor = formato === "novo" ? Math.max(1.0, totalGeral.vlEntrada * 0.005) : TOL_VALOR;
+      const okV = Math.abs(somaTot.valor - totalGeral.vlEntrada) <= tolValor;
       reconciliacao.total = { pdf: totalGeral, parsed: somaTot, okQtde: okQ, okValor: okV };
-      if (!okQ || !okV) reconciliacao.problemas.push("Total Geral diverge do PDF.");
+      if (!okV) reconciliacao.problemas.push(`Total diverge do PDF: PDF=${totalGeral.vlEntrada.toFixed(2)} vs Parser=${somaTot.valor.toFixed(2)}`);
+      if (!okQ) reconciliacao.problemas.push("Quantidade total diverge do PDF.");
     } else {
-      reconciliacao.problemas.push("Total Geral não encontrado no PDF — não foi possível auditar o total.");
+      reconciliacao.problemas.push("Total geral não encontrado no PDF — não foi possível auditar.");
+    }
+
+    // Reconciliação por NF (formato novo)
+    for (const nfKey of Object.keys(subtotaisNF)) {
+      const sub = subtotaisNF[nfKey];
+      const soma = somaBucket(r => r.nf === nfKey);
+      const tolNF = Math.max(1.0, sub.vlTotalHeader * 0.01);  // 1% ou R$1 (NFs podem ter ICMS-ST embutido)
+      const okV = Math.abs(soma.valor - sub.vlTotalHeader) <= tolNF;
+      reconciliacao.nf.push({
+        nf: nfKey, codFornec: sub.codFornec, fornecNome: sub.fornecNome,
+        pdf: { vlEntrada: sub.vlTotalHeader },
+        parsed: soma,
+        okValor: okV,
+      });
+      // NF divergente alta = problema; pequena = só warning
+      if (!okV && Math.abs(soma.valor - sub.vlTotalHeader) > Math.max(50, sub.vlTotalHeader * 0.02)) {
+        reconciliacao.problemas.push(`NF ${nfKey} (${sub.fornecNome||sub.codFornec}): soma itens ${soma.valor.toFixed(2)} ≠ Vl.Total ${sub.vlTotalHeader.toFixed(2)}`);
+      }
     }
 
     for (const key of Object.keys(subtotaisFornec)) {
@@ -3851,11 +4041,16 @@ function renderImportPreview() {
   if (reconciliacao.total) {
     const t  = reconciliacao.total;
     const ok = t.okQtde && t.okValor;
+    const formatoLabel = reconciliacao.formato === "novo" ? "Total das NFs" : "Total Geral";
+    const qtdeRow = reconciliacao.formato === "novo"
+      ? `<div class="muted" style="font-size:11px;margin-top:2px;">Formato novo (analítico por nota fiscal) — qtde total não disponível no rodapé do PDF</div>`
+      : `Qtde: PDF <b>${fmtQt(t.pdf.qtde)}</b> × parseado <b>${fmtQt(t.parsed.qtde)}</b> (diferença ${fmtQt(t.parsed.qtde - t.pdf.qtde)})<br>`;
     reconHtml += `<div style="background:${ok?'#dcfce7':'#fee2e2'};color:${ok?'#166534':'#991b1b'};padding:12px 14px;border-radius:6px;margin-bottom:10px;">
-      <div style="font-weight:600;margin-bottom:4px;">${ok ? '✅ Total Geral confere com o PDF' : '❌ Total Geral DIVERGE do PDF'}</div>
+      <div style="font-weight:600;margin-bottom:4px;">${ok ? `✅ ${formatoLabel} confere com o PDF` : `❌ ${formatoLabel} DIVERGE do PDF`}</div>
       <div style="font-size:12px;">
-        Qtde: PDF <b>${fmtQt(t.pdf.qtde)}</b> × parseado <b>${fmtQt(t.parsed.qtde)}</b> (diferença ${fmtQt(t.parsed.qtde - t.pdf.qtde)})<br>
+        ${qtdeRow}
         Valor: PDF <b>R$ ${fmtBR(t.pdf.vlEntrada)}</b> × parseado <b>R$ ${fmtBR(t.parsed.valor)}</b> (diferença R$ ${fmtBR(t.parsed.valor - t.pdf.vlEntrada)})
+        ${reconciliacao.formato === "novo" && t.pdf.notas ? `<br>Notas no PDF: <b>${t.pdf.notas}</b> · NFs reconciliadas: <b>${reconciliacao.nf.length}</b>` : ""}
       </div>
     </div>`;
   } else {
@@ -3925,6 +4120,40 @@ function renderImportPreview() {
           </tr>`;
         }).join("")}</tbody>
       </table>
+    </details>`;
+  }
+
+  // Por NF (formato novo)
+  if (reconciliacao.nf && reconciliacao.nf.length > 0) {
+    const probsN = reconciliacao.nf.filter(n => !n.okValor);
+    reconHtml += `<details ${probsN.length > 0 ? "open" : ""} style="margin-bottom:8px;">
+      <summary style="cursor:pointer;font-weight:600;padding:6px 0;">
+        Por Nota Fiscal — ${reconciliacao.nf.length - probsN.length} OK / ${probsN.length} divergência(s)
+      </summary>
+      <div style="max-height:240px;overflow:auto;border:1px solid var(--border);border-radius:6px;margin-top:6px;">
+        <table style="width:100%;font-size:12px;border-collapse:collapse;">
+          <thead style="background:#f8fafc;position:sticky;top:0;"><tr>
+            <th style="text-align:left;padding:6px;">NF</th>
+            <th style="text-align:left;padding:6px;">Fornecedor</th>
+            <th class="num" style="padding:6px;">Vl.Total (PDF)</th>
+            <th class="num" style="padding:6px;">Σ Itens (parseado)</th>
+            <th class="num" style="padding:6px;">Diferença</th>
+            <th style="padding:6px;">Status</th>
+          </tr></thead>
+          <tbody>${(probsN.length > 0 ? probsN : reconciliacao.nf).slice(0, 80).map(n => {
+            const diff = n.parsed.valor - n.pdf.vlEntrada;
+            return `<tr style="background:${n.okValor?'transparent':'#fee2e2'};">
+              <td style="padding:4px 6px;">${escapeHtml(n.nf)}</td>
+              <td style="padding:4px 6px;">${escapeHtml(n.codFornec)} ${escapeHtml(n.fornecNome || "")}</td>
+              <td class="num" style="padding:4px 6px;">R$ ${fmtBR(n.pdf.vlEntrada)}</td>
+              <td class="num" style="padding:4px 6px;">R$ ${fmtBR(n.parsed.valor)}</td>
+              <td class="num" style="padding:4px 6px;color:${Math.abs(diff)>1?'var(--danger)':'var(--text-muted)'};">${diff >= 0 ? "+" : ""}R$ ${fmtBR(diff)}</td>
+              <td style="padding:4px 6px;">${n.okValor ? "✅" : "❌"}</td>
+            </tr>`;
+          }).join("")}</tbody>
+        </table>
+      </div>
+      ${reconciliacao.nf.length > 80 ? `<div class="muted" style="font-size:11px;padding:4px 6px;">Mostrando primeiras 80 NFs</div>` : ""}
     </details>`;
   }
 

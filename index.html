@@ -1811,44 +1811,96 @@
   <!-- ============================== AUDITORIA ============================== -->
 
   <section id="panel-auditoria" class="panel">
-    <div class="alert warn" style="margin-bottom:14px;">
-      <div>
-        <b>Por que estoque negativo é um problema?</b><br>
-        Quando uma saída acontece sem entrada correspondente, o sistema usa o último custo conhecido ou zero — distorcendo o CMV, a margem e o CMP do item. Os casos abaixo precisam de atenção.
+    <!-- Sub-tabs da Auditoria -->
+    <div class="tabs" style="margin-bottom:16px;">
+      <div class="tab active" data-audsec="negativo" onclick="setAuditSecao('negativo')">📉 Estoque negativo</div>
+      <div class="tab" data-audsec="duplicadas" onclick="setAuditSecao('duplicadas')">🔁 Vendas duplicadas <span id="audit-dup-badge" class="chip red hidden" style="margin-left:6px; font-size:10px; padding:1px 6px;">0</span></div>
+    </div>
+
+    <!-- =================== Sub-seção: Estoque negativo =================== -->
+    <div id="audit-sec-negativo">
+      <div class="alert warn" style="margin-bottom:14px;">
+        <div>
+          <b>Por que estoque negativo é um problema?</b><br>
+          Quando uma saída acontece sem entrada correspondente, o sistema usa o último custo conhecido ou zero — distorcendo o CMV, a margem e o CMP do item. Os casos abaixo precisam de atenção.
+        </div>
+      </div>
+
+      <div class="kpis painel-kpis-grid" id="audit-kpis" style="margin-bottom:18px;"></div>
+
+      <div class="toolbar" style="margin-bottom:12px;">
+        <div class="chip-toggle">
+          <button class="active" data-audfilter="problemas" onclick="setAuditFilter('problemas')">Com problema</button>
+          <button data-audfilter="negativo-atual" onclick="setAuditFilter('negativo-atual')">Negativo agora</button>
+          <button data-audfilter="historico" onclick="setAuditFilter('historico')">Só histórico</button>
+          <button data-audfilter="todos" onclick="setAuditFilter('todos')">Todos</button>
+        </div>
+        <input type="text" id="audit-search" placeholder="Buscar por código ou descrição..." style="min-width:240px;">
+        <div style="margin-left:auto;" class="muted" id="audit-count">—</div>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto;">
+          <table id="audit-table">
+            <thead>
+              <tr>
+                <th style="width:75px;">Código</th>
+                <th>Descrição</th>
+                <th style="width:130px;">Grupo</th>
+                <th style="width:120px;">Status</th>
+                <th class="num" style="width:110px;">Saldo atual (kg)</th>
+                <th class="num" style="width:110px;">Pior negativo (kg)</th>
+                <th style="width:100px;">Primeiro neg.</th>
+                <th>Sugestão de correção</th>
+                <th style="width:130px;"></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <div class="kpis painel-kpis-grid" id="audit-kpis" style="margin-bottom:18px;"></div>
-
-    <div class="toolbar" style="margin-bottom:12px;">
-      <div class="chip-toggle">
-        <button class="active" data-audfilter="problemas" onclick="setAuditFilter('problemas')">Com problema</button>
-        <button data-audfilter="negativo-atual" onclick="setAuditFilter('negativo-atual')">Negativo agora</button>
-        <button data-audfilter="historico" onclick="setAuditFilter('historico')">Só histórico</button>
-        <button data-audfilter="todos" onclick="setAuditFilter('todos')">Todos</button>
+    <!-- =================== Sub-seção: Vendas duplicadas =================== -->
+    <div id="audit-sec-duplicadas" class="hidden">
+      <div class="alert warn" style="margin-bottom:14px;">
+        <div>
+          <b>Como identificamos uma venda duplicada?</b><br>
+          Vendas com a mesma <b>data + cliente + produto + quantidade</b> são tratadas como possíveis duplicatas. Isso geralmente acontece quando o Rel.8005 é importado em períodos com sobreposição (ex: janeiro 2x, ou janeiro + janeiro-fevereiro).
+          <br>Ao excluir, a primeira venda inserida é mantida e as demais (com seus movimentos de saída) são removidas.
+        </div>
       </div>
-      <input type="text" id="audit-search" placeholder="Buscar por código ou descrição..." style="min-width:240px;">
-      <div style="margin-left:auto;" class="muted" id="audit-count">—</div>
-    </div>
 
-    <div class="card">
-      <div style="overflow-x:auto;">
-        <table id="audit-table">
-          <thead>
-            <tr>
-              <th style="width:75px;">Código</th>
-              <th>Descrição</th>
-              <th style="width:130px;">Grupo</th>
-              <th style="width:120px;">Status</th>
-              <th class="num" style="width:110px;">Saldo atual (kg)</th>
-              <th class="num" style="width:110px;">Pior negativo (kg)</th>
-              <th style="width:100px;">Primeiro neg.</th>
-              <th>Sugestão de correção</th>
-              <th style="width:130px;"></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+      <div class="kpis painel-kpis-grid" id="audit-dup-kpis" style="margin-bottom:18px;"></div>
+
+      <div class="toolbar" style="margin-bottom:12px;">
+        <input type="text" id="audit-dup-search" placeholder="Buscar por NF, cliente, código..." style="min-width:240px;">
+        <input type="date" id="audit-dup-de" title="Data inicial">
+        <input type="date" id="audit-dup-ate" title="Data final">
+        <button class="btn ghost small" onclick="document.getElementById('audit-dup-de').value=''; document.getElementById('audit-dup-ate').value=''; renderAuditoriaDuplicadas();">✕</button>
+        <button class="btn danger" onclick="limparTodasDuplicatasVendas()" title="Em cada grupo, mantém a venda mais antiga e remove as duplicatas">🗑 Limpar todas as duplicatas</button>
+        <div style="margin-left:auto;" class="muted" id="audit-dup-count">—</div>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto;">
+          <table id="audit-dup-table">
+            <thead>
+              <tr>
+                <th style="width:40px;"></th>
+                <th style="width:95px;">Data</th>
+                <th>Cliente</th>
+                <th style="width:90px;">Cód. item</th>
+                <th>Descrição</th>
+                <th class="num" style="width:90px;">Qtde (kg)</th>
+                <th class="num" style="width:110px;">Valor</th>
+                <th style="width:155px;">Docto (NF)</th>
+                <th style="width:130px;"></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </section>
@@ -2786,6 +2838,7 @@ function renderAll() {
   renderPainel();
   // Auditoria só atualiza o badge no menu (não renderiza tabela se não estiver visível)
   try { renderAuditoria(); } catch (_) {}
+  try { renderAuditoriaDuplicadas(); } catch (_) {}
 }
 
 /* ======================= PAINEL — visão do mês ======================= */
@@ -5634,11 +5687,20 @@ function importFaturamentoXLSX(event) {
       // RCA vem como "970 - DANIELI FELIX DA SILVA" -> mantém formato igual ao já usado
       // no resto do sistema (campo `vendedor` é uma string única).
 
-      // ---- Processa linhas, detectando duplicatas exatas ----
-      const visto = new Set();         // chave canônica de TODAS as 38 colunas
+      // ---- Processa linhas, detectando duplicatas exatas (intra-arquivo)
+      // e ALSO ignorando linhas que já existem como venda no state (re-importação).
+      const visto = new Set();         // chave canônica de TODAS as colunas (intra-arquivo)
+      const jaExistentes = new Set();  // chave de negócio (data|cliente|codigo|qtde) já no state
+      (state.vendas || []).forEach(v => {
+        (v.itens || []).forEach(vi => {
+          const cod = vi.codigo || (state.itens.find(x => x.id === vi.itemId)?.codigo) || "";
+          const qt  = Math.round(Number(vi.qtde || 0) * 1000) / 1000;
+          jaExistentes.add(`${v.data}|${v.clienteCod||""}|${cod}|${qt}`);
+        });
+      });
       const novasVendas = [];
       const semItem = new Set();
-      let ignoradasDup = 0, semData = 0, semQtde = 0, semCodigo = 0;
+      let ignoradasDup = 0, ignoradasJaExiste = 0, semData = 0, semQtde = 0, semCodigo = 0;
 
       for (let i = 1; i < rows.length; i++) {
         const r = rows[i];
@@ -5664,6 +5726,11 @@ function importFaturamentoXLSX(event) {
         if (!codigo)  { semCodigo++; continue; }
         if (!dataISO) { semData++;   continue; }
         if (qtde === 0) { semQtde++; continue; }
+
+        // Hardening cross-imports: se já existe venda com mesma (data+cliente+codigo+qtde), pula.
+        const chaveNeg = `${dataISO}|${clienteCod}|${codigo}|${Math.round(qtde * 1000) / 1000}`;
+        if (jaExistentes.has(chaveNeg)) { ignoradasJaExiste++; continue; }
+        jaExistentes.add(chaveNeg);
 
         const precoVenda = vlTotal / qtde;             // unitário derivado
 
@@ -5722,10 +5789,11 @@ function importFaturamentoXLSX(event) {
 
       if (novasVendas.length === 0) {
         let msg = "Nenhuma venda extraída do Relatório 8005.";
-        if (ignoradasDup) msg += `\n• ${ignoradasDup} linha(s) duplicada(s) ignorada(s)`;
-        if (semData)      msg += `\n• ${semData} sem data válida`;
-        if (semQtde)      msg += `\n• ${semQtde} com quantidade zero`;
-        if (semCodigo)    msg += `\n• ${semCodigo} sem código de produto`;
+        if (ignoradasDup)      msg += `\n• ${ignoradasDup} linha(s) duplicada(s) na planilha`;
+        if (ignoradasJaExiste) msg += `\n• ${ignoradasJaExiste} linha(s) já existem como venda no sistema`;
+        if (semData)           msg += `\n• ${semData} sem data válida`;
+        if (semQtde)           msg += `\n• ${semQtde} com quantidade zero`;
+        if (semCodigo)         msg += `\n• ${semCodigo} sem código de produto`;
         alert(msg);
         return;
       }
@@ -5742,10 +5810,11 @@ function importFaturamentoXLSX(event) {
       renderAll();
 
       let msg = `✅ Relatório 8005 importado!\n\n• ${novasVendas.length} venda(s) adicionada(s)`;
-      if (ignoradasDup) msg += `\n• ${ignoradasDup} duplicata(s) ignorada(s)`;
-      if (semData)      msg += `\n• ${semData} sem data válida`;
-      if (semQtde)      msg += `\n• ${semQtde} com quantidade zero`;
-      if (semCodigo)    msg += `\n• ${semCodigo} sem código de produto`;
+      if (ignoradasDup)      msg += `\n• ${ignoradasDup} duplicata(s) na planilha ignoradas`;
+      if (ignoradasJaExiste) msg += `\n• ${ignoradasJaExiste} venda(s) já existentes no sistema (pulado para evitar duplicação)`;
+      if (semData)           msg += `\n• ${semData} sem data válida`;
+      if (semQtde)           msg += `\n• ${semQtde} com quantidade zero`;
+      if (semCodigo)         msg += `\n• ${semCodigo} sem código de produto`;
       if (semItem.size) {
         const lista = [...semItem].slice(0, 10).join(', ');
         const extra = semItem.size > 10 ? ` e mais ${semItem.size-10}` : '';
@@ -8107,8 +8176,201 @@ function auditarEstoqueNegativo() {
 let auditFilter = "problemas";
 function setAuditFilter(v) {
   auditFilter = v;
-  document.querySelectorAll('#panel-auditoria .chip-toggle button').forEach(b => b.classList.toggle("active", b.dataset.audfilter === v));
+  document.querySelectorAll('#audit-sec-negativo .chip-toggle button[data-audfilter]').forEach(b => b.classList.toggle("active", b.dataset.audfilter === v));
   renderAuditoria();
+}
+
+let auditSecaoAtiva = "negativo";
+function setAuditSecao(s) {
+  auditSecaoAtiva = s;
+  document.querySelectorAll('#panel-auditoria > .tabs .tab[data-audsec]').forEach(t => t.classList.toggle("active", t.dataset.audsec === s));
+  document.getElementById("audit-sec-negativo").classList.toggle("hidden", s !== "negativo");
+  document.getElementById("audit-sec-duplicadas").classList.toggle("hidden", s !== "duplicadas");
+  if (s === "negativo")   renderAuditoria();
+  if (s === "duplicadas") renderAuditoriaDuplicadas();
+}
+
+/* ======================= AUDITORIA: VENDAS DUPLICADAS ======================= */
+
+// Agrupa vendas por (data, clienteCod, itemCodigo, qtdeArred) e retorna grupos com 2+.
+// A 1ª venda do grupo (ordem de inserção em state.vendas) é a "original"; as demais são duplicatas.
+function auditarVendasDuplicadas() {
+  const grupos = new Map();
+  (state.vendas || []).forEach((v, idx) => {
+    (v.itens || []).forEach(vi => {
+      const codigo = vi.codigo || (state.itens.find(x => x.id === vi.itemId)?.codigo) || "";
+      const qt = Math.round(Number(vi.qtde || 0) * 1000) / 1000;
+      const chave = `${v.data}|${v.clienteCod||""}|${codigo}|${qt}`;
+      if (!grupos.has(chave)) grupos.set(chave, []);
+      grupos.get(chave).push({ venda: v, vendaIdx: idx, item: vi, codigo, qt });
+    });
+  });
+  const duplicadas = [];
+  grupos.forEach((arr, chave) => {
+    if (arr.length < 2) return;
+    arr.sort((a,b) => a.vendaIdx - b.vendaIdx); // preserva ordem de inserção
+    duplicadas.push({ chave, entradas: arr });
+  });
+  return duplicadas;
+}
+
+function renderAuditoriaDuplicadas() {
+  const grupos = auditarVendasDuplicadas();
+  const totalGrupos = grupos.length;
+  const totalDuplicatas = grupos.reduce((s,g) => s + (g.entradas.length - 1), 0);
+  const valorDup = grupos.reduce((s,g) => {
+    return s + g.entradas.slice(1).reduce((ss, e) => {
+      const vt = Number(e.item.vlVendaTotal || (e.item.qtde * e.item.precoVenda) || 0);
+      return ss + vt;
+    }, 0);
+  }, 0);
+
+  // Badge no sub-tab
+  const badge = document.getElementById("audit-dup-badge");
+  if (badge) {
+    if (totalDuplicatas > 0) { badge.textContent = totalDuplicatas; badge.classList.remove("hidden"); }
+    else                     { badge.classList.add("hidden"); }
+  }
+
+  // KPIs
+  const kpiHost = document.getElementById("audit-dup-kpis");
+  if (kpiHost) {
+    kpiHost.innerHTML = `
+      <div class="kpi">
+        <div class="label">Grupos duplicados</div>
+        <div class="value" style="color:${totalGrupos > 0 ? 'var(--danger)' : 'var(--ok)'};">${totalGrupos}</div>
+        <div class="hint">${totalGrupos > 0 ? `${totalDuplicatas} venda(s) a remover` : 'sem duplicatas'}</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Valor duplicado</div>
+        <div class="value" style="color:var(--danger);">${fmtMoney(valorDup)}</div>
+        <div class="hint">soma das duplicatas (não da venda original)</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Total de vendas</div>
+        <div class="value">${(state.vendas||[]).length}</div>
+        <div class="hint">após remoção: ${(state.vendas||[]).length - totalDuplicatas}</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Saúde dos lançamentos</div>
+        <div class="value" style="color:${totalDuplicatas === 0 ? 'var(--ok)' : 'var(--warn)'};">${(state.vendas||[]).length > 0 ? Math.round((1 - totalDuplicatas/(state.vendas||[]).length)*100) : 100}%</div>
+        <div class="hint">vendas únicas</div>
+      </div>
+    `;
+  }
+
+  // Filtros
+  const txt = (document.getElementById("audit-dup-search")?.value || "").toLowerCase();
+  const fDe  = document.getElementById("audit-dup-de")?.value || "";
+  const fAte = document.getElementById("audit-dup-ate")?.value || "";
+
+  const filtrados = grupos.filter(g => {
+    const sample = g.entradas[0];
+    if (fDe  && sample.venda.data < fDe ) return false;
+    if (fAte && sample.venda.data > fAte) return false;
+    if (txt) {
+      const blob = g.entradas.map(e => `${e.venda.docto||""} ${e.venda.cliente||""} ${e.codigo} ${e.item.descricao||""}`).join(" ").toLowerCase();
+      if (!blob.includes(txt)) return false;
+    }
+    return true;
+  });
+
+  const countEl = document.getElementById("audit-dup-count");
+  if (countEl) {
+    const dupsExibidas = filtrados.reduce((s,g) => s + (g.entradas.length - 1), 0);
+    countEl.textContent = `${filtrados.length} grupo(s) · ${dupsExibidas} duplicata(s)`;
+  }
+
+  const tbody = document.querySelector("#audit-dup-table tbody");
+  if (!filtrados.length) {
+    tbody.innerHTML = emptyTableRow(9, "✅", "Nenhuma duplicata", totalDuplicatas === 0
+      ? "Todas as suas vendas são únicas."
+      : "Ajuste os filtros para ver os grupos detectados.");
+    return;
+  }
+
+  // Renderiza por grupo (com header + linhas)
+  const html = filtrados.map((g, gi) => {
+    const sample = g.entradas[0];
+    const total = g.entradas.length;
+    const sep = `<tr style="background:var(--bg-softer);">
+      <td colspan="9" style="padding:8px 14px; font-size:12px; font-weight:600; color:var(--text-soft);">
+        Grupo ${gi+1} · ${total} vendas iguais (${total-1} duplicata${total > 2 ? 's' : ''})
+        · <span class="chip orange">${fmtDate(sample.venda.data)}</span>
+        · ${escapeHtml(sample.venda.cliente || "(sem cliente)")}
+        · item <b>${escapeHtml(sample.codigo)}</b>
+      </td>
+    </tr>`;
+
+    const linhas = g.entradas.map((e, idx) => {
+      const isOriginal = idx === 0;
+      const venda = e.venda;
+      const vi    = e.item;
+      const vlTotal = Number(vi.vlVendaTotal || (vi.qtde * vi.precoVenda) || 0);
+      const tag = isOriginal
+        ? `<span class="chip green" title="Mantida (inserida primeiro)">manter</span>`
+        : `<span class="chip red"   title="Duplicata">duplicata</span>`;
+      const bg = isOriginal ? "" : ' style="background:#fef2f2;"';
+      const acao = isOriginal
+        ? `<button class="btn small ghost" onclick="auditOpenVenda('${venda.id}')" title="Abrir detalhes">abrir</button>`
+        : `<button class="btn small danger" onclick="excluirVendaDuplicata('${venda.id}')" title="Remover esta venda e suas saídas">🗑 Excluir</button>`;
+      return `<tr${bg}>
+        <td>${tag}</td>
+        <td>${fmtDate(venda.data)}</td>
+        <td>${escapeHtml(venda.cliente || "—")}</td>
+        <td><b>${escapeHtml(e.codigo)}</b></td>
+        <td>${escapeHtml(vi.descricao || "")}</td>
+        <td class="num">${fmtNum(e.qt)}</td>
+        <td class="num">${fmtMoney(vlTotal)}</td>
+        <td class="muted" style="font-size:11px;">${escapeHtml(venda.docto || "—")}</td>
+        <td>${acao}</td>
+      </tr>`;
+    }).join("");
+    return sep + linhas;
+  }).join("");
+  tbody.innerHTML = html;
+}
+
+function excluirVendaDuplicata(vendaId) {
+  const v = (state.vendas||[]).find(x => x.id === vendaId);
+  if (!v) return;
+  if (!confirm(`Excluir esta venda duplicada?\n\nNF: ${v.docto || "—"}\nData: ${fmtDate(v.data)}\nCliente: ${v.cliente || "—"}\n\nOs movimentos de saída vinculados também serão removidos.`)) return;
+  removerMovimentosVenda(vendaId);
+  state.vendas = (state.vendas||[]).filter(x => x.id !== vendaId);
+  persist();
+  renderAll();
+  setAuditSecao("duplicadas");
+  showToast("Venda duplicada excluída.", "ok");
+}
+
+function limparTodasDuplicatasVendas() {
+  const grupos = auditarVendasDuplicadas();
+  const totalDup = grupos.reduce((s,g) => s + (g.entradas.length - 1), 0);
+  if (totalDup === 0) { alert("Nenhuma duplicata para remover."); return; }
+  if (!confirm(`Remover ${totalDup} venda(s) duplicada(s)?\n\nEm cada grupo, a venda mais antiga (1ª inserida) é mantida; as demais são removidas junto com seus movimentos de saída no estoque.\n\nEsta ação não pode ser desfeita.`)) return;
+
+  const idsParaRemover = [];
+  grupos.forEach(g => {
+    g.entradas.slice(1).forEach(e => idsParaRemover.push(e.venda.id));
+  });
+  idsParaRemover.forEach(id => removerMovimentosVenda(id));
+  const setIds = new Set(idsParaRemover);
+  state.vendas = (state.vendas||[]).filter(v => !setIds.has(v.id));
+  persist();
+  renderAll();
+  setAuditSecao("duplicadas");
+  showToast(`${totalDup} venda(s) duplicada(s) removidas.`, "ok");
+}
+
+function auditOpenVenda(vendaId) {
+  // Vai para Vendas e abre o detalhe se houver função
+  const navTab = document.querySelector('.app-sidebar .tab[data-tab="vendas"]');
+  if (navTab) navTab.click();
+  setTimeout(() => {
+    if (typeof openVendaDetail === "function") {
+      try { openVendaDetail(registerVendaKey({ id: vendaId })); } catch(_) {}
+    }
+  }, 100);
 }
 
 function renderAuditoria() {
@@ -8334,6 +8596,9 @@ safeListen("mov-item-select", "change", renderMovimentos);
 // Vendas: filtros e data no modal
 ["filter-vendas","filter-vendas-de","filter-vendas-ate"].forEach(id=>safeListen(id, "input", renderVendas));
 safeListen("audit-search", "input", renderAuditoria);
+["audit-dup-search","audit-dup-de","audit-dup-ate"].forEach(id => safeListen(id, "input", renderAuditoriaDuplicadas));
+safeListen("audit-dup-de", "change", renderAuditoriaDuplicadas);
+safeListen("audit-dup-ate", "change", renderAuditoriaDuplicadas);
 safeListen("filter-vendas-gran", "change", renderVendas);
 safeListen("m-venda-data", "change", () => { renderVendaItensTable(); });
 safeListen("v-filter-det","input", renderVendas);

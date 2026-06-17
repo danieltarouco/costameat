@@ -7917,54 +7917,63 @@ function openNFEdit(docto) {
   openModal("modal-nf-edit");
 }
 
-function nfEditRenderTabela() {
+function nfEditComputaValores() {
   const desconto = Number(document.getElementById("modal-nf-desconto").value || 0);
-  const tbody    = document.getElementById("modal-nf-tbody");
-  const tfoot    = document.getElementById("modal-nf-tfoot");
-
-  // Valor original total da NF (usa qtdeOrig/valorOrig se existir, senão atual)
   const valorOrigTotal = _nfEditMovs.reduce((s, x) => {
     const m = x.mov;
     return s + Number(m.valorOrig ?? m.valor ?? 0);
   }, 0);
 
-  let totQtdeOrig = 0, totValorOrig = 0, totValorAdj = 0;
-
-  tbody.innerHTML = _nfEditMovs.map((x, idx) => {
-    const { item, mov: m } = x;
+  const linhas = _nfEditMovs.map(x => {
+    const { mov: m } = x;
     const qtdeOrig  = Number(m.qtdeOrig  ?? m.qtde  ?? 0);
     const valorOrig = Number(m.valorOrig ?? m.valor ?? 0);
-    // Qtde nova — o que o usuário digitou (input inline)
-    const qtdeNova  = Number(m._nfQtdeTemp ?? qtdeOrig);
-    // Valor proporcionalmente ajustado pela qtde + desconto
+    const tempVal   = m._nfQtdeTemp;
+    // Aceita string "12.5" como input parcial sem quebrar — usa qtdeOrig se vazio/inválido
+    const qtdeNova  = (tempVal == null || tempVal === "" || isNaN(Number(tempVal))) ? qtdeOrig : Number(tempVal);
     const proporção = valorOrigTotal > 0 ? valorOrig / valorOrigTotal : 0;
     const descontoItem = desconto * proporção;
     const fatorQtde = qtdeOrig > 0 ? qtdeNova / qtdeOrig : 1;
     const valorAdj  = (valorOrig * fatorQtde) - descontoItem;
     const precoUnit = qtdeNova > 0 ? valorAdj / qtdeNova : 0;
+    return { qtdeOrig, valorOrig, qtdeNova, valorAdj, precoUnit, mudouQtde: qtdeNova !== qtdeOrig, mudouValor: Math.abs(valorAdj - valorOrig) > 0.01 };
+  });
 
-    totQtdeOrig  += qtdeOrig;
-    totValorOrig += valorOrig;
-    totValorAdj  += valorAdj;
+  return { linhas, valorOrigTotal };
+}
 
-    const mudouQtde  = qtdeNova !== qtdeOrig;
-    const mudouValor = Math.abs(valorAdj - valorOrig) > 0.01;
+function nfEditRenderTabela() {
+  const tbody = document.getElementById("modal-nf-tbody");
+  const { linhas } = nfEditComputaValores();
+  let totQtdeOrig = 0, totValorOrig = 0, totValorAdj = 0;
 
-    return `<tr style="${mudouQtde || mudouValor ? 'background:#fefce8;' : ''}">
+  tbody.innerHTML = _nfEditMovs.map((x, idx) => {
+    const { item, mov: m } = x;
+    const L = linhas[idx];
+    totQtdeOrig  += L.qtdeOrig;
+    totValorOrig += L.valorOrig;
+    totValorAdj  += L.valorAdj;
+
+    return `<tr data-row-idx="${idx}" style="${L.mudouQtde || L.mudouValor ? 'background:#fefce8;' : ''}">
       <td style="padding:7px 10px;border-bottom:1px solid var(--border);"><b>${item.codigo}</b></td>
       <td style="padding:7px 10px;border-bottom:1px solid var(--border); max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${item.descricao}">${item.descricao}</td>
-      <td style="padding:7px 10px;border-bottom:1px solid var(--border); text-align:right; color:var(--text-muted);">${fmtNum(qtdeOrig)}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid var(--border); text-align:right; color:var(--text-muted);">${fmtNum(L.qtdeOrig)}</td>
       <td style="padding:7px 10px;border-bottom:1px solid var(--border); text-align:right; background:#eff6ff;">
-        <input type="number" step="0.001" min="0" value="${qtdeNova}"
-          style="width:75px; text-align:right; border:1px solid #93c5fd; border-radius:4px; padding:3px 6px; font-size:12px;"
+        <input type="number" step="0.001" min="0" value="${L.qtdeNova}"
+          style="width:90px; text-align:right; border:1px solid #93c5fd; border-radius:4px; padding:5px 8px; font-size:13px;"
           oninput="nfEditSetQtde(${idx}, this.value)">
       </td>
-      <td style="padding:7px 10px;border-bottom:1px solid var(--border); text-align:right; color:var(--text-muted);">${fmtMoney(valorOrig)}</td>
-      <td style="padding:7px 10px;border-bottom:1px solid var(--border); text-align:right; font-weight:600; color:${mudouValor?'var(--primary)':''};">${fmtMoney(valorAdj)}</td>
-      <td style="padding:7px 10px;border-bottom:1px solid var(--border); text-align:right; font-size:12px; color:var(--text-soft);">${fmtMoney(precoUnit)}</td>
+      <td style="padding:7px 10px;border-bottom:1px solid var(--border); text-align:right; color:var(--text-muted);">${fmtMoney(L.valorOrig)}</td>
+      <td data-cell="valorAdj" style="padding:7px 10px;border-bottom:1px solid var(--border); text-align:right; font-weight:600; color:${L.mudouValor?'var(--primary)':''};">${fmtMoney(L.valorAdj)}</td>
+      <td data-cell="precoUnit" style="padding:7px 10px;border-bottom:1px solid var(--border); text-align:right; font-size:12px; color:var(--text-soft);">${fmtMoney(L.precoUnit)}</td>
     </tr>`;
   }).join("");
 
+  nfEditUpdateFooter(totQtdeOrig, totValorOrig, totValorAdj);
+}
+
+function nfEditUpdateFooter(totQtdeOrig, totValorOrig, totValorAdj) {
+  const tfoot = document.getElementById("modal-nf-tfoot");
   tfoot.innerHTML = `<tr style="background:#f8fafc; font-weight:600;">
     <td colspan="2" style="padding:8px 10px; text-align:right;">${_nfEditMovs.length} itens</td>
     <td style="padding:8px 10px; text-align:right;">${fmtNum(totQtdeOrig)}</td>
@@ -7975,14 +7984,43 @@ function nfEditRenderTabela() {
   </tr>`;
 }
 
+// Atualiza só células de valor + footer sem destruir os inputs (preserva foco/cursor)
+function nfEditUpdateValores() {
+  const tbody = document.getElementById("modal-nf-tbody");
+  if (!tbody) return;
+  const { linhas } = nfEditComputaValores();
+  let totQtdeOrig = 0, totValorOrig = 0, totValorAdj = 0;
+
+  linhas.forEach((L, idx) => {
+    totQtdeOrig  += L.qtdeOrig;
+    totValorOrig += L.valorOrig;
+    totValorAdj  += L.valorAdj;
+
+    const row = tbody.querySelector(`tr[data-row-idx="${idx}"]`);
+    if (!row) return;
+    row.style.background = (L.mudouQtde || L.mudouValor) ? "#fefce8" : "";
+    const adjCell = row.querySelector('[data-cell="valorAdj"]');
+    if (adjCell) {
+      adjCell.textContent = fmtMoney(L.valorAdj);
+      adjCell.style.color = L.mudouValor ? "var(--primary)" : "";
+    }
+    const puCell = row.querySelector('[data-cell="precoUnit"]');
+    if (puCell) puCell.textContent = fmtMoney(L.precoUnit);
+  });
+
+  nfEditUpdateFooter(totQtdeOrig, totValorOrig, totValorAdj);
+}
+
 function nfEditSetQtde(idx, val) {
-  // Salva temporariamente no objeto mov para o preview
-  _nfEditMovs[idx].mov._nfQtdeTemp = val === "" ? null : Number(val);
-  nfEditRenderTabela();
+  // Salva como STRING (pra aceitar dígitos parciais tipo "1." durante a digitação)
+  _nfEditMovs[idx].mov._nfQtdeTemp = (val === "" || val == null) ? null : val;
+  // Atualiza só os números — não toca nos inputs (preserva foco)
+  nfEditUpdateValores();
 }
 
 function nfEditPreview() {
-  nfEditRenderTabela();
+  // Desconto mudou — recalcula tudo, mas sem rebuild de input (atualização parcial)
+  nfEditUpdateValores();
 }
 
 function saveNFEdit() {

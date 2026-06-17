@@ -1620,10 +1620,9 @@
               <div class="muted" style="font-size:11px; text-transform:uppercase;" id="mov-saldo-label">Saldo Atual</div>
               <div style="font-weight:600;" id="mov-saldo-qtde">—</div>
             </div>
-            <div><div class="muted" style="font-size:11px; text-transform:uppercase;">Valor Bruto</div><div style="font-weight:600;" id="mov-saldo-valor">—</div></div>
-            <div><div class="muted" style="font-size:11px; text-transform:uppercase;">Valor Líquido</div><div style="font-weight:600; color:var(--ok);" id="mov-saldo-valor-liq">—</div></div>
-            <div><div class="muted" style="font-size:11px; text-transform:uppercase;">Preço Médio</div><div style="font-weight:600; color:var(--primary);" id="mov-preco-medio">—</div></div>
-            <div><div class="muted" style="font-size:11px; text-transform:uppercase;">PM Líquido</div><div style="font-weight:600; color:var(--ok);" id="mov-preco-medio-liq">—</div></div>
+            <div><div class="muted" style="font-size:11px; text-transform:uppercase;">Valor</div><div style="font-weight:600; color:var(--ok);" id="mov-saldo-valor-liq">—</div></div>
+            <div><div class="muted" style="font-size:11px; text-transform:uppercase;">Preço Médio</div><div style="font-weight:600; color:var(--primary);" id="mov-preco-medio-liq">—</div></div>
+            <span id="mov-saldo-valor" class="hidden"></span><span id="mov-preco-medio" class="hidden"></span>
             <div id="mov-saldo-inicio-wrap" style="display:none; border-left:1px solid var(--border); padding-left:20px;">
               <div class="muted" style="font-size:11px; text-transform:uppercase;">Saldo Início Período</div>
               <div style="font-weight:600; color:var(--text-soft);" id="mov-saldo-inicio-qtde">—</div>
@@ -1635,8 +1634,8 @@
         <table id="mov-table">
           <thead>
             <tr>
-              <th colspan="7" style="text-align:center; background:#eef2f7; border-right:2px solid var(--border-strong);">MOVIMENTOS</th>
-              <th colspan="5" style="text-align:center; background:#f0fdfa;">SALDOS</th>
+              <th colspan="6" style="text-align:center; background:#eef2f7; border-right:2px solid var(--border-strong);">MOVIMENTOS</th>
+              <th colspan="3" style="text-align:center; background:#f0fdfa;">SALDOS</th>
               <th style="width:55px;"></th>
             </tr>
             <tr>
@@ -1645,13 +1644,10 @@
               <th style="width:75px;">Docto</th>
               <th style="width:45px;">E/S</th>
               <th class="num" style="width:100px;">Quantidade</th>
-              <th class="num" style="width:110px;">Valor Bruto</th>
-              <th class="num" style="width:110px; border-right:2px solid var(--border-strong);">Valor Líquido</th>
-              <th class="num" style="width:95px;">Qtde</th>
-              <th class="num" style="width:110px;">Valor Bruto</th>
-              <th class="num" style="width:110px;">Valor Líq.</th>
-              <th class="num" style="width:100px;">PM</th>
-              <th class="num" style="width:100px;">PM Líq.</th>
+              <th class="num" style="width:120px; border-right:2px solid var(--border-strong);">Valor</th>
+              <th class="num" style="width:100px;">Qtde</th>
+              <th class="num" style="width:130px;">Valor</th>
+              <th class="num" style="width:110px;">Preço Médio</th>
               <th></th>
             </tr>
           </thead>
@@ -5055,12 +5051,9 @@ function renderMovimentos() {
         <td>${l.data ? fmtDate(l.data) : ""}</td>
         <td></td><td></td><td></td>
         <td class="num"></td>
-        <td class="num"><span class="muted" style="font-style:italic;">${rotulo}</span></td>
-        <td class="num" style="border-right:2px solid var(--border-strong);"></td>
+        <td class="num" style="border-right:2px solid var(--border-strong);"><span class="muted" style="font-style:italic;">${rotulo}</span></td>
         <td class="num"><b>${fmtNum(l.qtdeSaldo)}</b></td>
-        <td class="num">${fmtMoney(l.valorSaldo)}</td>
         <td class="num" style="color:var(--ok);">${fmtMoney(l.valorLiqSaldo)}</td>
-        <td class="num"><b>${l.precoMedio ? fmtMoney(l.precoMedio) : fmtMoney(0)}</b></td>
         <td class="num" style="color:var(--ok);"><b>${l.precoMedioLiq ? fmtMoney(l.precoMedioLiq) : fmtMoney(0)}</b></td>
         <td></td>
       </tr>`;
@@ -5097,12 +5090,9 @@ function renderMovimentos() {
       <td>${l.docto||""}${isAjustada?' <span style="font-size:10px;color:#92400e;background:#fde047;padding:1px 4px;border-radius:8px;">ajust.</span>':''}</td>
       <td>${chip}</td>
       <td class="num">${fmtNum(l.qtdeMov)}</td>
-      <td class="num">${fmtMoney(l.valorMov)}</td>
       <td class="num" style="color:var(--ok); border-right:2px solid var(--border-strong);">${fmtMoney(l.valorLiqMov)}</td>
       <td class="num">${saldoQtdeCell}</td>
-      <td class="num">${fmtMoney(l.valorSaldo)}</td>
       <td class="num" style="color:var(--ok);">${fmtMoney(l.valorLiqSaldo)}</td>
-      <td class="num"><b>${fmtMoney(l.precoMedio)}</b></td>
       <td class="num" style="color:var(--ok);"><b>${fmtMoney(l.precoMedioLiq)}</b></td>
       <td>${editBtn}</td>
     </tr>`;
@@ -5537,9 +5527,9 @@ function sincronizarMovimentosVenda(venda) {
     const item = state.itens.find(x => x.id === vi.itemId);
     if (!item) return;
     if (!Array.isArray(item.movimentos)) item.movimentos = [];
-    const pm = pmNaData(item, venda.data, venda.id);
+    const pm = pmLiqNaData(item, venda.data, venda.id);
     const qt = Number(vi.qtde||0);
-    const valorCmv = qt * pm; // CMV total da saída = qtde × PM
+    const valorCmv = qt * pm; // CMV total da saída = qtde × PM Líquido
     item.movimentos.push({
       id: uuid(),
       tipo: "S",

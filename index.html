@@ -6044,7 +6044,32 @@ function importFaturamentoXLSX(event) {
         });
       }
 
-      if (novasVendas.length === 0) {
+      // Aplica novas vendas no state e sincroniza movimentos S
+      novasVendas
+        .sort((a,b) => (a.data||"").localeCompare(b.data||""))
+        .forEach(v => {
+          state.vendas.push(v);
+          sincronizarMovimentosVenda(v);
+        });
+
+      // Relinkagem: varre TODAS as vendas (incluindo importações antigas) e amarra
+      // itens de venda com itemId=null ao item de cadastro correspondente.
+      // Resolve dados órfãos de importações feitas antes do auto-cadastro estar ativo.
+      let relinked = 0;
+      (state.vendas||[]).forEach(v => {
+        (v.itens||[]).forEach(vi => {
+          if (vi.itemId == null && vi.codigo) {
+            const found = state.itens.find(it => String(it.codigo) === String(vi.codigo));
+            if (found) { vi.itemId = found.id; relinked++; }
+          }
+        });
+      });
+      // Se relinkou, regenera os movimentos S de todas as vendas (CMV recalcula correto)
+      if (relinked > 0) {
+        (state.vendas||[]).forEach(v => sincronizarMovimentosVenda(v));
+      }
+
+      if (novasVendas.length === 0 && relinked === 0) {
         let msg = "Nenhuma venda extraída do Relatório 8005.";
         if (ignoradasDup)      msg += `\n• ${ignoradasDup} linha(s) duplicada(s) na planilha`;
         if (ignoradasJaExiste) msg += `\n• ${ignoradasJaExiste} linha(s) já existem como venda no sistema`;
@@ -6055,18 +6080,11 @@ function importFaturamentoXLSX(event) {
         return;
       }
 
-      // Aplica no state e sincroniza movimentos S
-      novasVendas
-        .sort((a,b) => (a.data||"").localeCompare(b.data||""))
-        .forEach(v => {
-          state.vendas.push(v);
-          sincronizarMovimentosVenda(v);
-        });
-
       persist();
       renderAll();
 
       let msg = `✅ Relatório 8005 importado!\n\n• ${novasVendas.length} venda(s) adicionada(s)`;
+      if (relinked > 0) msg += `\n• ${relinked} item(ns) de venda antiga(s) relinkado(s) ao cadastro`;
       if (ignoradasDup)      msg += `\n• ${ignoradasDup} duplicata(s) na planilha ignoradas`;
       if (ignoradasJaExiste) msg += `\n• ${ignoradasJaExiste} venda(s) já existentes no sistema (pulado para evitar duplicação)`;
       if (semData)           msg += `\n• ${semData} sem data válida`;

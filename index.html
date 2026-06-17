@@ -6433,6 +6433,7 @@ function renderVendas() {
       <th class="num" style="width:95px;">Qtde (kg)</th>
       <th class="num" style="width:110px;">Receita</th>
       <th class="num" style="width:105px;">CMV</th>
+      <th class="num" style="width:100px;">Imposto</th>
       <th class="num" style="width:100px;">Comissão</th>
       <th class="num" style="width:110px;">Margem Real</th>
       <th class="num" style="width:75px;">Marg. %</th>
@@ -6452,6 +6453,7 @@ function renderVendas() {
         <td class="num">${fmtNum(qt)}</td>
         <td class="num">${fmtMoney(r.receita)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(r.cmv)}</td>
+        <td class="num" style="color:var(--warn);">${fmtMoney(r.imposto)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(r.comissao)}</td>
         <td class="num" style="font-weight:600; color:${r.margemReal>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(r.margemReal)}</td>
         <td class="num">${r.margemRealPct==null?"—":r.margemRealPct.toFixed(2)+"%"}</td>
@@ -6463,6 +6465,7 @@ function renderVendas() {
       <td class="num">${fmtNum(qtTotal)}</td>
       <td class="num">${fmtMoney(rec)}</td>
       <td class="num">${fmtMoney(cmv)}</td>
+      <td class="num">${fmtMoney(imp)}</td>
       <td class="num">${fmtMoney(com)}</td>
       <td class="num">${fmtMoney(margemReal)}</td>
       <td class="num">${rec>0?((margemReal/rec)*100).toFixed(2)+"%":"—"}</td>
@@ -6499,9 +6502,11 @@ function renderVendas() {
       <th class="num" style="width:90px;">Qtde (kg)</th>
       <th class="num" style="width:95px;">Venda Unit.</th>
       <th class="num" style="width:95px;">CMV Unit.</th>
+      <th class="num" style="width:90px;">Imp. Unit.</th>
       <th class="num" style="width:90px;">Com. Unit.</th>
       <th class="num" style="width:110px;">Receita</th>
       <th class="num" style="width:105px;">CMV</th>
+      <th class="num" style="width:100px;">Imposto</th>
       <th class="num" style="width:100px;">Comissão</th>
       <th class="num" style="width:110px;">Margem Real</th>
       <th class="num" style="width:75px;">Marg. %</th>
@@ -6513,6 +6518,7 @@ function renderVendas() {
       const mr = g.receita - g.cmv - g.imposto - g.comissao;
       const vu = g.qtde > 0 ? g.receita/g.qtde : 0;
       const cu = g.qtde > 0 ? g.cmv/g.qtde : 0;
+      const iu = g.qtde > 0 ? g.imposto/g.qtde : 0;
       const comu = g.qtde > 0 ? g.comissao/g.qtde : 0;
       const mp = g.receita > 0 ? (mr/g.receita)*100 : null;
       return `<tr>
@@ -6522,9 +6528,11 @@ function renderVendas() {
         <td class="num">${fmtNum(g.qtde)}</td>
         <td class="num">${fmtMoney(vu)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(cu)}</td>
+        <td class="num" style="color:var(--warn);">${fmtMoney(iu)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(comu)}</td>
         <td class="num">${fmtMoney(g.receita)}</td>
         <td class="num">${fmtMoney(g.cmv)}</td>
+        <td class="num">${fmtMoney(g.imposto)}</td>
         <td class="num">${fmtMoney(g.comissao)}</td>
         <td class="num" style="font-weight:600; color:${mr>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(mr)}</td>
         <td class="num">${mp==null?"—":mp.toFixed(2)+"%"}</td>
@@ -6534,9 +6542,10 @@ function renderVendas() {
     tfoot.innerHTML = `<tr class="footer-total">
       <td colspan="3" style="text-align:right;">TOTAL</td>
       <td class="num">${fmtNum(qtTotal)}</td>
-      <td colspan="3"></td>
+      <td colspan="4"></td>
       <td class="num">${fmtMoney(rec)}</td>
       <td class="num">${fmtMoney(cmv)}</td>
+      <td class="num">${fmtMoney(imp)}</td>
       <td class="num">${fmtMoney(com)}</td>
       <td class="num">${fmtMoney(margemReal)}</td>
       <td class="num">${rec>0?((margemReal/rec)*100).toFixed(2)+"%":"—"}</td>
@@ -6563,6 +6572,7 @@ function renderVendas() {
       <th class="num" style="width:95px;">Qtde (kg)</th>
       <th class="num" style="width:110px;">Receita</th>
       <th class="num" style="width:105px;">CMV</th>
+      <th class="num" style="width:100px;">Imposto</th>
       <th class="num" style="width:100px;">Comissão</th>
       <th class="num" style="width:115px;">Margem Real</th>
       <th class="num" style="width:75px;">Marg. %</th>
@@ -6580,6 +6590,7 @@ function renderVendas() {
         <td class="num">${fmtNum(g.qtde)}</td>
         <td class="num">${fmtMoney(g.receita)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(g.cmv)}</td>
+        <td class="num" style="color:var(--warn);">${fmtMoney(g.imposto)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(g.comissao)}</td>
         <td class="num" style="font-weight:600; color:${mr>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(mr)}</td>
         <td class="num">${mp==null?"—":mp.toFixed(2)+"%"}</td>
@@ -6591,6 +6602,7 @@ function renderVendas() {
       <td class="num">${fmtNum(qtTotal)}</td>
       <td class="num">${fmtMoney(rec)}</td>
       <td class="num">${fmtMoney(cmv)}</td>
+      <td class="num">${fmtMoney(imp)}</td>
       <td class="num">${fmtMoney(com)}</td>
       <td class="num">${fmtMoney(margemReal)}</td>
       <td class="num">${rec>0?((margemReal/rec)*100).toFixed(2)+"%":"—"}</td>
@@ -6620,6 +6632,7 @@ function renderVendas() {
       <th class="num" style="width:95px;">Qtde (kg)</th>
       <th class="num" style="width:115px;">Receita</th>
       <th class="num" style="width:110px;">CMV</th>
+      <th class="num" style="width:100px;">Imposto</th>
       <th class="num" style="width:100px;">Comissão</th>
       <th class="num" style="width:115px;">Margem Real</th>
       <th class="num" style="width:75px;">Marg. %</th>
@@ -6637,6 +6650,7 @@ function renderVendas() {
         <td class="num">${fmtNum(g.qtde)}</td>
         <td class="num">${fmtMoney(g.receita)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(g.cmv)}</td>
+        <td class="num" style="color:var(--warn);">${fmtMoney(g.imposto)}</td>
         <td class="num" style="color:var(--warn);">${fmtMoney(g.comissao)}</td>
         <td class="num" style="font-weight:600; color:${mr>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(mr)}</td>
         <td class="num">${mp==null?"—":mp.toFixed(2)+"%"}</td>
@@ -6647,6 +6661,7 @@ function renderVendas() {
       <td class="num">${fmtNum(qtTotal)}</td>
       <td class="num">${fmtMoney(rec)}</td>
       <td class="num">${fmtMoney(cmv)}</td>
+      <td class="num">${fmtMoney(imp)}</td>
       <td class="num">${fmtMoney(com)}</td>
       <td class="num">${fmtMoney(margemReal)}</td>
       <td class="num">${rec>0?((margemReal/rec)*100).toFixed(2)+"%":"—"}</td>

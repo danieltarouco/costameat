@@ -5502,7 +5502,10 @@ function vendaResumo(v) {
     const pm = pmLiqNaData(item, v.data, v.id);
     const qt = Number(vi.qtde||0);
     const pu = Number(vi.precoVenda||0);
-    const iu = Number(vi.impostoUnit||0);
+    // Imposto calculado AO VIVO pelo regime atual do item (ICMS efetivo + PIS + COFINS).
+    // Se item existe e tem regime, recalcula; caso contrário usa o stored (legacy).
+    const aliqPct = item ? aliquotaCreditoItem(item) : 0;
+    const iu = aliqPct > 0 ? pu * aliqPct : Number(vi.impostoUnit||0);
     const cu = Number(vi.comissaoUnit||0);
     receita += qt * pu;
     cmv += qt * pm;
@@ -6484,7 +6487,8 @@ function renderVendas() {
         const g = mapa.get(item.id);
         const qt = Number(vi.qtde||0);
         const pu = Number(vi.precoVenda||0);
-        const iu = Number(vi.impostoUnit||0);
+        const aliqPct = aliquotaCreditoItem(item);
+        const iu = aliqPct > 0 ? pu * aliqPct : Number(vi.impostoUnit||0);
         const cu = Number(vi.comissaoUnit||0);
         const pm = pmLiqNaData(item, v.data, v.id);
         g.qtde += qt;
@@ -7025,7 +7029,8 @@ function openVendaDetail(vendaIdOrKey) {
     const pm = pmLiqNaData(item, v.data, v.id);
     const qt = Number(vi.qtde||0);
     const pu = Number(vi.precoVenda||0);
-    const iu = Number(vi.impostoUnit||0);
+    const aliqPct = item ? aliquotaCreditoItem(item) : 0;
+    const iu = aliqPct > 0 ? pu * aliqPct : Number(vi.impostoUnit||0);
     const cou = Number(vi.comissaoUnit||0);
     const rec = qt*pu, cc = qt*pm, imp = qt*iu, com = qt*cou;
     const mr = rec - cc - imp - com;
@@ -7210,7 +7215,9 @@ function expandItemVendas(itemId) {
     const vi = (v.itens||[]).find(x => x.itemId === itemId);
     const pm = pmLiqNaData(item, v.data, v.id);
     const qt = Number(vi.qtde||0), pu = Number(vi.precoVenda||0);
-    const iu = Number(vi.impostoUnit||0), cu = Number(vi.comissaoUnit||0);
+    const aliqPct = item ? aliquotaCreditoItem(item) : 0;
+    const iu = aliqPct > 0 ? pu * aliqPct : Number(vi.impostoUnit||0);
+    const cu = Number(vi.comissaoUnit||0);
     const rec = qt*pu, cc = qt*pm, imp = qt*iu, com = qt*cu;
     const mr = rec - cc - imp - com;
     totQt += qt; totRec += rec; totCmv += cc; totImp += imp; totCom += com;

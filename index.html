@@ -3555,7 +3555,13 @@ async function importRel218PDF(event) {
       let nfAtual = null;
 
       const reTotalFinal = /^(\d+)\s+Notas\s+Listadas\s+Total\s*:?\s*([\d.,]+)\s+([\d.,]+)\s*$/i;
+      // Regex estrito do cabeçalho da NF — captura todos os campos com segurança.
+      // Grupos: 1=dataEntrada 2=numTrans 3=NF 4=tipoEnt 5=serie 6=dtEmissao 7=prazoNum 8=codFornec 9=nome+CGC 10=UF 11=VlTotal 12=VlIPI
+      const reNFFull = /^(\d{2}\/\d{2}\/\d{4})\s+(\d+)\s+\*?(\d+)\s+(\S+)\s+(\S+)\s+(\d{2}\/\d{2}\/\d{4})\s+(\d+)\s+dias?\s+(\d+)\s+(.+?)\s+([A-Z]{2})\s+([\d.,]+)\s+([\d.,]+)\s*$/i;
+      // Detecção rápida (linha começa como cabeçalho de NF)
       const reNFInicio   = /^(\d{2}\/\d{2}\/\d{4})\s+(\d+)\s+\*(\d+)\s+/;
+      // Item: código desc... filial(1) emb UN qt prunit custAnt custAtual codFiscal(4d) op(letra)
+      const reItem = /^(\d+)\s+(.+?)\s+(\d+)\s+(\S+)\s+(\S+)\s+([\d.,]+)\s+([\d.,]+)\s+([\d.,]+)\s+([\d.,]+)\s+(\d{4})\s+([A-Z])\s*$/;
 
       for (const rawLine of lines) {
         const line = (rawLine || "").trim();
@@ -3580,48 +3586,36 @@ async function importRel218PDF(event) {
           continue;
         }
 
-        // Cabeçalho de NF
+        // Cabeçalho de NF — usa regex ESTRITO com captura
         if (reNFInicio.test(line)) {
-          const tokens = line.split(/\s+/);
-          if (tokens.length < 12) { linhasIgnoradas.push({ line, motivo: "NF: poucos tokens" }); continue; }
-
-          const ipiStr   = tokens[tokens.length - 1];
-          const totalStr = tokens[tokens.length - 2];
-          const uf       = tokens[tokens.length - 3];
-
-          const isNum = s => /^-?[\d.,]+$/.test(s);
-          if (!isNum(ipiStr) || !isNum(totalStr) || !/^[A-Z]{2}$/.test(uf)) {
-            linhasIgnoradas.push({ line, motivo: "NF: padrão UF/total não reconhecido" });
+          const mNF = line.match(reNFFull);
+          if (!mNF) {
+            linhasIgnoradas.push({ line, motivo: "NF: linha começa como NF mas não casa o padrão completo (data/trans/*NF/tipo/série/dt-emissão/N dias/codFornec/nome+CGC/UF/Vl.Total/Vl.IPI)" });
             continue;
           }
+          const dataEntrada  = mNF[1];
+          // mNF[2] = numTrans
+          const nf           = mNF[3];
+          // mNF[4] = tipoEnt, mNF[5] = série, mNF[6] = dtEmissao, mNF[7] = prazoNum
+          const codFornec    = mNF[8];
+          const nomeCgcRaw   = mNF[9];
+          const uf           = mNF[10];
+          const totalStr     = mNF[11];
+          const ipiStr       = mNF[12];
 
-          // Localiza "dias" / "dia" (entre prazo e codFornec)
-          let diasIdx = -1;
-          for (let j = 6; j < Math.min(12, tokens.length); j++) {
-            if (/^dias?$/i.test(tokens[j])) { diasIdx = j; break; }
-          }
-          if (diasIdx < 0) { linhasIgnoradas.push({ line, motivo: 'NF: âncora "dias" não localizada' }); continue; }
-
-          // Localiza CGC: token (ou sufixo do último token de nome) com 10+ dígitos
+          // Separa nome do fornecedor do CGC (que pode estar grudado no último token)
           let cgcDigits = "";
-          let nameEndIdx = tokens.length - 3;
-          const lastBeforeUf = tokens[tokens.length - 4];
-          if (/^[\d.\/\-]{10,}$/.test(lastBeforeUf)) {
-            cgcDigits = lastBeforeUf.replace(/\D/g, "");
-            nameEndIdx = tokens.length - 4;
-          } else {
-            const m = lastBeforeUf.match(/(\d[\d.\/\-]{9,})$/);
-            if (m) {
-              cgcDigits = m[1].replace(/\D/g, "");
-              tokens[tokens.length - 4] = lastBeforeUf.slice(0, lastBeforeUf.length - m[1].length);
-              nameEndIdx = tokens.length - 3;
-            }
+          let nomeFornec = nomeCgcRaw;
+          // Caso 1: CGC separado por espaço (ex: "ADORO SA 60037058004390")
+          let m = nomeCgcRaw.match(/^(.+?)\s+(\d[\d.\/\-]{9,})$/);
+          if (!m) {
+            // Caso 2: CGC grudado no último token (ex: "...LTDA22534873000117")
+            m = nomeCgcRaw.match(/^(.+?)(\d[\d.\/\-]{12,})$/);
           }
-
-          const dataEntrada = tokens[0];
-          const nf          = tokens[2].replace(/^\*/, "");
-          const codFornec   = tokens[diasIdx + 1] || "";
-          const nomeFornec  = tokens.slice(diasIdx + 2, nameEndIdx).join(" ").replace(/\s+/g, " ").trim();
+          if (m) {
+            nomeFornec = m[1].trim();
+            cgcDigits = m[2].replace(/\D/g, "");
+          }
 
           if (nomeFornec) fornecedoresLidos[codFornec] = nomeFornec;
 
@@ -3638,30 +3632,18 @@ async function importRel218PDF(event) {
           continue;
         }
 
-        // Linha de item (precisa de NF ativa)
+        // Linha de item (precisa de NF ativa) — regex estrito
         if (!nfAtual) continue;
-        const tokens = line.split(/\s+/);
-        if (tokens.length < 10) continue;
+        const mItem = line.match(reItem);
+        if (!mItem) continue;
 
-        const op            = tokens[tokens.length - 1];
-        const codFiscalStr  = tokens[tokens.length - 2];
-        if (!/^[A-Z]$/.test(op) || !/^\d{4}$/.test(codFiscalStr)) continue;
-
-        const custoAtualStr = tokens[tokens.length - 3];
-        const custoAntStr   = tokens[tokens.length - 4];
-        const prunitStr     = tokens[tokens.length - 5];
-        const qtStr         = tokens[tokens.length - 6];
-        const numOK = s => /^-?[\d.,]+$/.test(s);
-        if (![custoAtualStr, custoAntStr, prunitStr, qtStr].every(numOK)) continue;
-
-        const filial = tokens[tokens.length - 9];
-        if (!/^\d+$/.test(filial)) continue;
-
-        const codigo = tokens[0];
-        if (!/^\d+$/.test(codigo)) continue;
-
-        const emb         = tokens[tokens.length - 8];
-        const descricao   = tokens.slice(1, tokens.length - 9).join(" ").trim();
+        const codigo      = mItem[1];
+        const descricao   = mItem[2].trim();
+        // mItem[3] = filial, mItem[4] = embalagem, mItem[5] = UN
+        const emb         = mItem[4];
+        const qtStr       = mItem[6];
+        const prunitStr   = mItem[7];
+        // mItem[8] = custoFinAnt, mItem[9] = custoFinAtual, mItem[10] = codFiscal, mItem[11] = op
         const qtde        = parseBR(qtStr);
         const prunit      = parseBR(prunitStr);
         if (qtde <= 0 || prunit <= 0) { linhasIgnoradas.push({ line, motivo: "item com qtde/prunit zerado" }); continue; }
@@ -3944,7 +3926,7 @@ async function importRel218PDF(event) {
     reconciliacao.allOk = reconciliacao.problemas.length === 0;
 
     // Guarda para o passo de confirmação
-    pendingImportRel218 = { resultados, reconciliacao, fornecedoresLidos, linhasIgnoradas };
+    pendingImportRel218 = { resultados, reconciliacao, fornecedoresLidos, linhasIgnoradas, allLines };
 
     renderImportPreview();
     openModal("modal-import-preview");
@@ -4031,7 +4013,7 @@ function hideAppLoading() {
 function renderImportPreview() {
   const p = pendingImportRel218;
   if (!p) return;
-  const { resultados, reconciliacao, fornecedoresLidos, linhasIgnoradas } = p;
+  const { resultados, reconciliacao, fornecedoresLidos, linhasIgnoradas, allLines } = p;
   const root = document.getElementById("import-preview-body");
   const fmtBR = v => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtQt = v => v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 3 });
@@ -4155,6 +4137,19 @@ function renderImportPreview() {
         </table>
       </div>
       ${reconciliacao.nf.length > 80 ? `<div class="muted" style="font-size:11px;padding:4px 6px;">Mostrando primeiras 80 NFs</div>` : ""}
+    </details>`;
+  }
+
+  // Diagnóstico: 30 primeiras linhas extraídas do PDF (útil pra investigar layout)
+  if (allLines && allLines.length > 0) {
+    reconHtml += `<details style="margin-bottom:8px;">
+      <summary style="cursor:pointer;font-weight:600;padding:6px 0;font-size:12px;color:var(--text-soft);">
+        🔎 Linhas extraídas do PDF — debug (${allLines.length} total)
+      </summary>
+      <div style="background:#f8fafc;padding:8px;border-radius:4px;margin-top:6px;font-size:11px;font-family:monospace;max-height:240px;overflow:auto;border:1px solid var(--border);">
+        ${allLines.slice(0, 60).map((l, i) => `<div style="border-bottom:1px solid #eef2f7; padding:2px 0;"><span style="color:#94a3b8; display:inline-block; width:30px;">${i+1}</span>${escapeHtml(l.substring(0, 220))}</div>`).join("")}
+        ${allLines.length > 60 ? `<div class="muted" style="margin-top:6px;">… e mais ${allLines.length - 60} linhas (mostrando 60 primeiras)</div>` : ""}
+      </div>
     </details>`;
   }
 

@@ -5213,7 +5213,22 @@ function saveMov() {
   } else {
     item.movimentos.push({ id: uuid(), ...payload });
   }
-  persist(); closeModal("modal-mov"); renderMovimentos();
+  // Auto-resync vendas afetadas se o movimento for de entrada (E) — entrada muda PM.
+  // Saídas (S) novas/editadas manualmente não afetam PM, então não precisa.
+  let resincronizadas = 0;
+  if (tipo === "E") {
+    const vendasAfetadas = (state.vendas || []).filter(v =>
+      (v.itens || []).some(vi => vi.itemId === item.id)
+    );
+    vendasAfetadas.forEach(v => sincronizarMovimentosVenda(v));
+    resincronizadas = vendasAfetadas.length;
+  }
+  persist();
+  closeModal("modal-mov");
+  renderAll();
+  if (resincronizadas > 0) {
+    showToast(`Movimento salvo. ${resincronizadas} venda(s) re-sincronizada(s).`, "ok");
+  }
 }
 function deleteMovFromModal() {
   if (!movItemSelecionado || !editingMovId) return;
@@ -8197,11 +8212,21 @@ function saveNFEdit() {
     delete m._nfQtdeTemp;
   });
 
+  // Auto-resync: re-sincroniza as vendas que envolvem os itens afetados pela edição.
+  // Assim CMV e movimentos de saída (S) ficam consistentes sem precisar clicar
+  // em "Recalcular CMV" manualmente.
+  const itensAfetadosIds = new Set(_nfEditMovs.map(x => x.item.id));
+  const vendasAfetadas = (state.vendas || []).filter(v =>
+    (v.itens || []).some(vi => itensAfetadosIds.has(vi.itemId))
+  );
+  vendasAfetadas.forEach(v => sincronizarMovimentosVenda(v));
+
   persist();
   closeModal("modal-nf-edit");
-  renderCompras();
-  renderMovimentos();
-  alert(`NF ${_nfEditDocto} ajustada com sucesso. CMP atualizado.`);
+  renderAll();
+  let msg = `NF ${_nfEditDocto} ajustada com sucesso. CMP atualizado.`;
+  if (vendasAfetadas.length > 0) msg += `\n${vendasAfetadas.length} venda(s) tiveram o CMV re-sincronizado automaticamente.`;
+  alert(msg);
 }
 
 /* ======================= MODAIS ======================= */

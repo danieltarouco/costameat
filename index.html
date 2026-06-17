@@ -5935,7 +5935,7 @@ function importFaturamentoXLSX(event) {
       });
       const novasVendas = [];
       const semItem = new Set();
-      let ignoradasDup = 0, ignoradasJaExiste = 0, semData = 0, semQtde = 0, semCodigo = 0;
+      let ignoradasDup = 0, ignoradasJaExiste = 0, semData = 0, semQtde = 0, semCodigo = 0, sinteticos = 0;
 
       for (let i = 1; i < rows.length; i++) {
         const r = rows[i];
@@ -5949,16 +5949,25 @@ function importFaturamentoXLSX(event) {
         if (visto.has(chaveLinha)) { ignoradasDup++; continue; }
         visto.add(chaveLinha);
 
-        const codigo     = limpaTexto(r[iCodProd]);
-        const descricao  = limpaTexto(r[iDescr]);
-        const dataISO    = toISO(r[iDtFat]);
-        const qtde       = Number(r[iQt]) || 0;
-        const vlTotal    = Number(r[iPVenda]) || 0;   // PVENDA = valor TOTAL da linha
+        let codigo      = limpaTexto(r[iCodProd]);
+        const descricao = limpaTexto(r[iDescr]);
+        const dataISO   = toISO(r[iDtFat]);
+        const qtde      = Number(r[iQt]) || 0;
+        const vlTotal   = Number(r[iPVenda]) || 0;   // PVENDA = valor TOTAL da linha
         const clienteCod = limpaTexto(r[iCodCli]);
-        const cliente    = limpaTexto(r[iCliente]);
-        const vendedor   = limpaTexto(r[iRca]);
+        const cliente   = limpaTexto(r[iCliente]);
+        const vendedor  = limpaTexto(r[iRca]);
 
-        if (!codigo)  { semCodigo++; continue; }
+        // Sem código E sem descrição = linha lixo; sem código MAS com descrição
+        // = gera código sintético "S/" + slug da descrição (deduplica por descrição).
+        let codigoSintetico = false;
+        if (!codigo) {
+          if (!descricao) { semCodigo++; continue; }
+          const slug = descricao.toUpperCase().replace(/[^A-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 24);
+          if (!slug) { semCodigo++; continue; }
+          codigo = `S/${slug}`;
+          codigoSintetico = true;
+        }
         if (!dataISO) { semData++;   continue; }
         if (qtde === 0) { semQtde++; continue; }
 
@@ -5974,6 +5983,7 @@ function importFaturamentoXLSX(event) {
         let item = state.itens.find(it => String(it.codigo) === String(codigo));
         if (!item) {
           semItem.add(codigo);
+          if (codigoSintetico) sinteticos++;
           item = {
             id: uuid(), codigo, descricao,
             dept: "", fornecedor: "", emb: "KG",
@@ -5982,7 +5992,7 @@ function importFaturamentoXLSX(event) {
             saldoQtde: null, saldoCusto: null, saldoData: null, saldoObs: "",
             movimentos: [],
             pendenteCadastro: true,
-            origemCadastro: "rel8005",
+            origemCadastro: codigoSintetico ? "rel8005-sem-codigo" : "rel8005",
           };
           state.itens.push(item);
         }
@@ -6066,6 +6076,9 @@ function importFaturamentoXLSX(event) {
         const lista = [...semItem].slice(0, 10).join(', ');
         const extra = semItem.size > 10 ? ` e mais ${semItem.size-10}` : '';
         msg += `\n\n📝 ${semItem.size} item(ns) novo(s) criado(s) automaticamente: ${lista}${extra}`;
+        if (sinteticos > 0) {
+          msg += `\n   ${sinteticos} desses tem código sintético (linha do XLSX sem CODPROD — prefixo "S/").`;
+        }
         msg += `\n   Vá em Tributação → marque o regime PIS/COFINS e ICMS desses itens (estão como "pendente").`;
         msg += `\n   O imposto começa a aparecer assim que o regime for definido.`;
       }

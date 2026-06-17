@@ -2817,7 +2817,14 @@ function creditosItem(item) {
   };
 }
 function stPctItem(item) {
-  return Number((item || {}).stPct || 0) / 100;
+  const raw = Number((item || {}).stPct || 0);
+  // Defesa: stPct deve estar em PORCENTAGEM (0-100). Valores absurdos indicam dado corrompido.
+  if (!isFinite(raw) || raw < 0) return 0;
+  if (raw > 100) {
+    console.warn(`[stPctItem] valor de ST suspeito para item ${item?.codigo}: ${raw}% — limitado a 100%. Conferir cadastro em Tributação.`);
+    return 1; // 100% como teto
+  }
+  return raw / 100;
 }
 function temTributacao(item) {
   return item.regimePc != null && item.regimeIcms != null;
@@ -4705,6 +4712,16 @@ function renderTributacao() {
 function updateTrib(id, campo, val) {
   const it = state.itens.find(x=>x.id===id);
   if (!it) return;
+  // Validação específica do ST: deve estar entre 0 e 100 (%).
+  if (campo === "stPct" && val != null) {
+    const n = Number(val);
+    if (!isFinite(n) || n < 0 || n > 100) {
+      alert(`ST inválido: ${val}\n\nO ST é em PORCENTAGEM (0 a 100). Para 10,87% digite 10.87 (com PONTO).\nValor não salvo.`);
+      renderTributacao();
+      return;
+    }
+    val = n;
+  }
   it[campo] = val || null;
   persist();
   renderTributacao();

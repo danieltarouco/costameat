@@ -5969,16 +5969,28 @@ function importFaturamentoXLSX(event) {
 
         const precoVenda = vlTotal / qtde;             // unitário derivado
 
-        // Procura item no cadastro p/ pegar regime tributário e calcular imposto
-        const item = state.itens.find(it => String(it.codigo) === String(codigo));
-        if (!item) semItem.add(codigo);
+        // Procura item; se não existe, AUTO-CADASTRA como pendente (regime fica null,
+        // usuário classifica depois em Tributação).
+        let item = state.itens.find(it => String(it.codigo) === String(codigo));
+        if (!item) {
+          semItem.add(codigo);
+          item = {
+            id: uuid(), codigo, descricao,
+            dept: "", fornecedor: "", emb: "KG",
+            ultPreco: null, ultData: null,
+            regimePc: null, regimeIcms: null,
+            saldoQtde: null, saldoCusto: null, saldoData: null, saldoObs: "",
+            movimentos: [],
+            pendenteCadastro: true,
+            origemCadastro: "rel8005",
+          };
+          state.itens.push(item);
+        }
 
         let impostoUnit = 0;
-        if (item) {
-          const a = aliqsItem(item);
-          const pctImp = ((a.pis||0) + (a.cofins||0) + (a.icmsEf||0)) / 100;
-          impostoUnit = precoVenda * pctImp;
-        }
+        const a = aliqsItem(item);
+        const pctImp = ((a.pis||0) + (a.cofins||0) + (a.icmsEf||0)) / 100;
+        impostoUnit = precoVenda * pctImp;
         const impostoTotal = qtde * impostoUnit;
 
         // docto único (e idempotente em re-importações da mesma planilha)
@@ -6053,8 +6065,9 @@ function importFaturamentoXLSX(event) {
       if (semItem.size) {
         const lista = [...semItem].slice(0, 10).join(', ');
         const extra = semItem.size > 10 ? ` e mais ${semItem.size-10}` : '';
-        msg += `\n\n⚠️ ${semItem.size} código(s) sem cadastro de item: ${lista}${extra}`;
-        msg += `\n   (vendas foram criadas, mas CMV/imposto ficam zerados até o item ser cadastrado)`;
+        msg += `\n\n📝 ${semItem.size} item(ns) novo(s) criado(s) automaticamente: ${lista}${extra}`;
+        msg += `\n   Vá em Tributação → marque o regime PIS/COFINS e ICMS desses itens (estão como "pendente").`;
+        msg += `\n   O imposto começa a aparecer assim que o regime for definido.`;
       }
       alert(msg);
 

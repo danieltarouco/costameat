@@ -1721,6 +1721,7 @@
         <option value="trimestre">Trimestre</option>
       </select>
       <button class="btn primary" onclick="openVendaModal()">+ Nova Venda</button>
+      <button class="btn" onclick="recalcularImpostosVendas()" title="Recalcula o imposto (PIS+COFINS+ICMS) de todas as vendas com base no regime tributário atual de cada item">🧾 Recalcular impostos</button>
       <button class="btn danger" onclick="limparVendas()" title="Remove todas as vendas e seus movimentos de saída no estoque" style="font-weight:700;">🗑 Limpar vendas</button>
       <div style="margin-left:auto" class="muted" id="count-vendas"></div>
     </div>
@@ -3339,6 +3340,38 @@ function recalcularComissoes() {
   if (atualizadas === 0) { alert("Nenhum item foi alterado (vendedores sem comissão ou sem vendas vinculadas)."); return; }
   persist(); renderVendas();
   alert(`✅ ${atualizadas} iten(s) de venda recalculado(s).`);
+}
+
+function recalcularImpostosVendas() {
+  let atualizadas = 0, semItem = 0, semRegime = 0;
+  const totalVendas = (state.vendas||[]).length;
+  if (totalVendas === 0) { alert("Nenhuma venda no sistema."); return; }
+  if (!confirm(`Recalcular impostos de todas as ${totalVendas} venda(s) com base nos regimes tributários atuais (PIS + COFINS + ICMS efetivo)?`)) return;
+
+  (state.vendas||[]).forEach(v => {
+    (v.itens||[]).forEach(vi => {
+      const item = state.itens.find(x => x.id === vi.itemId);
+      if (!item) { semItem++; return; }
+      const aliqPct = aliquotaCreditoItem(item);
+      if (aliqPct <= 0) { semRegime++; return; }
+      const pu = Number(vi.precoVenda || 0);
+      const novoImpostoUnit  = pu * aliqPct;
+      const qt = Number(vi.qtde || 0);
+      const novoImpostoTotal = qt * novoImpostoUnit;
+      if (Math.abs((vi.impostoUnit||0) - novoImpostoUnit) > 0.0001) {
+        vi.impostoUnit  = Math.round(novoImpostoUnit  * 1e6) / 1e6;
+        vi.impostoTotal = Math.round(novoImpostoTotal * 1e4) / 1e4;
+        atualizadas++;
+      }
+    });
+  });
+
+  persist();
+  renderVendas();
+  let msg = `✅ ${atualizadas} item(ns) de venda atualizado(s).`;
+  if (semItem)   msg += `\n⚠ ${semItem} item(ns) sem cadastro vinculado (pulado).`;
+  if (semRegime) msg += `\nℹ ${semRegime} item(ns) ainda sem regime tributário (PIS/COFINS/ICMS = 0). Configure em Tributação.`;
+  alert(msg);
 }
 
 /* ======================= IMPORTAÇÃO COMPRAS CSV (NF) ======================= */

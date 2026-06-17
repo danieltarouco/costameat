@@ -5971,15 +5971,12 @@ function importFaturamentoXLSX(event) {
         if (!dataISO) { semData++;   continue; }
         if (qtde === 0) { semQtde++; continue; }
 
-        // Hardening cross-imports: se já existe venda com mesma (data+cliente+codigo+qtde), pula.
-        const chaveNeg = `${dataISO}|${clienteCod}|${codigo}|${Math.round(qtde * 1000) / 1000}`;
-        if (jaExistentes.has(chaveNeg)) { ignoradasJaExiste++; continue; }
-        jaExistentes.add(chaveNeg);
-
         const precoVenda = vlTotal / qtde;             // unitário derivado
 
         // Procura item; se não existe, AUTO-CADASTRA como pendente (regime fica null,
         // usuário classifica depois em Tributação).
+        // IMPORTANTE: roda ANTES do check de dedup — assim mesmo se a venda já existe,
+        // o item é criado caso ainda não esteja no cadastro (resolve dados órfãos).
         let item = state.itens.find(it => String(it.codigo) === String(codigo));
         if (!item) {
           semItem.add(codigo);
@@ -5996,6 +5993,11 @@ function importFaturamentoXLSX(event) {
           };
           state.itens.push(item);
         }
+
+        // Hardening cross-imports: se já existe venda com mesma (data+cliente+codigo+qtde), pula.
+        const chaveNeg = `${dataISO}|${clienteCod}|${codigo}|${Math.round(qtde * 1000) / 1000}`;
+        if (jaExistentes.has(chaveNeg)) { ignoradasJaExiste++; continue; }
+        jaExistentes.add(chaveNeg);
 
         let impostoUnit = 0;
         const a = aliqsItem(item);

@@ -1721,6 +1721,7 @@
         <option value="trimestre">Trimestre</option>
       </select>
       <button class="btn primary" onclick="openVendaModal()">+ Nova Venda</button>
+      <button class="btn" onclick="recalcularCMVVendas()" title="Recalcula o CMV de todas as vendas usando o PM Líquido atual do item na data de cada venda. Útil após editar NF de entrada ou ajustar saldos.">📊 Recalcular CMV</button>
       <button class="btn" onclick="recalcularImpostosVendas()" title="Recalcula o imposto (PIS+COFINS+ICMS) de todas as vendas com base no regime tributário atual de cada item">🧾 Recalcular impostos</button>
       <button class="btn" onclick="recalcularComissoes()" title="Recalcula a comissão de todas as vendas com base na % cadastrada do vendedor (aba Vendedores)">💰 Recalcular comissões</button>
       <button class="btn danger" onclick="limparVendas()" title="Remove todas as vendas e seus movimentos de saída no estoque" style="font-weight:700;">🗑 Limpar vendas</button>
@@ -3341,6 +3342,26 @@ function recalcularComissoes() {
   if (atualizadas === 0) { alert("Nenhum item foi alterado (vendedores sem comissão ou sem vendas vinculadas)."); return; }
   persist(); renderVendas();
   alert(`✅ ${atualizadas} iten(s) de venda recalculado(s).`);
+}
+
+function recalcularCMVVendas() {
+  const totalVendas = (state.vendas||[]).length;
+  if (totalVendas === 0) { alert("Nenhuma venda no sistema."); return; }
+  if (!confirm(`Recalcular o CMV (custo médio) de todas as ${totalVendas} venda(s)?\n\nO sistema vai regerar os movimentos de saída usando o PM Líquido atual de cada item na data da venda. Útil depois de editar NFs de entrada ou ajustar saldos.`)) return;
+
+  let recriadas = 0, semItem = 0;
+  (state.vendas||[]).forEach(v => {
+    const temItemLinkado = (v.itens||[]).some(vi => vi.itemId && state.itens.find(x => x.id === vi.itemId));
+    if (!temItemLinkado) { semItem++; return; }
+    sincronizarMovimentosVenda(v);
+    recriadas++;
+  });
+
+  persist();
+  renderAll();
+  let msg = `✅ ${recriadas} venda(s) tiveram o CMV recalculado.`;
+  if (semItem) msg += `\n⚠ ${semItem} venda(s) sem item linkado (pulado). Re-importe o XLSX pra relinkar.`;
+  alert(msg);
 }
 
 function recalcularImpostosVendas() {

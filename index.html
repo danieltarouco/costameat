@@ -1835,6 +1835,7 @@
           <button data-audfilter="todos" onclick="setAuditFilter('todos')">Todos</button>
         </div>
         <input type="text" id="audit-search" placeholder="Buscar por código ou descrição..." style="min-width:240px;">
+        <button class="btn primary" onclick="auditFixNegativoTodos()" title="Cria entradas de ajuste em todos os itens com histórico negativo, usando o custo histórico como referência">🔧 Ajustar negativos automaticamente</button>
         <div style="margin-left:auto;" class="muted" id="audit-count">—</div>
       </div>
 
@@ -8913,6 +8914,7 @@ function renderAuditoria() {
       <td>
         <button class="btn small" onclick="auditOpenMovimentos('${item.id}')" title="Ver movimentos">📊</button>
         <button class="btn small" onclick="auditOpenSaldo('${item.id}')" title="Cadastrar saldo inicial">📝</button>
+        ${r.status !== "ok" ? `<button class="btn small primary" onclick="auditFixNegativo('${item.id}')" title="Criar entrada de ajuste para cobrir o déficit">🔧</button>` : ""}
       </td>
     </tr>`;
   }).join("");
@@ -8943,6 +8945,174 @@ function auditOpenSaldo(itemId) {
       if (f && item) { f.value = item.codigo; f.dispatchEvent(new Event("input")); }
     }, 80);
   }
+}
+
+/* ======================= AUDITORIA: FIX AUTOMÁTICO DE NEGATIVOS =======================
+   Regra: cria uma entrada de ajuste ANTES do 1º negativo para "cobrir" o déficit.
+   - qtde = |pior negativo do item|
+   - data = 1 dia antes da 1ª saída que causou negativo (ou mesma data + ordem)
+   - valor:
+       1. E-movement mais recente ANTERIOR à data do 1º negativo (usa prunit dele)
+       2. Se não houver → 1ª E-movement do item na história (fallback)
+       3. Se não houver nenhuma entrada → ultPreco do cadastro
+       4. Se nada disso → não conserta, retorna sem sucesso
+*/
+function auditCalcularAjusteNegativo(item) {
+  const movs = (item.movimentos || []).slice().sort((a, b) => {
+    const da = a.data || "", db = b.data || "";
+    if (da !== db) return da.localeCompare(db);
+    if (a.tipo !== b.tipo) return a.tipo === "E" ? -1 : 1;
+    return 0;
+  });
+  let saldo = Number(item.saldoQtde || 0);
+  let piorNeg = 0;
+  let dataPrimeiroNeg = null;
+  for (const m of movs) {
+    const q = Number(m.qtde || 0);
+    if (m.tipo === "E") saldo += q;
+    else if (m.tipo === "S") {
+      saldo -= q;
+      if (saldo < 0) {
+        if (dataPrimeiroNeg == null) dataPrimeiroNeg = m.data;
+        if (saldo < piorNeg) piorNeg = saldo;
+      }
+    }
+  }
+  if (piorNeg >= 0 || !dataPrimeiroNeg) return null; // nunca ficou negativo
+
+  const deficit = Math.abs(piorNeg);
+  // Determina preço unitário de referência
+  const entradas = movs.filter(m => m.tipo === "E" && Number(m.qtde||0) > 0 && Number(m.valor||0) > 0);
+  const entradaAnterior = entradas.filter(m => (m.data||"") < dataPrimeiroNeg).sort((a,b) => (b.data||"").localeCompare(a.data||""))[0];
+  const primeiraEntrada = entradas.sort((a,b) => (a.data||"").localeCompare(b.data||""))[0];
+  let prunit = 0, refDesc = "";
+  if (entradaAnterior) {
+    prunit = Number(entradaAnterior.valor) / Number(entradaAnterior.qtde);
+    refDesc = `E ${fmtDate(entradaAnterior.data)} R$ ${prunit.toFixed(4)}/un`;
+  } else if (primeiraEntrada) {
+    prunit = Number(primeiraEntrada.valor) / Number(primeiraEntrada.qtde);
+    refDesc = `1ª E ${fmtDate(primeiraEntrada.data)} R$ ${prunit.toFixed(4)}/un`;
+  } else if (item.ultPreco != null && item.ultPreco > 0) {
+    prunit = Number(item.ultPreco);
+    refDesc = `ultPreco R$ ${prunit.toFixed(4)}/un`;
+  } else {
+    return { impossivel: true, motivo: "Item sem entradas e sem ultPreco — não é possível estimar custo" };
+  }
+
+  // Data do ajuste: 1 dia ANTES da 1ª saída negativa (para ordem cronológica limpa)
+  const dt = new Date(dataPrimeiroNeg + "T00:00:00");
+  dt.setDate(dt.getDate() - 1);
+  const dataAjuste = dt.toISOString().slice(0, 10);
+
+  return {
+    impossivel: false,
+    dataAjuste,
+    qtde: Math.round(deficit * 1000) / 1000,
+    prunit: Math.round(prunit * 10000) / 10000,
+    valor: Math.round(deficit * prunit * 100) / 100,
+    referencia: refDesc,
+    dataPrimeiroNeg,
+    piorNeg,
+  };
+}
+
+function auditFixNegativo(itemId) {
+  const item = state.itens.find(x => x.id === itemId);
+  if (!item) return;
+  const calc = auditCalcularAjusteNegativo(item);
+  if (!calc) { alert("Este item não tem histórico negativo (nada a corrigir)."); return; }
+  if (calc.impossivel) { alert(`Não foi possível corrigir ${item.codigo}: ${calc.motivo}`); return; }
+  const msg = `Criar entrada de ajuste no item ${item.codigo} — ${item.descricao}?\n\n` +
+              `Data: ${fmtDate(calc.dataAjuste)} (1 dia antes do 1º negativo em ${fmtDate(calc.dataPrimeiroNeg)})\n` +
+              `Qtde: ${fmtNum(calc.qtde)} kg\n` +
+              `Valor: R$ ${calc.valor.toFixed(2)} (${calc.referencia})\n\n` +
+              `Isso vai "cobrir" o déficit de ${fmtNum(Math.abs(calc.piorNeg))} kg. Continuar?`;
+  if (!confirm(msg)) return;
+
+  if (!Array.isArray(item.movimentos)) item.movimentos = [];
+  item.movimentos.push({
+    id: uuid(),
+    tipo: "E",
+    data: calc.dataAjuste,
+    docto: "AJUSTE-NEG",
+    lancto: "AJUSTE",
+    qtde: calc.qtde,
+    valor: calc.valor,
+    ajusteAutomatico: true,
+    observacao: `Ajuste automático de estoque negativo — referência: ${calc.referencia}`,
+  });
+
+  // Re-sincroniza vendas afetadas para atualizar CMV
+  const vendasAfetadas = (state.vendas || []).filter(v =>
+    (v.itens || []).some(vi => vi.itemId === item.id)
+  );
+  vendasAfetadas.forEach(v => sincronizarMovimentosVenda(v));
+
+  persist();
+  renderAll();
+  alert(`✅ Entrada de ajuste criada para ${item.codigo}.\n${vendasAfetadas.length} venda(s) re-sincronizada(s).`);
+}
+
+function auditFixNegativoTodos() {
+  const problemas = auditarEstoqueNegativo();
+  if (!problemas.length) { alert("Nenhum item com problema negativo."); return; }
+
+  // Prévia: calcula antes de aplicar pra usuário confirmar
+  const plano = problemas.map(p => {
+    const calc = auditCalcularAjusteNegativo(p.item);
+    return { item: p.item, calc };
+  }).filter(x => x.calc); // pula os sem problema
+
+  const impossiveis = plano.filter(x => x.calc.impossivel);
+  const aplicaveis = plano.filter(x => !x.calc.impossivel);
+
+  if (aplicaveis.length === 0) {
+    alert(`Nenhum item pode ser ajustado automaticamente.\n${impossiveis.length} item(ns) sem referência de custo.`);
+    return;
+  }
+
+  const totalDeficit = aplicaveis.reduce((s, x) => s + x.calc.qtde, 0);
+  const totalValor = aplicaveis.reduce((s, x) => s + x.calc.valor, 0);
+
+  const previa = aplicaveis.slice(0, 8).map(x =>
+    `• ${x.item.codigo} — ${fmtNum(x.calc.qtde)}kg × R$ ${x.calc.prunit.toFixed(2)} = R$ ${x.calc.valor.toFixed(2)} em ${fmtDate(x.calc.dataAjuste)} (${x.calc.referencia})`
+  ).join("\n");
+  const extra = aplicaveis.length > 8 ? `\n... e mais ${aplicaveis.length - 8} itens` : "";
+
+  const msg = `AJUSTAR TODOS OS ITENS COM ESTOQUE NEGATIVO?\n\n` +
+              `Serão criadas ${aplicaveis.length} entrada(s) de ajuste automático.\n` +
+              `Total: ${fmtNum(totalDeficit)} kg · R$ ${totalValor.toFixed(2)}\n\n` +
+              `Prévia:\n${previa}${extra}\n\n` +
+              (impossiveis.length ? `⚠ ${impossiveis.length} item(ns) sem referência de custo — pulado(s):\n${impossiveis.slice(0,5).map(x => `• ${x.item.codigo}`).join("\n")}\n\n` : "") +
+              `Confirmar?`;
+
+  if (!confirm(msg)) return;
+
+  const vendasParaResync = new Set();
+  aplicaveis.forEach(({ item, calc }) => {
+    if (!Array.isArray(item.movimentos)) item.movimentos = [];
+    item.movimentos.push({
+      id: uuid(),
+      tipo: "E",
+      data: calc.dataAjuste,
+      docto: "AJUSTE-NEG",
+      lancto: "AJUSTE",
+      qtde: calc.qtde,
+      valor: calc.valor,
+      ajusteAutomatico: true,
+      observacao: `Ajuste automático de estoque negativo — referência: ${calc.referencia}`,
+    });
+    (state.vendas || []).forEach(v => {
+      if ((v.itens || []).some(vi => vi.itemId === item.id)) vendasParaResync.add(v.id);
+    });
+  });
+
+  // Resync das vendas afetadas
+  (state.vendas || []).filter(v => vendasParaResync.has(v.id)).forEach(v => sincronizarMovimentosVenda(v));
+
+  persist();
+  renderAll();
+  alert(`✅ ${aplicaveis.length} entrada(s) de ajuste criada(s).\n${vendasParaResync.size} venda(s) re-sincronizada(s).\n${impossiveis.length} item(ns) sem referência (pulado).`);
 }
 
 const TAB_RENDERERS = {

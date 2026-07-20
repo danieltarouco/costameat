@@ -8975,15 +8975,18 @@ function auditCalcularAjusteNegativo(item) {
   let saldo = Number(item.saldoQtde || 0);
   let piorNeg = 0;
   let dataPrimeiroNeg = null;
+  // Trata saldo inicial negativo (edge case)
+  if (saldo < 0) { piorNeg = saldo; dataPrimeiroNeg = item.saldoData || (movs[0] && movs[0].data) || null; }
+  // Percorre TODOS os tipos de movimento (E, S, A) exatamente como auditarEstoqueNegativo faz.
   for (const m of movs) {
     const q = Number(m.qtde || 0);
-    if (m.tipo === "E") saldo += q;
-    else if (m.tipo === "S") {
-      saldo -= q;
-      if (saldo < 0) {
-        if (dataPrimeiroNeg == null) dataPrimeiroNeg = m.data;
-        if (saldo < piorNeg) piorNeg = saldo;
-      }
+    if      (m.tipo === "E") saldo += q;
+    else if (m.tipo === "S") saldo -= q;
+    else if (m.tipo === "A") saldo += q * (m.sinal || 1);
+    else continue;
+    if (saldo < -0.0001) {
+      if (dataPrimeiroNeg == null) dataPrimeiroNeg = m.data;
+      if (saldo < piorNeg) piorNeg = saldo;
     }
   }
   if (piorNeg >= 0 || !dataPrimeiroNeg) return null; // nunca ficou negativo

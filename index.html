@@ -5120,9 +5120,12 @@ function renderMovimentos() {
     const movObj = l.movId ? (item.movimentos||[]).find(m => m.id === l.movId) : null;
     const isNFMov = l.tipo === "E" && movObj && movObj.docto && !movObj.vendaId;
     const isAjustada = isNFMov && movObj.qtdeOrig != null;
-    const editBtn = isNFMov
-      ? `<button class="btn small ghost" style="color:#92400e;" title="Editável via aba Compras (por NF)" onclick="openNFEdit('${movObj.docto}')">✏ NF</button>`
-      : (l.movId ? `<button class="btn small ghost" onclick="openMovModal('${l.movId}')">✎</button>` : "");
+    const isAjusteAuto = movObj && movObj.ajusteAutomatico === true;
+    const editBtn = isAjusteAuto
+      ? `<button class="btn small ghost" style="color:#7c3aed;" title="Ajuste automático de estoque negativo — editar/excluir" onclick="openMovModal('${l.movId}')">🔧</button>`
+      : (isNFMov
+        ? `<button class="btn small ghost" style="color:#92400e;" title="Editável via aba Compras (por NF)" onclick="openNFEdit('${movObj.docto}')">✏ NF</button>`
+        : (l.movId ? `<button class="btn small ghost" onclick="openMovModal('${l.movId}')">✎</button>` : ""));
 
     const isPrimeiroNeg = movIdPrimeiroNeg && l.movId === movIdPrimeiroNeg;
     const saldoNeg = l.qtdeSaldo < -0.0001;
@@ -5131,6 +5134,8 @@ function renderMovimentos() {
       rowStyle = ' style="background:#fef2f2; border-left:3px solid var(--danger);"';
     } else if (saldoNeg) {
       rowStyle = ' style="background:#fff7f7;"';
+    } else if (isAjusteAuto) {
+      rowStyle = ' style="background:#f5f3ff; border-left:3px solid #a855f7;"';
     } else if (isAjustada) {
       rowStyle = ' style="background:#fefce8;"';
     }
@@ -5140,9 +5145,12 @@ function renderMovimentos() {
     const tagPrimeiroNeg = isPrimeiroNeg
       ? ' <span style="font-size:10px;background:var(--danger);color:#fff;padding:2px 6px;border-radius:8px;font-weight:600;margin-left:4px;">1º negativo</span>'
       : '';
+    const tagAjusteAuto = isAjusteAuto
+      ? ` <span style="font-size:10px;background:#7c3aed;color:#fff;padding:2px 7px;border-radius:8px;font-weight:600;margin-left:4px;" title="${escapeHtml(movObj.observacao || 'Ajuste automático de estoque negativo')}">🔧 AJUSTE AUTO</span>`
+      : '';
     return `<tr${rowStyle}>
       <td>${fmtDate(l.data)}${tagPrimeiroNeg}</td>
-      <td>${l.lancto||""}</td>
+      <td>${l.lancto||""}${tagAjusteAuto}</td>
       <td>${l.docto||""}${isAjustada?' <span style="font-size:10px;color:#92400e;background:#fde047;padding:1px 4px;border-radius:8px;">ajust.</span>':''}</td>
       <td>${chip}</td>
       <td class="num">${fmtNum(l.qtdeMov)}</td>

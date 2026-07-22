@@ -4827,15 +4827,19 @@ function updateSaldo(id, campo, val) {
 let movItemSelecionado = null;
 
 function calcEvolucao(item) {
-  // Retorna array com linhas da evolução: [{tipo, data, lancto, docto, qtdeMov, valorMov, valorLiqMov, qtdeSaldo, valorSaldo, valorLiqSaldo, precoMedio, precoMedioLiq, movId?}]
-  // Versão bruta + versão líquida (descontando créditos tributários por entrada)
   const linhas = [];
-  const creditoPct = aliquotaCreditoItem(item); // ex: 0.1625 para 16,25%
+  const creditoPct = aliquotaCreditoItem(item);
+  const stP = stPctItem(item);
+  // Fallback: prunit da 1ª entrada — usado nas saídas antes de qualquer E
+  const prunitFallback = _primeiraEntradaPrunit(item);
+  const pmFallbackBruto = prunitFallback * (1 + stP);
+  const pmFallbackLiq   = prunitFallback * (1 + stP - creditoPct);
+
   let qtdeSaldo = Number(item.saldoQtde||0);
   let valorSaldo = qtdeSaldo * Number(item.saldoCusto||0);
-  let valorLiqSaldo = valorSaldo * (1 - creditoPct); // saldo inicial também é líquido de crédito (premissa)
-  let precoMedio = qtdeSaldo > 0 ? valorSaldo / qtdeSaldo : 0;
-  let precoMedioLiq = qtdeSaldo > 0 ? valorLiqSaldo / qtdeSaldo : 0;
+  let valorLiqSaldo = valorSaldo * (1 - creditoPct);
+  let precoMedio = qtdeSaldo > 0 ? valorSaldo / qtdeSaldo : pmFallbackBruto;
+  let precoMedioLiq = qtdeSaldo > 0 ? valorLiqSaldo / qtdeSaldo : pmFallbackLiq;
   linhas.push({
     tipo: "INICIAL", data: item.saldoData || null, lancto: "", docto: "",
     qtdeMov: null, valorMov: null, valorLiqMov: null,
@@ -4852,25 +4856,30 @@ function calcEvolucao(item) {
     let vLiq = null;
     if (m.tipo === "E") {
       if (v == null) v = 0;
-      const stP = stPctItem(item);
-      const vComSt = v * (1 + stP);           // bruto com ST
-      vLiq = vComSt - v * creditoPct;         // líquido = bruto_com_ST − créditos_sobre_nota
+      const vComSt = v * (1 + stP);
+      vLiq = vComSt - v * creditoPct;
       qtdeSaldo += q;
       valorSaldo += vComSt;
       valorLiqSaldo += vLiq;
-      precoMedio = qtdeSaldo !== 0 ? valorSaldo / qtdeSaldo : 0;
-      precoMedioLiq = qtdeSaldo !== 0 ? valorLiqSaldo / qtdeSaldo : 0;
+      precoMedio = qtdeSaldo > 0 ? valorSaldo / qtdeSaldo : pmFallbackBruto;
+      precoMedioLiq = qtdeSaldo > 0 ? valorLiqSaldo / qtdeSaldo : pmFallbackLiq;
     } else {
-      if (v == null) v = q * precoMedio;
-      vLiq = q * precoMedioLiq;
+      // Saída: se ainda não tem estoque contábil (qtdeSaldo<=0), usa fallback da 1ª entrada
+      const pmParaEsta   = qtdeSaldo > 0 ? precoMedio    : pmFallbackBruto;
+      const pmLiqParaEsta = qtdeSaldo > 0 ? precoMedioLiq : pmFallbackLiq;
+      if (v == null) v = q * pmParaEsta;
+      vLiq = q * pmLiqParaEsta;
       qtdeSaldo -= q;
       valorSaldo -= v;
       valorLiqSaldo -= vLiq;
       if (Math.abs(qtdeSaldo) < 1e-9) {
         qtdeSaldo = 0;
-        if (Math.abs(valorSaldo) < 0.01) { valorSaldo = 0; precoMedio = 0; }
-        if (Math.abs(valorLiqSaldo) < 0.01) { valorLiqSaldo = 0; precoMedioLiq = 0; }
+        if (Math.abs(valorSaldo) < 0.01) valorSaldo = 0;
+        if (Math.abs(valorLiqSaldo) < 0.01) valorLiqSaldo = 0;
       }
+      // Recalcula PM saldo (com fallback quando saldo <=0)
+      precoMedio = qtdeSaldo > 0 ? valorSaldo / qtdeSaldo : pmFallbackBruto;
+      precoMedioLiq = qtdeSaldo > 0 ? valorLiqSaldo / qtdeSaldo : pmFallbackLiq;
     }
     linhas.push({
       tipo: m.tipo, data: m.data || null, lancto: m.lancto||"", docto: m.docto||"",
@@ -5530,12 +5539,27 @@ function pmNaData(item, dataAlvo, excluirVendaId) {
 // PM líquido na data: mesmo algoritmo do pmNaData, mas descontando créditos tributários
 // (ICMS efetivo + PIS + COFINS) a cada entrada, igual ao precoMedioLiq de calcEvolucao.
 // Usado em todos os relatórios/exibição de CMV nas vendas.
+// Prunit fallback: preço da PRIMEIRA entrada de todo o histórico do item.
+// Usado quando não há histórico de custo (saldoCusto=0 e nenhuma E anterior à data-alvo).
+function _primeiraEntradaPrunit(item) {
+  const primeira = (item.movimentos||[])
+    .filter(m => m.tipo === "E" && Number(m.qtde||0) > 0 && Number(m.valor||0) > 0)
+    .sort((a,b) => (a.data||"").localeCompare(b.data||""))[0];
+  return primeira ? Number(primeira.valor) / Number(primeira.qtde) : 0;
+}
+
 function pmLiqNaData(item, dataAlvo, excluirVendaId) {
   if (!item) return 0;
-  const creditoPct = aliquotaCreditoItem(item); // ex: 0.1625
+  const creditoPct = aliquotaCreditoItem(item); // ex: 0.07
+  const stP = stPctItem(item);
+  // Fallback: prunit da primeira entrada da história (para saídas anteriores à 1ª E)
+  const prunitFallback = _primeiraEntradaPrunit(item);
+  const pmFallbackBruto = prunitFallback * (1 + stP);
+  const pmFallbackLiq   = prunitFallback * (1 + stP - creditoPct);
+
   let q = Number(item.saldoQtde||0);
-  let v  = q * Number(item.saldoCusto||0);          // bruto (rastreamento qtde)
-  let vL = v * (1 - creditoPct);                     // líquido (para PM líquido)
+  let v  = q * Number(item.saldoCusto||0);          // bruto
+  let vL = v * (1 - creditoPct);                     // líquido
   const movs = (item.movimentos||[]).filter(m => {
     if (excluirVendaId && m.vendaId === excluirVendaId) return false;
     return (m.data || "") < dataAlvo || ((m.data||"") === dataAlvo && m.tipo === "E");
@@ -5549,14 +5573,14 @@ function pmLiqNaData(item, dataAlvo, excluirVendaId) {
     const qm = Number(m.qtde||0);
     if (m.tipo === "E") {
       const mv = m.valor != null ? Number(m.valor) : 0;
-      const stP = stPctItem(item);
       const mvComSt = mv * (1 + stP);
       q  += qm;
       v  += mvComSt;
       vL += mvComSt - mv * creditoPct;
     } else {
-      const pmLiq = q > 0 ? vL/q : 0;
-      const pmBrt = q > 0 ? v/q  : 0;
+      // Se ainda não há estoque contábil (q<=0), usa a 1ª entrada como fallback de custo
+      const pmLiq = q > 0 ? vL/q : pmFallbackLiq;
+      const pmBrt = q > 0 ? v/q  : pmFallbackBruto;
       const vs  = m.valor != null ? Number(m.valor) : qm * pmBrt;
       const vsL = qm * pmLiq;
       q  -= qm;
@@ -5564,7 +5588,9 @@ function pmLiqNaData(item, dataAlvo, excluirVendaId) {
       vL -= vsL;
     }
   });
-  return q > 0 ? vL/q : 0;
+  if (q > 0) return vL/q;
+  if (pmFallbackLiq > 0) return pmFallbackLiq;  // sem estoque no fim, mas há referência de custo
+  return 0;
 }
 
 function aliquotaCreditoItem(item) {

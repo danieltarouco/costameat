@@ -6573,10 +6573,11 @@ function renderVendas() {
       const r = vendaResumo(v);
       const qt = (v.itens||[]).reduce((s, vi) => s + Number(vi.qtde||0), 0);
       qtTotal += qt;
+      const cliSafe = (v.cliente||"").replace(/'/g,"\\'");
       return `<tr>
         <td>${fmtDate(v.data)}</td>
-        <td><b>${v.docto||"—"}</b></td>
-        <td>${v.cliente||"—"}</td>
+        <td style="cursor:pointer; color:var(--primary); text-decoration:underline dotted;" onclick="openVendaDetail('${registerVendaKey(v)}')" title="Ver detalhes da NF"><b>${v.docto||"—"}</b></td>
+        <td style="cursor:pointer; color:var(--primary); text-decoration:underline dotted;" onclick="expandClienteVendas('${cliSafe}')" title="Ver todas as vendas deste cliente">${escapeHtml(v.cliente||"—")}</td>
         <td class="num">${(v.itens||[]).length}</td>
         <td class="num">${fmtNum(qt)}</td>
         <td class="num">${fmtMoney(r.receita)}</td>
@@ -6651,8 +6652,8 @@ function renderVendas() {
       const comu = g.qtde > 0 ? g.comissao/g.qtde : 0;
       const mp = g.receita > 0 ? (mr/g.receita)*100 : null;
       return `<tr>
-        <td><b>${g.item.codigo}</b></td>
-        <td>${g.item.descricao}</td>
+        <td style="cursor:pointer; color:var(--primary); text-decoration:underline dotted;" onclick="expandItemVendas('${g.item.id}')" title="Ver todas as vendas deste item"><b>${g.item.codigo}</b></td>
+        <td style="cursor:pointer; color:var(--primary); text-decoration:underline dotted;" onclick="expandItemVendas('${g.item.id}')" title="Ver todas as vendas deste item">${escapeHtml(g.item.descricao)}</td>
         <td><span class="badge-dept">${g.item.dept} ${deptName(g.item.dept)}</span></td>
         <td class="num">${fmtNum(g.qtde)}</td>
         <td class="num">${fmtMoney(vu)}</td>
@@ -6712,8 +6713,9 @@ function renderVendas() {
       qtTotal += g.qtde;
       const mr = g.receita - g.cmv - g.imposto - g.comissao;
       const mp = g.receita > 0 ? (mr/g.receita)*100 : null;
+      const cliSafe = g.cliente.replace(/"/g, '&quot;');
       return `<tr>
-        <td><b>${g.cliente}</b></td>
+        <td data-cliente="${cliSafe}" style="cursor:pointer; color:var(--primary); text-decoration:underline dotted;" onclick="expandClienteVendas(this.dataset.cliente)" title="Ver todas as vendas deste cliente"><b>${escapeHtml(g.cliente)}</b></td>
         <td class="num">${g.vendas.length}</td>
         <td class="num">${g.qtdeItens}</td>
         <td class="num">${fmtNum(g.qtde)}</td>
@@ -6723,7 +6725,7 @@ function renderVendas() {
         <td class="num" style="color:var(--warn);">${fmtMoney(g.comissao)}</td>
         <td class="num" style="font-weight:600; color:${mr>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(mr)}</td>
         <td class="num">${mp==null?"—":mp.toFixed(2)+"%"}</td>
-        <td><button class="btn small ghost" data-cliente="${g.cliente.replace(/"/g, '&quot;')}" onclick="expandClienteVendas(this.dataset.cliente)">vendas</button></td>
+        <td><button class="btn small ghost" data-cliente="${cliSafe}" onclick="expandClienteVendas(this.dataset.cliente)">vendas</button></td>
       </tr>`;
     }).join("");
     tfoot.innerHTML = `<tr class="footer-total">
@@ -6771,9 +6773,10 @@ function renderVendas() {
       qtTotal += g.qtde;
       const mr = g.receita - g.cmv - g.imposto - g.comissao;
       const mp = g.receita > 0 ? (mr/g.receita)*100 : null;
+      const vSafe = String(g.vendedor).replace(/"/g, '&quot;');
       return `<tr>
-        <td><b>${g.vendedor}</b></td>
-        <td class="muted">${g.supervisor}</td>
+        <td data-vendedor="${vSafe}" style="cursor:pointer; color:var(--primary); text-decoration:underline dotted;" onclick="expandVendedorVendas(this.dataset.vendedor)" title="Ver todas as vendas deste vendedor"><b>${escapeHtml(g.vendedor)}</b></td>
+        <td class="muted">${escapeHtml(g.supervisor)}</td>
         <td class="num">${g.clientes.size}</td>
         <td class="num">${g.qtdeItens}</td>
         <td class="num">${fmtNum(g.qtde)}</td>
@@ -7400,6 +7403,69 @@ function expandItemVendas(itemId) {
   document.getElementById("m-venda-del")?.classList.add("hidden");
   openModal("modal-venda-detail");
 }
+function expandVendedorVendas(vendedorKey) {
+  // vendedorKey é o nome do vendedor (representante) mais o RCA opcional — usa a mesma lógica de agregação por RCA da view "Por Vendedor"
+  const vendas = getVendasFiltered().filter(v => (v.representante || v.rca || v.supervisor || "(sem vendedor)") === vendedorKey);
+  if (vendas.length === 0) return;
+  let totItens=0, totRec=0, totCmv=0, totImp=0, totCom=0, totQt=0;
+  const clientes = new Set();
+  const rows = vendas.map(v => {
+    const r = vendaResumo(v);
+    const qt = (v.itens||[]).reduce((s, vi) => s + Number(vi.qtde||0), 0);
+    totItens += (v.itens||[]).length; totQt += qt;
+    totRec += r.receita; totCmv += r.cmv; totImp += r.imposto; totCom += r.comissao;
+    clientes.add(v.cliente || "");
+    return `<tr>
+      <td>${fmtDate(v.data)}</td>
+      <td><b>${v.docto||"—"}</b></td>
+      <td style="cursor:pointer; color:var(--primary); text-decoration:underline dotted;" onclick="closeModal('modal-venda-detail'); setTimeout(()=>expandClienteVendas('${(v.cliente||'').replace(/'/g,"\\'")}'), 100)">${escapeHtml(v.cliente||"—")}</td>
+      <td class="num">${fmtNum(qt)}</td>
+      <td class="num">${fmtMoney(r.receita)}</td>
+      <td class="num" style="color:var(--warn);">${fmtMoney(r.cmv)}</td>
+      <td class="num" style="color:var(--warn);">${fmtMoney(r.imposto)}</td>
+      <td class="num" style="color:var(--warn);">${fmtMoney(r.comissao)}</td>
+      <td class="num" style="font-weight:600; color:${r.margemReal>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(r.margemReal)}</td>
+      <td class="num">${r.margemRealPct==null?"—":r.margemRealPct.toFixed(2)+"%"}</td>
+      <td><button class="btn small ghost" onclick="closeModal('modal-venda-detail'); openVendaDetail('${registerVendaKey(v)}');">abrir</button></td>
+    </tr>`;
+  }).join("");
+  const totMr = totRec - totCmv - totImp - totCom;
+  const totMp = totRec > 0 ? (totMr/totRec)*100 : null;
+  document.getElementById("modal-venda-detail-title").textContent = `Vendas do vendedor: ${vendedorKey}`;
+  document.getElementById("modal-venda-detail-body").innerHTML = `
+    <div class="kpis" style="margin-bottom:12px;">
+      <div class="kpi"><div class="label">Vendas</div><div class="value" style="font-size:16px;">${vendas.length}</div></div>
+      <div class="kpi"><div class="label">Clientes</div><div class="value" style="font-size:16px;">${clientes.size}</div></div>
+      <div class="kpi"><div class="label">Qtde (kg)</div><div class="value" style="font-size:16px;">${fmtNum(totQt)}</div></div>
+      <div class="kpi"><div class="label">Receita</div><div class="value" style="font-size:16px;">${fmtMoney(totRec)}</div></div>
+      <div class="kpi"><div class="label">CMV</div><div class="value" style="font-size:16px; color:var(--warn);">${fmtMoney(totCmv)}</div></div>
+      <div class="kpi"><div class="label">Imposto</div><div class="value" style="font-size:16px; color:var(--warn);">${fmtMoney(totImp)}</div></div>
+      <div class="kpi"><div class="label">Comissão</div><div class="value" style="font-size:16px; color:var(--warn);">${fmtMoney(totCom)}</div></div>
+      <div class="kpi"><div class="label">Margem Real</div><div class="value" style="font-size:16px; color:${totMr>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(totMr)}</div><div class="hint">${totMp!=null?totMp.toFixed(2)+"%":"—"}</div></div>
+    </div>
+    <div style="border:1px solid var(--border); border-radius:6px; overflow:auto; max-height:420px;">
+      <table>
+        <thead><tr>
+          <th style="width:95px;">Data</th>
+          <th style="width:85px;">NF</th>
+          <th>Cliente</th>
+          <th class="num" style="width:80px;">Qtde (kg)</th>
+          <th class="num" style="width:110px;">Receita</th>
+          <th class="num" style="width:105px;">CMV</th>
+          <th class="num" style="width:95px;">Imposto</th>
+          <th class="num" style="width:95px;">Comissão</th>
+          <th class="num" style="width:115px;">Margem Real</th>
+          <th class="num" style="width:75px;">Marg. %</th>
+          <th style="width:65px;"></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+  currentVendaDetail = null;
+  openModal("modal-venda-detail");
+}
+
 function expandClienteVendas(cliente) {
   const vendas = getVendasFiltered().filter(v => (v.cliente||"(sem cliente)") === cliente);
   if (vendas.length === 0) return;

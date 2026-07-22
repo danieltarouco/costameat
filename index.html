@@ -2197,13 +2197,22 @@
         <div><label>Docto (opcional)</label><input type="text" id="m-mov-docto"></div>
       </div>
       <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-        <div><label>Quantidade</label><input type="number" step="0.0001" id="m-mov-qtde"></div>
         <div>
-          <label>Valor (R$) <span class="muted" id="m-mov-valor-hint" style="font-weight:normal;font-size:11px;"></span></label>
-          <input type="number" step="0.0001" id="m-mov-valor">
+          <label>Quantidade (kg)</label>
+          <input type="number" step="0.0001" id="m-mov-qtde" oninput="atualizarPrunitDerivado()">
+        </div>
+        <div>
+          <label>Valor TOTAL da nota (R$) <span class="muted" id="m-mov-valor-hint" style="font-weight:normal;font-size:11px;"></span></label>
+          <input type="number" step="0.0001" id="m-mov-valor" oninput="atualizarPrunitDerivado()">
         </div>
       </div>
-      <div class="muted" style="font-size:12px;" id="m-mov-help">Para <b>Entrada</b>, informe o valor total da nota. Para <b>Saída</b>, deixe em branco para calcular automaticamente pelo preço médio atual.</div>
+      <div id="m-mov-prunit-derivado" style="font-size:13px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; padding:8px 12px; margin-bottom:8px; color:#1e40af; display:none;">
+        <b>Preço unitário derivado:</b> <span id="m-mov-prunit-valor">—</span>
+      </div>
+      <div class="muted" style="font-size:12px;" id="m-mov-help">
+        <b>Entrada:</b> digite o <b>valor TOTAL da nota</b> (não o unitário) — o sistema calcula o preço/kg dividindo pela quantidade.
+        <br><b>Saída:</b> deixe em branco para o sistema calcular pelo preço médio atual.
+      </div>
     </div>
     <div class="footer">
       <button class="btn danger hidden" id="m-mov-del" onclick="deleteMovFromModal()">Excluir</button>
@@ -5206,6 +5215,27 @@ function atualizarHintValor() {
   const t = document.getElementById("m-mov-tipo").value;
   const hint = document.getElementById("m-mov-valor-hint");
   hint.textContent = t === "E" ? "(obrigatório)" : "(opcional — calcula pelo preço médio)";
+  atualizarPrunitDerivado();
+}
+
+function atualizarPrunitDerivado() {
+  const qtde = Number(document.getElementById("m-mov-qtde").value || 0);
+  const valor = Number(document.getElementById("m-mov-valor").value || 0);
+  const box = document.getElementById("m-mov-prunit-derivado");
+  const span = document.getElementById("m-mov-prunit-valor");
+  if (qtde > 0 && valor > 0) {
+    const prunit = valor / qtde;
+    box.style.display = "block";
+    // Alerta visual se prunit parece muito baixo (< R$ 0,10/kg) — sinal de erro comum
+    const suspeito = prunit < 0.10;
+    box.style.background = suspeito ? "#fef2f2" : "#eff6ff";
+    box.style.borderColor = suspeito ? "#fca5a5" : "#bfdbfe";
+    box.style.color = suspeito ? "#991b1b" : "#1e40af";
+    span.innerHTML = `R$ ${prunit.toLocaleString("pt-BR", {minimumFractionDigits: 4, maximumFractionDigits: 4})}/kg` +
+      (suspeito ? " <b>⚠ verifique: valor parece unitário e não total</b>" : "");
+  } else {
+    box.style.display = "none";
+  }
 }
 function saveMov() {
   if (!movItemSelecionado) return;

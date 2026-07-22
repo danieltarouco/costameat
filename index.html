@@ -1814,6 +1814,45 @@
     <div class="tabs" style="margin-bottom:16px;">
       <div class="tab active" data-audsec="negativo" onclick="setAuditSecao('negativo')">📉 Estoque negativo</div>
       <div class="tab" data-audsec="duplicadas" onclick="setAuditSecao('duplicadas')">🔁 Vendas duplicadas <span id="audit-dup-badge" class="chip red hidden" style="margin-left:6px; font-size:10px; padding:1px 6px;">0</span></div>
+      <div class="tab" data-audsec="custos" onclick="setAuditSecao('custos')">💰 Custos suspeitos <span id="audit-custos-badge" class="chip red hidden" style="margin-left:6px; font-size:10px; padding:1px 6px;">0</span></div>
+    </div>
+
+    <!-- =================== Sub-seção: Custos suspeitos =================== -->
+    <div id="audit-sec-custos" class="hidden">
+      <div class="alert warn" style="margin-bottom:14px;">
+        <div>
+          <b>Entradas com preço unitário suspeito</b><br>
+          Lista todos os movimentos de entrada (E) onde o preço unitário (<code>valor ÷ qtde</code>) fica abaixo de um limite mínimo. Um caso comum é digitar o preço UNITÁRIO no campo "Valor total da nota" por engano — o sistema aceita, mas o CMP e o CMV das vendas passam a usar um custo distorcido.
+        </div>
+      </div>
+
+      <div class="toolbar" style="margin-bottom:12px;">
+        <label style="font-size:12px; color:var(--text-soft);">Limite mínimo (R$/kg):</label>
+        <input type="number" id="audit-custos-limite" step="0.01" min="0" value="0.50" style="width:100px;" onchange="renderAuditoriaCustos()">
+        <input type="text" id="audit-custos-search" placeholder="Buscar por código, descrição, NF..." style="min-width:280px;">
+        <div style="margin-left:auto;" class="muted" id="audit-custos-count">—</div>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto;">
+          <table id="audit-custos-table">
+            <thead>
+              <tr>
+                <th style="width:80px;">Código</th>
+                <th>Descrição</th>
+                <th style="width:110px;">Data</th>
+                <th style="width:110px;">Docto</th>
+                <th style="width:90px;">Lancto</th>
+                <th class="num" style="width:110px;">Qtde</th>
+                <th class="num" style="width:130px;">Valor total</th>
+                <th class="num" style="width:130px;">Prunit derivado</th>
+                <th style="width:90px;"></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- =================== Sub-seção: Estoque negativo =================== -->
@@ -2856,6 +2895,7 @@ function renderAll() {
   // Auditoria só atualiza o badge no menu (não renderiza tabela se não estiver visível)
   try { renderAuditoria(); } catch (_) {}
   try { renderAuditoriaDuplicadas(); } catch (_) {}
+  try { renderAuditoriaCustos(); } catch (_) {}
 }
 
 /* ======================= PAINEL — visão do mês ======================= */
@@ -8744,6 +8784,8 @@ function setAuditSecao(s) {
   document.querySelectorAll('#panel-auditoria > .tabs .tab[data-audsec]').forEach(t => t.classList.toggle("active", t.dataset.audsec === s));
   document.getElementById("audit-sec-negativo").classList.toggle("hidden", s !== "negativo");
   document.getElementById("audit-sec-duplicadas").classList.toggle("hidden", s !== "duplicadas");
+  document.getElementById("audit-sec-custos").classList.toggle("hidden", s !== "custos");
+  if (s === "custos") renderAuditoriaCustos();
   if (s === "negativo")   renderAuditoria();
   if (s === "duplicadas") renderAuditoriaDuplicadas();
 }
@@ -8770,6 +8812,95 @@ function auditarVendasDuplicadas() {
     duplicadas.push({ chave, entradas: arr });
   });
   return duplicadas;
+}
+
+/* ======================= AUDITORIA: CUSTOS SUSPEITOS ======================= */
+function auditarCustosSuspeitos(limite) {
+  const suspeitos = [];
+  const lim = Number(limite) > 0 ? Number(limite) : 0.50;
+  (state.itens || []).forEach(item => {
+    (item.movimentos || []).forEach(m => {
+      if (m.tipo !== "E") return;
+      const q = Number(m.qtde || 0);
+      const v = Number(m.valor || 0);
+      if (q <= 0 || v <= 0) return;
+      const prunit = v / q;
+      if (prunit < lim) {
+        suspeitos.push({
+          item, mov: m, qtde: q, valor: v, prunit,
+          data: m.data || "", docto: m.docto || "", lancto: m.lancto || "",
+        });
+      }
+    });
+  });
+  suspeitos.sort((a, b) => a.prunit - b.prunit); // mais suspeitos primeiro
+  return suspeitos;
+}
+
+function renderAuditoriaCustos() {
+  const limite = Number(document.getElementById("audit-custos-limite")?.value || 0.50);
+  const txt = (document.getElementById("audit-custos-search")?.value || "").toLowerCase();
+  const suspeitos = auditarCustosSuspeitos(limite);
+
+  // Badge
+  const badge = document.getElementById("audit-custos-badge");
+  if (badge) {
+    if (suspeitos.length > 0) { badge.textContent = suspeitos.length; badge.classList.remove("hidden"); }
+    else                       { badge.classList.add("hidden"); }
+  }
+
+  const filtrados = suspeitos.filter(s => {
+    if (!txt) return true;
+    const blob = `${s.item.codigo} ${s.item.descricao||""} ${s.docto} ${s.lancto}`.toLowerCase();
+    return blob.includes(txt);
+  });
+
+  const countEl = document.getElementById("audit-custos-count");
+  if (countEl) countEl.textContent = `${filtrados.length} entrada(s) suspeita(s)`;
+
+  const tbody = document.querySelector("#audit-custos-table tbody");
+  if (!tbody) return;
+
+  if (filtrados.length === 0) {
+    tbody.innerHTML = emptyTableRow(9, "✅", "Nenhuma entrada suspeita",
+      suspeitos.length === 0 ? "Todos os E-movimentos têm preço unitário acima do limite." : "Tente ajustar o limite ou o filtro.");
+    return;
+  }
+
+  tbody.innerHTML = filtrados.slice(0, 200).map(s => {
+    const origem = s.docto === "AJUSTE-NEG"
+      ? '<span class="chip" style="background:#f5f3ff; color:#7c3aed;">ajuste auto</span>'
+      : (s.docto ? '<span class="chip green">NF</span>' : '<span class="chip gray">manual</span>');
+    return `<tr>
+      <td><b>${escapeHtml(s.item.codigo)}</b></td>
+      <td style="max-width:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(s.item.descricao||"")}">${escapeHtml(s.item.descricao||"")}</td>
+      <td>${fmtDate(s.data)}</td>
+      <td>${escapeHtml(s.docto || "—")} ${origem}</td>
+      <td>${escapeHtml(s.lancto || "—")}</td>
+      <td class="num">${fmtNum(s.qtde)}</td>
+      <td class="num">${fmtMoney(s.valor)}</td>
+      <td class="num" style="color:var(--danger); font-weight:600;">${s.prunit.toLocaleString("pt-BR", {minimumFractionDigits:4, maximumFractionDigits:4})}/kg</td>
+      <td>
+        <button class="btn small" onclick="auditCustoAbrirMov('${s.item.id}','${s.mov.id}')" title="Abrir movimento pra editar">✎</button>
+      </td>
+    </tr>`;
+  }).join("") + (filtrados.length > 200 ? `<tr><td colspan="9" class="muted" style="text-align:center; padding:8px;">... e mais ${filtrados.length - 200} entradas (mostrando 200 primeiras)</td></tr>` : "");
+}
+
+function auditCustoAbrirMov(itemId, movId) {
+  // Navega para Movimentos, seleciona item, abre o modal do movimento
+  const navTab = document.querySelector('.app-sidebar .tab[data-tab="movimentos"]');
+  if (navTab) navTab.click();
+  setTimeout(() => {
+    const sel = document.getElementById("mov-item-select");
+    if (sel) {
+      sel.value = itemId;
+      sel.dispatchEvent(new Event("change"));
+    }
+    setTimeout(() => {
+      if (typeof openMovModal === "function") openMovModal(movId);
+    }, 120);
+  }, 100);
 }
 
 function renderAuditoriaDuplicadas() {
@@ -9327,6 +9458,8 @@ safeListen("mov-item-select", "change", renderMovimentos);
 ["filter-vendas","filter-vendas-de","filter-vendas-ate"].forEach(id=>safeListen(id, "input", renderVendas));
 safeListen("audit-search", "input", renderAuditoria);
 ["audit-dup-search","audit-dup-de","audit-dup-ate"].forEach(id => safeListen(id, "input", renderAuditoriaDuplicadas));
+safeListen("audit-custos-search", "input", renderAuditoriaCustos);
+safeListen("audit-custos-limite", "input", renderAuditoriaCustos);
 safeListen("audit-dup-de", "change", renderAuditoriaDuplicadas);
 safeListen("audit-dup-ate", "change", renderAuditoriaDuplicadas);
 safeListen("filter-vendas-gran", "change", renderVendas);

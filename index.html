@@ -1712,7 +1712,7 @@
         <button data-view="item" onclick="setVendasView('item')">Por Item</button>
         <button data-view="cliente" onclick="setVendasView('cliente')">Por Cliente</button>
         <button data-view="periodo" onclick="setVendasView('periodo')">Por Período</button>
-        <button data-view="rca" onclick="setVendasView('rca')">Por Vendedor</button>
+        <button data-view="rca" onclick="setVendasView('rca')">Por Equipe</button>
       </div>
       <select id="filter-vendas-gran" class="hidden" title="Granularidade do período">
         <option value="dia">Dia</option>
@@ -6073,6 +6073,7 @@ function importFaturamentoXLSX(event) {
       const iCodCli  = colIdx("CODCLI");
       const iCliente = colIdx("CLIENTE");
       const iRca     = colIdx("RCA");
+      const iEquipe  = colIdx("NOME");  // NOME = nome da equipe/supervisor (ex: "EQUIPE VAREJO", "CAYENA")
 
       const obrig = { CODPROD:iCodProd, DESCRICAO:iDescr, DTFAT:iDtFat, QT:iQt,
                       PVENDA:iPVenda, CODCLI:iCodCli, CLIENTE:iCliente, RCA:iRca };
@@ -6132,6 +6133,7 @@ function importFaturamentoXLSX(event) {
         const clienteCod = limpaTexto(r[iCodCli]);
         const cliente   = limpaTexto(r[iCliente]);
         const vendedor  = limpaTexto(r[iRca]);
+        const equipe    = iEquipe >= 0 ? limpaTexto(r[iEquipe]) : "";
 
         // Sem código E sem descrição = linha lixo; sem código MAS com descrição
         // = gera código sintético "S/" + slug da descrição (deduplica por descrição).
@@ -6206,6 +6208,7 @@ function importFaturamentoXLSX(event) {
           vendedor,
           rcaCod,
           rcaNome,
+          equipe,
           origem:     'rel8005',
           itens: [{
             codigo,
@@ -6836,14 +6839,19 @@ function renderVendas() {
       <td></td>
     </tr>`;
   } else if (vendasView === "rca") {
+    // Agrega por EQUIPE (coluna NOME do Rel.8005 — ex: "EQUIPE VAREJO", "CAYENA").
+    // Fallback: usa supervisor/rcaNome quando equipe não está no dado (vendas antigas).
     const mapa = new Map();
     vendas.forEach(v => {
-      const vendedor = v.representante || v.rca || v.supervisor || "(sem vendedor)";
-      const sup = v.supervisor || v.rcaNome || "";
-      if (!mapa.has(vendedor)) mapa.set(vendedor, { vendedor, supervisor: sup, clientes: new Set(), vendas: [], qtde: 0, qtdeItens: 0, receita: 0, cmv: 0, imposto: 0, comissao: 0 });
-      const g = mapa.get(vendedor);
+      const equipe = (v.equipe && v.equipe.trim())
+                     || v.supervisor
+                     || v.rcaNome
+                     || "(sem equipe)";
+      if (!mapa.has(equipe)) mapa.set(equipe, { equipe, vendedores: new Set(), clientes: new Set(), vendas: [], qtde: 0, qtdeItens: 0, receita: 0, cmv: 0, imposto: 0, comissao: 0 });
+      const g = mapa.get(equipe);
       g.vendas.push(v);
       g.clientes.add(v.cliente || "");
+      if (v.vendedor) g.vendedores.add(v.vendedor);
       const r = vendaResumo(v);
       g.qtdeItens += (v.itens||[]).length;
       g.qtde += (v.itens||[]).reduce((s, vi) => s + Number(vi.qtde||0), 0);
@@ -6852,8 +6860,8 @@ function renderVendas() {
     });
     const linhas = [...mapa.values()].sort((a,b) => b.receita - a.receita);
     thead.innerHTML = `<tr>
-      <th>Vendedor (RCA)</th>
-      <th>Supervisor</th>
+      <th>Equipe</th>
+      <th class="num" style="width:80px;">Vendedores</th>
       <th class="num" style="width:80px;">Clientes</th>
       <th class="num" style="width:70px;">Itens</th>
       <th class="num" style="width:95px;">Qtde (kg)</th>
@@ -6869,10 +6877,10 @@ function renderVendas() {
       qtTotal += g.qtde;
       const mr = g.receita - g.cmv - g.imposto - g.comissao;
       const mp = g.receita > 0 ? (mr/g.receita)*100 : null;
-      const vSafe = String(g.vendedor).replace(/"/g, '&quot;');
+      const eSafe = String(g.equipe).replace(/"/g, '&quot;');
       return `<tr>
-        <td data-vendedor="${vSafe}" style="cursor:pointer; color:var(--primary); text-decoration:underline dotted;" onclick="expandVendedorVendas(this.dataset.vendedor)" title="Ver todas as vendas deste vendedor"><b>${escapeHtml(g.vendedor)}</b></td>
-        <td class="muted">${escapeHtml(g.supervisor)}</td>
+        <td data-equipe="${eSafe}" style="cursor:pointer; color:var(--primary); text-decoration:underline dotted;" onclick="expandEquipeVendas(this.dataset.equipe)" title="Ver todas as vendas desta equipe"><b>${escapeHtml(g.equipe)}</b></td>
+        <td class="num">${g.vendedores.size}</td>
         <td class="num">${g.clientes.size}</td>
         <td class="num">${g.qtdeItens}</td>
         <td class="num">${fmtNum(g.qtde)}</td>
@@ -7499,8 +7507,80 @@ function expandItemVendas(itemId) {
   document.getElementById("m-venda-del")?.classList.add("hidden");
   openModal("modal-venda-detail");
 }
+function expandEquipeVendas(equipeKey) {
+  // Filtra vendas cuja equipe (coluna NOME) bate — inclui fallback pros dados antigos sem v.equipe
+  const vendas = getVendasFiltered().filter(v => {
+    const eq = (v.equipe && v.equipe.trim()) || v.supervisor || v.rcaNome || "(sem equipe)";
+    return eq === equipeKey;
+  });
+  if (vendas.length === 0) return;
+  let totItens=0, totRec=0, totCmv=0, totImp=0, totCom=0, totQt=0;
+  const clientes = new Set(), vendedores = new Set();
+  const rows = vendas.map(v => {
+    const r = vendaResumo(v);
+    const qt = (v.itens||[]).reduce((s, vi) => s + Number(vi.qtde||0), 0);
+    totItens += (v.itens||[]).length; totQt += qt;
+    totRec += r.receita; totCmv += r.cmv; totImp += r.imposto; totCom += r.comissao;
+    clientes.add(v.cliente || "");
+    if (v.vendedor) vendedores.add(v.vendedor);
+    return `<tr>
+      <td>${fmtDate(v.data)}</td>
+      <td><b>${v.docto||"—"}</b></td>
+      <td>${escapeHtml(v.vendedor||"—")}</td>
+      <td style="cursor:pointer; color:var(--primary); text-decoration:underline dotted;" onclick="closeModal('modal-venda-detail'); setTimeout(()=>expandClienteVendas('${(v.cliente||'').replace(/'/g,"\\'")}'), 100)">${escapeHtml(v.cliente||"—")}</td>
+      <td class="num">${fmtNum(qt)}</td>
+      <td class="num">${fmtMoney(r.receita)}</td>
+      <td class="num" style="color:var(--warn);">${fmtMoney(r.cmv)}</td>
+      <td class="num" style="color:var(--warn);">${fmtMoney(r.imposto)}</td>
+      <td class="num" style="color:var(--warn);">${fmtMoney(r.comissao)}</td>
+      <td class="num" style="font-weight:600; color:${r.margemReal>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(r.margemReal)}</td>
+      <td class="num">${r.margemRealPct==null?"—":r.margemRealPct.toFixed(2)+"%"}</td>
+      <td><button class="btn small ghost" onclick="closeModal('modal-venda-detail'); openVendaDetail('${registerVendaKey(v)}');">abrir</button></td>
+    </tr>`;
+  }).join("");
+  const totMr = totRec - totCmv - totImp - totCom;
+  const totMp = totRec > 0 ? (totMr/totRec)*100 : null;
+  document.getElementById("modal-venda-detail-title").textContent = `Vendas da equipe: ${equipeKey}`;
+  document.getElementById("modal-venda-detail-body").innerHTML = `
+    <div class="kpis" style="margin-bottom:12px;">
+      <div class="kpi"><div class="label">Vendas</div><div class="value" style="font-size:16px;">${vendas.length}</div></div>
+      <div class="kpi"><div class="label">Vendedores</div><div class="value" style="font-size:16px;">${vendedores.size}</div></div>
+      <div class="kpi"><div class="label">Clientes</div><div class="value" style="font-size:16px;">${clientes.size}</div></div>
+      <div class="kpi"><div class="label">Qtde (kg)</div><div class="value" style="font-size:16px;">${fmtNum(totQt)}</div></div>
+      <div class="kpi"><div class="label">Receita</div><div class="value" style="font-size:16px;">${fmtMoney(totRec)}</div></div>
+      <div class="kpi"><div class="label">CMV</div><div class="value" style="font-size:16px; color:var(--warn);">${fmtMoney(totCmv)}</div></div>
+      <div class="kpi"><div class="label">Imposto</div><div class="value" style="font-size:16px; color:var(--warn);">${fmtMoney(totImp)}</div></div>
+      <div class="kpi"><div class="label">Comissão</div><div class="value" style="font-size:16px; color:var(--warn);">${fmtMoney(totCom)}</div></div>
+      <div class="kpi"><div class="label">Margem Real</div><div class="value" style="font-size:16px; color:${totMr>=0?'var(--ok)':'var(--danger)'};">${fmtMoney(totMr)}</div><div class="hint">${totMp!=null?totMp.toFixed(2)+"%":"—"}</div></div>
+    </div>
+    <div style="border:1px solid var(--border); border-radius:6px; overflow:auto; max-height:420px;">
+      <table>
+        <thead><tr>
+          <th style="width:95px;">Data</th>
+          <th style="width:85px;">NF</th>
+          <th>Vendedor</th>
+          <th>Cliente</th>
+          <th class="num" style="width:80px;">Qtde (kg)</th>
+          <th class="num" style="width:110px;">Receita</th>
+          <th class="num" style="width:105px;">CMV</th>
+          <th class="num" style="width:95px;">Imposto</th>
+          <th class="num" style="width:95px;">Comissão</th>
+          <th class="num" style="width:115px;">Margem Real</th>
+          <th class="num" style="width:75px;">Marg. %</th>
+          <th style="width:65px;"></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+  currentVendaDetail = null;
+  document.getElementById("m-venda-del")?.classList.add("hidden");
+  openModal("modal-venda-detail");
+}
+
+// Alias para compatibilidade (chamadores antigos ainda podem existir)
 function expandVendedorVendas(vendedorKey) {
-  // vendedorKey é o nome do vendedor (representante) mais o RCA opcional — usa a mesma lógica de agregação por RCA da view "Por Vendedor"
+  // vendedorKey é o nome do vendedor (representante) mais o RCA opcional
   const vendas = getVendasFiltered().filter(v => (v.representante || v.rca || v.supervisor || "(sem vendedor)") === vendedorKey);
   if (vendas.length === 0) return;
   let totItens=0, totRec=0, totCmv=0, totImp=0, totCom=0, totQt=0;

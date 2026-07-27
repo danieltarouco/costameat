@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-27T00:00:00Z",
+  "title": "Design System: Costameat",
+  "extensions": {
+    "colorMeta": {
+      "bordeaux":         { "role": "primary",  "displayName": "Costameat Bordeaux",        "canonical": "#991b1b", "tonalRamp": ["#450a0a", "#5a1414", "#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#f87171", "#fef2f2"] },
+      "bordeaux-deep":    { "role": "primary",  "displayName": "Costameat Bordeaux Deep",  "canonical": "#7f1d1d" },
+      "bordeaux-cellar":  { "role": "primary",  "displayName": "Costameat Bordeaux Cellar","canonical": "#450a0a" },
+      "bordeaux-veil":    { "role": "primary",  "displayName": "Costameat Bordeaux Veil",  "canonical": "#fef2f2" },
+      "teal-controller":  { "role": "secondary","displayName": "Controller Teal",           "canonical": "#0f766e", "tonalRamp": ["#134e4a", "#115e59", "#0f766e", "#0d9488", "#14b8a6", "#5eead4", "#a7f3d0", "#ecfdf5"] },
+      "teal-veil":        { "role": "secondary","displayName": "Controller Teal Veil",      "canonical": "#ecfdf5" },
+      "stone-canvas":     { "role": "neutral",  "displayName": "Stone Canvas",              "canonical": "#fafaf9", "tonalRamp": ["#1c1917", "#57534e", "#78716c", "#a8a29e", "#d6d3d1", "#e7e5e4", "#f5f5f4", "#fafaf9"] },
+      "stone-card":       { "role": "neutral",  "displayName": "Stone Card",                "canonical": "#ffffff" },
+      "stone-hush":       { "role": "neutral",  "displayName": "Stone Hush",                "canonical": "#f5f5f4" },
+      "stone-shelf":      { "role": "neutral",  "displayName": "Stone Shelf",               "canonical": "#f0efed" },
+      "ink-slate":        { "role": "neutral",  "displayName": "Ink Slate",                 "canonical": "#1c1917" },
+      "ink-slate-soft":   { "role": "neutral",  "displayName": "Ink Slate Soft",            "canonical": "#57534e" },
+      "ink-slate-muted":  { "role": "neutral",  "displayName": "Ink Slate Muted",           "canonical": "#a8a29e" },
+      "signal-danger":    { "role": "tertiary", "displayName": "Signal Danger",             "canonical": "#dc2626" },
+      "signal-warn":      { "role": "tertiary", "displayName": "Signal Warn",               "canonical": "#d97706" },
+      "signal-ok":        { "role": "tertiary", "displayName": "Signal Ok",                 "canonical": "#16a34a" },
+      "signal-info":      { "role": "tertiary", "displayName": "Signal Info",               "canonical": "#0369a1" }
+    },
+    "typographyMeta": {
+      "display":  { "displayName": "Display",  "purpose": "Login logo (28px 700 -0.02em). Aparece uma vez no sistema." },
+      "headline": { "displayName": "Headline", "purpose": "Valores de KPI (Faturamento, Margem Real, Volume) — 22px 700, tabular-nums." },
+      "title":    { "displayName": "Title",    "purpose": "Título da página no topbar; título de card ('Faturamento por grupo') — 16-20px 600." },
+      "body":     { "displayName": "Body",     "purpose": "Base do sistema, 14px. Todo texto de conteúdo, células de tabela padrão." },
+      "body-sm":  { "displayName": "Body Small","purpose": "Tabelas densas, botões, inputs, sidebar nav — 13px." },
+      "label":    { "displayName": "Label",    "purpose": "Labels de KPI, headers de tabela, hints — 11px 600 uppercase letter-spacing 0.06em." }
+    },
+    "shadows": [
+      { "name": "shadow-xs", "value": "0 1px 2px rgba(15, 23, 42, 0.04)", "purpose": "Cards e KPIs em repouso. Quase imperceptível — apenas separação de superfície." },
+      { "name": "shadow-sm", "value": "0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04)", "purpose": "Hover de KPI quando translateY(-1px) é aplicado." },
+      { "name": "shadow-md", "value": "0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05)", "purpose": "Topbar sticky, botões primários em hover." },
+      { "name": "shadow-lg", "value": "0 10px 15px -3px rgba(15, 23, 42, 0.10), 0 4px 6px -4px rgba(15, 23, 42, 0.06)", "purpose": "Drawer da sidebar mobile." },
+      { "name": "shadow-xl", "value": "0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08)", "purpose": "Modais e login card. Único momento onde a sombra vira perceptível." }
+    ],
+    "motion": [
+      { "name": "t-fast", "value": "120ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Micro-interactions: color/border/opacity em botões, hovers de célula." },
+      { "name": "t-base", "value": "180ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default: sidebar collapse, card hover, chip toggle." },
+      { "name": "t-slow", "value": "280ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Modal slide-in, page transitions." }
+    ],
+    "breakpoints": [
+      { "name": "mobile-sm", "value": "560px", "purpose": "KPIs do Painel colapsam pra 1 coluna" },
+      { "name": "tablet",    "value": "720px", "purpose": "Topbar compacto, tabs padding reduzido" },
+      { "name": "desktop-sm","value": "900px", "purpose": "Split (sidebar+content) do Painel colapsa" },
+      { "name": "desktop",   "value": "980px", "purpose": "Sidebar vira drawer com hambúrguer abaixo" },
+      { "name": "desktop-lg","value": "1100px","purpose": "KPIs do Painel viram 2 colunas" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação primária. Sempre Bordeaux. Padding compacto, transição rápida.",
+      "html": "<button class=\"ds-btn-primary\">+ Nova Venda</button>",
+      "css": ".ds-btn-primary { background: #991b1b; color: #fff; padding: 7px 12px; border: 1px solid #991b1b; border-radius: 6px; font: 500 13px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; cursor: pointer; transition: background 120ms cubic-bezier(.4,0,.2,1), border-color 120ms cubic-bezier(.4,0,.2,1); display: inline-flex; align-items: center; gap: 6px; } .ds-btn-primary:hover { background: #7f1d1d; border-color: #7f1d1d; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.22); } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Ação secundária calma. Sem borda, texto muted.",
+      "html": "<button class=\"ds-btn-ghost\">Cancelar</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: #57534e; padding: 7px 12px; border: 1px solid transparent; border-radius: 6px; font: 500 13px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; cursor: pointer; transition: background 120ms, color 120ms; } .ds-btn-ghost:hover { background: #f0efed; color: #1c1917; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Ação destrutiva. Texto vermelho, borda rosé, background só em hover.",
+      "html": "<button class=\"ds-btn-danger\">🗑 Limpar vendas</button>",
+      "css": ".ds-btn-danger { background: #fff; color: #dc2626; padding: 7px 12px; border: 1px solid #fca5a5; border-radius: 6px; font: 500 13px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; cursor: pointer; transition: background 120ms, border-color 120ms; } .ds-btn-danger:hover { background: #fee2e2; border-color: #dc2626; }"
+    },
+    {
+      "name": "KPI Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Card de indicador. Label uppercase, valor tabular-numeric, hover lifts com accent bar Bordeaux.",
+      "html": "<div class=\"ds-kpi\"><div class=\"ds-kpi-label\">Faturamento total</div><div class=\"ds-kpi-value\">R$ 1.474.311,81</div><div class=\"ds-kpi-hint\">47 NF(s) no período</div></div>",
+      "css": ".ds-kpi { background: #fff; border: 1px solid #e7e5e4; border-radius: 8px; padding: 16px; box-shadow: 0 1px 2px rgba(15,23,42,0.04); position: relative; overflow: hidden; transition: box-shadow 180ms, transform 180ms, border-color 180ms; } .ds-kpi::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #991b1b; opacity: 0; transition: opacity 180ms; } .ds-kpi:hover { box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04); transform: translateY(-1px); border-color: #d6d3d1; } .ds-kpi:hover::before { opacity: 1; } .ds-kpi-label { font: 600 11px/1.2 -apple-system, sans-serif; text-transform: uppercase; letter-spacing: 0.06em; color: #57534e; } .ds-kpi-value { font: 700 22px/1.2 -apple-system, sans-serif; letter-spacing: -0.01em; color: #991b1b; font-variant-numeric: tabular-nums; margin-top: 4px; } .ds-kpi-hint { font: 400 11px/1.4 -apple-system, sans-serif; color: #a8a29e; margin-top: 2px; }"
+    },
+    {
+      "name": "Chip (Info)",
+      "kind": "chip",
+      "refersTo": "chip-info",
+      "description": "Chip padrão de metadata. Pill, uppercase 11px.",
+      "html": "<span class=\"ds-chip\">Grupo 10013</span>",
+      "css": ".ds-chip { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 2px 9px; border-radius: 999px; font: 600 11px/1.4 -apple-system, sans-serif; letter-spacing: 0.02em; }"
+    },
+    {
+      "name": "Chip (Ok)",
+      "kind": "chip",
+      "refersTo": "chip-ok",
+      "description": "Chip verde para sucesso, valores positivos, tag ok.",
+      "html": "<span class=\"ds-chip-ok\">manter</span>",
+      "css": ".ds-chip-ok { display: inline-block; background: #dcfce7; color: #166534; padding: 2px 9px; border-radius: 999px; font: 600 11px/1.4 -apple-system, sans-serif; letter-spacing: 0.02em; }"
+    },
+    {
+      "name": "Chip (Danger)",
+      "kind": "chip",
+      "refersTo": "chip-danger",
+      "description": "Chip vermelho para alerta crítico, duplicata, saldo negativo.",
+      "html": "<span class=\"ds-chip-danger\">● Negativo agora</span>",
+      "css": ".ds-chip-danger { display: inline-block; background: #fee2e2; color: #991b1b; padding: 2px 9px; border-radius: 999px; font: 600 11px/1.4 -apple-system, sans-serif; letter-spacing: 0.02em; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Input padrão com border strong e focus ring Bordeaux.",
+      "html": "<input type=\"text\" class=\"ds-input\" placeholder=\"Buscar por código ou descrição...\">",
+      "css": ".ds-input { background: #fff; color: #1c1917; padding: 8px 10px; border: 1px solid #d6d3d1; border-radius: 6px; font: 400 13px/1.5 -apple-system, sans-serif; outline: none; transition: border-color 120ms, box-shadow 120ms; min-width: 240px; } .ds-input:focus { border-color: #991b1b; box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.22); }"
+    },
+    {
+      "name": "Sidebar Nav Item (Active)",
+      "kind": "nav",
+      "refersTo": "sidebar-item-active",
+      "description": "Item da sidebar quando é a página ativa. Fundo Bordeaux Veil, texto Bordeaux, ícone Bordeaux.",
+      "html": "<div class=\"ds-nav-item ds-nav-active\"><svg class=\"ds-nav-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"9\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"5\"/><rect x=\"14\" y=\"12\" width=\"7\" height=\"9\"/><rect x=\"3\" y=\"16\" width=\"7\" height=\"5\"/></svg><span>Painel</span></div>",
+      "css": ".ds-nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; font: 600 13.5px/1.2 -apple-system, sans-serif; color: #991b1b; background: #fef2f2; border-radius: 6px; cursor: pointer; transition: background 120ms; } .ds-nav-icon { width: 18px; height: 18px; color: #991b1b; flex-shrink: 0; }"
+    },
+    {
+      "name": "Card Header",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Cabeçalho de card com título + subtitle. Padding hairline em cima, border-bottom, sem shadow interno.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><div><h3 class=\"ds-card-title\">Faturamento por grupo</h3><div class=\"ds-card-subtitle\">Distribuição da receita do mês</div></div></div><div class=\"ds-card-body\">conteúdo do card</div></div>",
+      "css": ".ds-card { background: #fff; border: 1px solid #e7e5e4; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 2px rgba(15,23,42,0.04); } .ds-card-header { padding: 18px 22px 14px; border-bottom: 1px solid #e7e5e4; display: flex; align-items: center; justify-content: space-between; gap: 12px; } .ds-card-title { font: 700 14px/1.3 -apple-system, sans-serif; letter-spacing: -0.01em; color: #1c1917; margin: 0; } .ds-card-subtitle { font: 400 12px/1.4 -apple-system, sans-serif; color: #a8a29e; margin-top: 2px; } .ds-card-body { padding: 20px 22px 22px; color: #57534e; font: 400 14px/1.5 -apple-system, sans-serif; }"
+    },
+    {
+      "name": "Chip Toggle (Segmented)",
+      "kind": "chip",
+      "refersTo": "chip-toggle",
+      "description": "Controle segmentado. Track Stone Shelf, item ativo Stone Card com shadow-xs.",
+      "html": "<div class=\"ds-toggle\"><button class=\"ds-toggle-btn ds-toggle-active\">Líquido</button><button class=\"ds-toggle-btn\">Bruto</button></div>",
+      "css": ".ds-toggle { display: inline-flex; background: #f0efed; padding: 3px; border-radius: 6px; gap: 2px; } .ds-toggle-btn { background: transparent; border: none; padding: 5px 12px; font: 500 12px/1.2 -apple-system, sans-serif; color: #57534e; border-radius: 4px; cursor: pointer; transition: background 120ms, color 120ms; } .ds-toggle-btn:hover { color: #1c1917; } .ds-toggle-active { background: #fff; color: #1c1917; font-weight: 600; box-shadow: 0 1px 2px rgba(15,23,42,0.04); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Distributor's Desk",
+    "overview": "Costameat é a mesa de trabalho de quem administra a distribuição — planilhas grandes e legíveis, decisões diárias tomadas em ritmo, informação densa porém calma. A interface recede pra deixar o dado brilhar: números tabulares alinhados, tabelas que respiram sem inchar, cor apenas nos pontos onde uma ação importa. Nada de mascote, nada de ilustração, nada de floreio: a ferramenta é o produto.\n\nO sistema tem uma personalidade dupla que nunca disputa espaço na mesma superfície. Bordeaux (o vermelho profundo da marca) fica confinado a ações primárias, chips de risco e o mark de identidade — nunca cobre grandes áreas. Stone (o palete quente de pedra e cal) domina 90% da tela, criando o silêncio necessário pra ler tabelas de 200+ linhas sem cansar. Teal aparece só como accent secundário controladoria/financeiro (nos valores líquidos e KPI de volume).\n\nA elevação é sutil e layered: sombras muito discretas separam camadas (topbar sobre conteúdo, card sobre fundo, modal sobre página) sem chamar atenção. Movimento existe como resposta a ação, nunca como decoração.",
+    "keyCharacteristics": [
+      "Sidebar fixa 248px, topbar branca sticky, main-area com padding generoso",
+      "Tipografia system-native (SF/Segoe/Roboto), sem web-fonts, foco em performance de render em telas grandes",
+      "Números tabulares em toda tabela financeira (font-variant-numeric: tabular-nums)",
+      "Chips arredondados (999px), cards com corner 12px, botões com corner 6px — hierarquia por radius",
+      "Sem gradientes em fundos ou botões; gradientes só existem em brand marks pontuais (login mark, avatar da sidebar)",
+      "Estados de erro/atenção comunicados por chips coloridos ou linhas destacadas, nunca por overlay dramático"
+    ],
+    "rules": [
+      { "name": "The Bordeaux Isolation Rule", "body": "Bordeaux nunca aparece em grandes áreas de fundo. Sua função é ativar decisão (botão), sinalizar risco (chip red, avatar), ou marcar identidade (brand mark). Se você está pintando mais de 10% da tela de Bordeaux, você está enfraquecendo o sinal — pare.", "section": "colors" },
+      { "name": "The Warm-Cool Duality Rule", "body": "Bordeaux (quente) e Teal (frio) nunca dividem o palco. Bordeaux domina ação/marca; Teal aparece só como accent secundário em finanças (valor líquido, sucesso). Se ambos apareceriam juntos numa mesma tabela ou card, Bordeaux vence e Teal recua.", "section": "colors" },
+      { "name": "The Numbers Are Tabular Rule", "body": "Todo número financeiro (valores, quantidades, percentuais) usa font-variant-numeric: tabular-nums. Colunas de tabela ficam alinhadas verticalmente sem precisar de text-align: right no valor absoluto.", "section": "typography" },
+      { "name": "The No-Serifs Rule", "body": "O sistema é 100% sans-serif system. Nada de Playfair, Georgia, Merriweather ou qualquer serif decorativa. O sistema serve pra ler dado, não pra apresentar prosa editorial.", "section": "typography" },
+      { "name": "The Layered But Quiet Rule", "body": "Sombras existem em cada superfície, mas são tão sutis que só se percebem se somem. A profundidade é resultado do conjunto (border + shadow-xs + background sutilmente diferente), não de um efeito individual.", "section": "elevation" },
+      { "name": "The Left-Anchored Rule", "body": "Conteúdo não centraliza. Tudo alinha à esquerda a partir do padding 28px do main. Tabelas de 12 colunas cabem sem precisar horizontal scroll até 1400px.", "section": "layout" }
+    ],
+    "dos": [
+      "Do usar Costameat Bordeaux apenas em ações primárias, chips de alerta crítico, item ativo da sidebar e brand marks. Nunca cobrir grandes áreas.",
+      "Do aplicar tabular-nums em toda célula com número — a legibilidade em tabelas de 200+ linhas depende disso.",
+      "Do usar Signal Warn (âmbar) pra todo custo que consome receita (CMV, imposto, comissão) — cria uma âncora visual pro raciocínio de margem.",
+      "Do manter labels em uppercase (11px 600 letter-spacing 0.06em) — labels não são conteúdo, são metadados.",
+      "Do limitar radius: 6px em ações (botões, sidebar item), 12px em containers de dado (cards), pill em identidades (chips).",
+      "Do empilhar KPIs em cards com accent bar Bordeaux 3px aparecendo só no hover — é o momento sancionado do Bordeaux fora de ação."
+    ],
+    "donts": [
+      "Don't usar Bordeaux como fundo de área grande (header cheio, banner, section-heading). O sinal vira ruído.",
+      "Don't trazer web-fonts, display serifs (Playfair, Georgia, Merriweather), display sans (Space Grotesk, Inter alta hierarquia) ou qualquer fonte customizada. System stack é o padrão.",
+      "Don't usar gradientes em fundos, botões ou cards. Gradientes só existem em brand marks pontuais (login SVG, avatar da sidebar).",
+      "Don't adicionar emojis, mascotes, ilustrações ou personagens. Se a interface precisa desses recursos pra ser calorosa, algo está errado nos dados.",
+      "Don't competir Bordeaux e Teal na mesma superfície. Bordeaux vence em ação e marca; Teal só aparece como accent de valor líquido/sucesso onde Bordeaux não está.",
+      "Don't usar shadow-md ou mais forte em cards estáticos. Shadows são resposta a estado (hover, focus, modal).",
+      "Don't centralizar main content ou tabelas. Left-anchored do padding 28px é a regra."
+    ]
+  }
+}

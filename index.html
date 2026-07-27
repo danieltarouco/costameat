@@ -1338,6 +1338,12 @@
         </div>
       </div>
       <div class="topbar-actions">
+        <!-- Toggle de modo de custo (afeta TODAS as telas: Painel, Vendas, Movimentos, Custo Líquido) -->
+        <div class="chip-toggle" title="Modo de custo — afeta CMV, PM e Margem em todas as telas">
+          <button data-custo-mode-btn="liquido" onclick="setCustoMode('liquido')" title="Custo líquido: valor da nota menos créditos tributários (PIS+COFINS+ICMS)">Líquido</button>
+          <button data-custo-mode-btn="bruto"   onclick="setCustoMode('bruto')"   title="Custo bruto: valor pago ao fornecedor (sem descontar créditos tributários)">Bruto</button>
+        </div>
+        <span style="width:1px; height:24px; background:var(--border); margin:0 4px;"></span>
         <button class="btn small primary" onclick="document.getElementById('importRel218PDFFile').click()" title="Importar Rel.218 — Entrada de Mercadoria (PDF)">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Importar Compras
@@ -2655,6 +2661,7 @@ async function loadState() {
       });
       if (!Array.isArray(state.vendas))     state.vendas = [];
       if (!Array.isArray(state.vendedores)) state.vendedores = [];
+      if (state.custoMode !== "bruto" && state.custoMode !== "liquido") state.custoMode = "liquido";
       const seedByCode = Object.fromEntries(ITENS_SEED.map(s => [s.codigo, s]));
       state.itens.forEach(i => {
         const s = seedByCode[i.codigo];
@@ -2880,6 +2887,11 @@ function temTributacao(item) {
 
 /* ======================= RENDERIZAÇÃO ======================= */
 function renderAll() {
+  // Sincroniza o toggle de modo de custo com o estado
+  const modo = custoMode();
+  document.querySelectorAll('[data-custo-mode-btn]').forEach(b => {
+    b.classList.toggle("active", b.dataset.custoModeBtn === modo);
+  });
   populateSelectsDepts();
   populateSelectsFornec();
   renderItens();
@@ -4877,7 +4889,7 @@ let movItemSelecionado = null;
 
 function calcEvolucao(item) {
   const linhas = [];
-  const creditoPct = aliquotaCreditoItem(item);
+  const creditoPct = creditoPctEfetivo(item); // 0 se modo=bruto, aliquotaCreditoItem se líquido
   const stP = stPctItem(item);
   // Fallback: prunit da 1ª entrada — usado nas saídas antes de qualquer E
   const prunitFallback = _primeiraEntradaPrunit(item);
@@ -5620,7 +5632,7 @@ function _primeiraEntradaPrunit(item) {
 
 function pmLiqNaData(item, dataAlvo, excluirVendaId) {
   if (!item) return 0;
-  const creditoPct = aliquotaCreditoItem(item); // ex: 0.07
+  const creditoPct = creditoPctEfetivo(item); // 0 se modo=bruto, aliquotaCreditoItem se líquido
   const stP = stPctItem(item);
   // Fallback: prunit da primeira entrada da história (para saídas anteriores à 1ª E)
   const prunitFallback = _primeiraEntradaPrunit(item);
@@ -5668,6 +5680,34 @@ function aliquotaCreditoItem(item) {
   if (!item) return 0;
   const a = aliqsItem(item);
   return ((a.icmsEf||0) + (a.pis||0) + (a.cofins||0)) / 100;
+}
+
+// Modo de custo global — controla se PM/CMV usa o custo líquido (com créditos) ou bruto.
+// "liquido" (padrão) → subtrai PIS+COFINS+ICMS da entrada = custo real considerando créditos.
+// "bruto"           → não subtrai nada = valor pago ao fornecedor (menos desconto se houver).
+function custoMode() {
+  return (state && state.custoMode === "bruto") ? "bruto" : "liquido";
+}
+
+// Alíquota efetiva de crédito CONFORME O MODO ATIVO: 0 se bruto, aliquotaCreditoItem se líquido.
+// Usado em pmLiqNaData e calcEvolucao pra respeitar o toggle global.
+function creditoPctEfetivo(item) {
+  return custoMode() === "bruto" ? 0 : aliquotaCreditoItem(item);
+}
+
+function setCustoMode(modo) {
+  if (modo !== "bruto" && modo !== "liquido") return;
+  if (!state) return;
+  state.custoMode = modo;
+  persist();
+  // Re-renderiza tudo (Painel, Vendas, Movimentos, etc.)
+  try { renderAll(); } catch(e) { console.error(e); }
+  // Atualiza indicadores visuais do toggle em todas as topbars
+  document.querySelectorAll('[data-custo-mode-btn]').forEach(b => {
+    b.classList.toggle("active", b.dataset.custoModeBtn === modo);
+  });
+  const label = document.getElementById("custo-mode-label");
+  if (label) label.textContent = modo === "bruto" ? "Custo BRUTO" : "Custo LÍQUIDO";
 }
 
 function vendaResumo(v) {

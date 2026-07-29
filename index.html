@@ -5728,8 +5728,11 @@ function vendaResumo(v) {
     const pu = Number(vi.precoVenda||0);
     // Imposto calculado AO VIVO pelo regime atual do item (ICMS efetivo + PIS + COFINS).
     // Se item existe e tem regime, recalcula; caso contrário usa o stored (legacy).
+    // No modo de custo "bruto", zeramos imposto — a análise ignora tributos nos dois lados
+    // (custo cheio da nota vs receita cheia da venda), mantendo simetria com pmLiqNaData.
     const aliqPct = item ? aliquotaCreditoItem(item) : 0;
-    const iu = aliqPct > 0 ? pu * aliqPct : Number(vi.impostoUnit||0);
+    const impBruto = aliqPct > 0 ? pu * aliqPct : Number(vi.impostoUnit||0);
+    const iu = custoMode() === "bruto" ? 0 : impBruto;
     const cu = Number(vi.comissaoUnit||0);
     receita += qt * pu;
     cmv += qt * pm;
@@ -6762,7 +6765,8 @@ function renderVendas() {
         const qt = Number(vi.qtde||0);
         const pu = Number(vi.precoVenda||0);
         const aliqPct = aliquotaCreditoItem(item);
-        const iu = aliqPct > 0 ? pu * aliqPct : Number(vi.impostoUnit||0);
+        const impBruto = aliqPct > 0 ? pu * aliqPct : Number(vi.impostoUnit||0);
+        const iu = custoMode() === "bruto" ? 0 : impBruto;
         const cu = Number(vi.comissaoUnit||0);
         const pm = pmLiqNaData(item, v.data, v.id);
         g.qtde += qt;
@@ -7311,7 +7315,8 @@ function openVendaDetail(vendaIdOrKey) {
     const qt = Number(vi.qtde||0);
     const pu = Number(vi.precoVenda||0);
     const aliqPct = item ? aliquotaCreditoItem(item) : 0;
-    const iu = aliqPct > 0 ? pu * aliqPct : Number(vi.impostoUnit||0);
+    const impBruto = aliqPct > 0 ? pu * aliqPct : Number(vi.impostoUnit||0);
+    const iu = custoMode() === "bruto" ? 0 : impBruto;
     const cou = Number(vi.comissaoUnit||0);
     const rec = qt*pu, cc = qt*pm, imp = qt*iu, com = qt*cou;
     const mr = rec - cc - imp - com;
@@ -7497,7 +7502,8 @@ function expandItemVendas(itemId) {
     const pm = pmLiqNaData(item, v.data, v.id);
     const qt = Number(vi.qtde||0), pu = Number(vi.precoVenda||0);
     const aliqPct = item ? aliquotaCreditoItem(item) : 0;
-    const iu = aliqPct > 0 ? pu * aliqPct : Number(vi.impostoUnit||0);
+    const impBruto = aliqPct > 0 ? pu * aliqPct : Number(vi.impostoUnit||0);
+    const iu = custoMode() === "bruto" ? 0 : impBruto;
     const cu = Number(vi.comissaoUnit||0);
     const rec = qt*pu, cc = qt*pm, imp = qt*iu, com = qt*cu;
     const mr = rec - cc - imp - com;
